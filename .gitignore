@@ -5,7 +5,6 @@
 
 ## Directories ##
 ########################
-mappings/*/drafts/*
 mappings/*/medication_codes/*
 mappings/*/laboratory_tests/survey/*
 mappings/*/condition_codes/*
