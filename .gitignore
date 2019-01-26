@@ -5,6 +5,6 @@
 
 ## Directories ##
 ########################
-mappings/*/medication_codes/*
-mappings/*/laboratory_tests/survey/*
-mappings/*/condition_codes/*
+!mappings/*/medication_codes/.gitkeep
+!mappings/*/laboratory_tests/.gitkeep
+!mappings/*/condition_codes/.gitkeep
