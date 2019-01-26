@@ -1,0 +1,21 @@
+## Compiled source ##
+#######################
+*.pyc
+*.exe
+
+## Directories ##
+########################
+mappings/condition_codes/~$*
+mappings/drafts/~$*
+mappings/medication_codes/~$*
+mappings/laboratory_tests/survey/~$*
+
+# exception to the rule
+!mappings/condition_codes/.gitkeep
+!mappings/medication_codes/.gitkeep
+!mappings/laboratory_tests/.gitkeep 
+
+# add empty files to repositories
+!resources/.gitkeep
+!scripts/.gitkeep
+
