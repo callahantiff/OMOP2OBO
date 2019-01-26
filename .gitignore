@@ -5,14 +5,7 @@
 
 ## Directories ##
 ########################
-mappings/condition_codes/~$*
-mappings/drafts/~$*
-mappings/medication_codes/~$*
-mappings/laboratory_tests/survey/~$*
-
-# exception to the rule
-!mappings/*/condition_codes/CONDS_Mapping_External_Files.xlsx
-!mappings/*/condition_codes/HP_DOID_FULL.csv
-!mappings/*/condition_codes/MAPPED_WIKI.csv
-!mappings/*/condition_codes/MRCONSO.RRF
-!mappings/*/condition_codes/SNOMED_CONDS_11.16.2018.xlsx
+mappings/*/drafts/*
+mappings/*/medication_codes/*
+mappings/*/laboratory_tests/survey/*
+mappings/*/condition_codes/*
