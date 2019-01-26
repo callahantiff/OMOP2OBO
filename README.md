@@ -14,11 +14,8 @@ This program was written on a system running OS X Sierra. Successful execution o
 
 <!--### Installation
 
-To install and execute the program designate the cloned project folder as the current working directory. Place any outside files within the working directory prior to executing the program.
+<!--To install and execute the program designate the cloned project folder as the current working directory. Place any outside <!--files within the working directory prior to executing the program.-->
 
-```
-pip install -r requirements.txt -->
-```
 
 ## Contributing
 
