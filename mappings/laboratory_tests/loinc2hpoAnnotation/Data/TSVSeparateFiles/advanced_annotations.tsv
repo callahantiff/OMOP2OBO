@@ -1,4 +1,0 @@
-loincId	loincScale	system	code	hpoTermId	inversed	note	flag	version	createdOn	createdBy	lastEditedOn	lastEditedBy
-600-7	Nom	http://snomed.info/sct	3092008	HP:0007499	false	NA	false	0.2	2018-03-27T10:53:03	JGM:Aaron	2018-04-06T15:26:09	JGM:azhang
-32167-9	Nom	FHIR	A	HP:0012086	false	NA	false	0.1	2018-04-03T13:00:43	HPO:nvasilevsky	NA	NA
-32167-9	Nom	FHIR	N	HP:0012086	true	NA	false	0.1	2018-04-03T13:00:43	HPO:nvasilevsky	NA	NA
