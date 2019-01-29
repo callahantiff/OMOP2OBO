@@ -18,3 +18,4 @@ mappings/laboratory_tests/survey/LOINC_LABS_09.10.18_mapped.xlsx
 mappings/laboratory_tests/survey/Mapping_Lab_Results_to_Phenotypes.qsf
 mappings/medication_codes/CHEBI.xlsx
 mappings/medication_codes/RXNORM_MEDS_10.08.18_mapped.xlsx
+mappings/laboratory_tests/loinc2hpoAnnotation
