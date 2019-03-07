@@ -2,6 +2,8 @@
 
 This repository provides code to map different sources of clinical data to the [Open Biomedical Repositories](http://www.obofoundry.org/).
 
+Please see the [Project Wiki](https://github.com/callahantiff/BioLater/wiki) for more information!
+
 
 <!--### Prerequisites
 
