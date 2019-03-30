@@ -1,12 +1,6 @@
 http://purl.obolibrary.org/obo/hp.owl
 http://purl.obolibrary.org/obo/doid.owl
-<<<<<<< HEAD
 http://purl.obolibrary.org/obo/pro.owl
 http://purl.obolibrary.org/obo/vo.owl
 http://purl.obolibrary.org/obo/chebi.owl
-=======
-http://purl.obolibrary.org/obo/chebi.owl
-http://purl.obolibrary.org/obo/pro.owl
-http://purl.obolibrary.org/obo/vo.owl
->>>>>>> parent of a4384c7... updated gittignore and added resources files
 http://purl.obolibrary.org/obo/ncbitaxon.owl

@@ -1,4 +1,4 @@
-#Sat Mar 30 21:02:50 UTC 2019 
+#Sat Mar 30 21:21:01 UTC 2019 
 DOWNLOAD_URL= http://purl.obolibrary.org/obo/hp.owl
 DOWNLOAD_DATE= 03/30/2019
 FILE_SIZE_IN_BYTES= 90406185
