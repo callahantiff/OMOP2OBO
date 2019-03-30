@@ -60,34 +60,37 @@ class Ontology(object):
         ensure that the command line argument passed to OWLTools returned data and the second is that for each URL
         provided as input, a data file is returned.
         """
-
         print('\n')
         print('#' * 100)
         print('Downloading and processing ontologies')
         print('\n')
 
+        # for i in range(0, len(source_list)):
         for i in range(0, len(self.source_list)):
-
             source = self.source_list[i]
             file_prefix = source.split('/')[-1].split('.')[0]
-            print('Downloading ' + str(file_prefix))
 
-            # set command line argument
-            try:
-                subprocess.check_call(['./resources/lib/owltools',
-                                       str(source),
-                                       '--merge-import-closure',
-                                       '-o',
-                                       './resources/ontologies/'
-                                       + str(file_prefix) + '_with_imports.owl'])
-            except subprocess.CalledProcessError as error:
-                print(error.output)
+            # check if ontology has already been downloaded
+            if os.path.exists('./resources/ontologies/' + str(file_prefix) + '_with_imports.owl'):
+                pass
+            else:
+                print('Downloading ' + str(file_prefix))
+
+                try:
+                    subprocess.check_call(['./resources/lib/owltools',
+                                           str(source),
+                                           '--merge-import-closure',
+                                           '-o',
+                                           './resources/ontologies/'
+                                           + str(file_prefix) + '_with_imports.owl'])
+                except subprocess.CalledProcessError as error:
+                    print(error.output)
 
             self.data_files.append('./resources/ontologies/' + str(file_prefix) + '_with_imports.owl')
 
-            # CHECK - all URLs returned an data file
-            if len(self.source_list) != i + 1:
-                raise Exception('ERROR: Not all URLs returned a data file')
+        # CHECK - all URLs returned an data file
+        if len(self.source_list) != len(self.data_files):
+            raise Exception('ERROR: Not all URLs returned a data file')
 
     def get_data_files(self):
         """Function returns the list of data sources with file path"""
@@ -98,13 +101,6 @@ class Ontology(object):
         """Function generates metadata for the data sources that it imports. Metadata includes the date of download,
         date of last modification to the file, the difference in days between last date of modification and current
         download date, file size in bytes, path to file, and URL from which the file was downloaded for each data source
-
-            :param
-                data_file (list): each item in the list contains the full path and filename of an input data source
-
-             :return:
-                 metadata (list): nested list where first item is today's date and each remaining item is a list that
-                 contains metadata information for each source that was downloaded
         """
 
         self.metadata.append(['#' + str(datetime.utcnow().strftime('%a %b %d %X UTC %Y')) + ' \n'])
@@ -116,12 +112,9 @@ class Ontology(object):
 
             # get vars for metadata file
             file_info = requests.head(self.source_list[i])
-            # file_info = requests.head(source_list[i])
             diff_date = ''
-            mod_date = ''
 
             if ".owl" in source:
-                mod_date = "NONE"
                 diff_date = "N/A"
 
             if ".owl" not in source:
@@ -137,8 +130,7 @@ class Ontology(object):
                                'DOWNLOAD_DATE= %s' % str(datetime.now().strftime('%m/%d/%Y')),
                                'FILE_SIZE_IN_BYTES= %s' % str(os.stat(source).st_size),
                                'FILE_AGE_IN_DAYS= %s' % str(diff_date),
-                               'DOWNLOADED_FILE= %s' % str(source),
-                               'FILE_LAST_MOD_DATE= %s' % str(mod_date)]
+                               'DOWNLOADED_FILE= %s' % str(source)]
 
             self.metadata.append(source_metadata)
 
@@ -149,16 +141,6 @@ class Ontology(object):
 
     def write_source_metadata(self):
         """Function generates a text file that stores metadata for the data sources that it imports.
-
-        :param
-            metadata (list): nested list where first item is today's date and each remaining item is a list that
-                 contains metadata information for each source that was downloaded
-
-            data_type (str): the type of data files being processed
-
-        :return:
-            writes a text file storing metadata for the imported ontologies and names it
-
         """
 
         # open file to write to and specify output location
