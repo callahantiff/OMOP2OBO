@@ -28,3 +28,4 @@ mappings/laboratory_tests/survey/~$LOINC2HP_Survey_Results.xlsx
 mappings/medication_codes/~$RXNORM_MEDS_10.08.18_mapped.xlsx
 
 resources/ontologies/*.owl
+resources/programming/google_api/*
