@@ -47,11 +47,11 @@ class RDFGraph(object):
 
         for row in pbar(query_results):
             if row[2] is not None:
-                valid_res[str(row[1].decode('ascii', 'ignore')).lower()] = [str(row[0]),
-                                                                            str(row[2].encode('ascii',
-                                                                                              'ignore')).lower()]
+                label = row[1].encode('ascii', 'ignore').lower().decode('utf-8')
+                defin = row[2].encode('ascii', 'ignore').lower().decode('utf-8')
+                valid_res[label] = [str(row[0]), defin]
             else:
-                valid_res[str(row[1].decode('ascii', 'ignore')).lower()] = [str(row[0]), '']
+                valid_res[row[1].encode('ascii', 'ignore').lower().decode('utf-8')] = [str(row[0]), '']
 
         # close progress bar
         pbar.finish()
@@ -150,14 +150,15 @@ class RDFGraph(object):
         print('Processing Query Results \n')
 
         for row in pbar(query_results):
-            key = str(row[0].encode('ascii', errors='replace')).lower()
+            key = row[0].encode('ascii', 'ignore').lower().decode('utf-8')
 
             if key in syn.keys():
-                if str(row[1]) not in syn[key] and str(row[2].encode('ascii',
-                                                                     errors='replace').lower()) not in syn[key]:
-                    syn[key] += [str(row[1]), str(row[2].encode('ascii', errors='replace').lower())]
+                defin = row[2].encode('ascii', 'ignore').lower().decode('utf-8')
+
+                if str(row[1]) not in syn[key] and defin not in syn[key]:
+                    syn[key] += [str(row[1]), row[2].encode('ascii', 'ignore').lower().decode('utf-8')]
             else:
-                syn[key] = [str(row[1]), str(row[2].encode('ascii', errors='replace').lower())]
+                syn[key] = [str(row[1]), row[2].encode('ascii', errors='replace').lower().decode('utf-8')]
 
         pbar.finish()
 
