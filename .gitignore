@@ -2,6 +2,7 @@
 #######################
 *.pyc
 *.exe
+.idea/*
 
 ## Directories ##
 ########################
@@ -25,3 +26,8 @@ mappings/condition_codes/~$CONDS_Mapping_External_Files.xlsx
 mappings/condition_codes/~$SNOMED_CONDS_11.16.2018.xlsx
 mappings/laboratory_tests/survey/~$LOINC2HP_Survey_Results.xlsx
 mappings/medication_codes/~$RXNORM_MEDS_10.08.18_mapped.xlsx
+
+resources/ontologies/*.owl
+resources/programming/google_api/*
+resources/programming/umls_api.txt
+resources/ontologies/*.pickle

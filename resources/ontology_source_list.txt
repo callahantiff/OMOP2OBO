@@ -1,0 +1,6 @@
+http://purl.obolibrary.org/obo/hp.owl
+http://purl.obolibrary.org/obo/doid.owl
+http://purl.obolibrary.org/obo/pro.owl
+http://purl.obolibrary.org/obo/vo.owl
+http://purl.obolibrary.org/obo/chebi.owl
+http://purl.obolibrary.org/obo/ncbitaxon.owl
