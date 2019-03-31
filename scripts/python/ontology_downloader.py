@@ -1,15 +1,16 @@
 ##########################################################################################
 # ontology_downloader.py
 # version 1.0.0
-# date: 03.30.2019
-# Python 3.6.2
+# python 3.6.2
 ##########################################################################################
 
-from datetime import *
-import requests
+
 import os
 import os.path
+import requests
 import subprocess
+
+from datetime import *
 
 
 class Ontology(object):
