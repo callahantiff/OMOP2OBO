@@ -31,3 +31,4 @@ resources/ontologies/*.owl
 resources/programming/google_api/*
 resources/programming/umls_api.txt
 resources/ontologies/*.pickle
+/scripts/*
