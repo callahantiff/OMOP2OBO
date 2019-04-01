@@ -27,5 +27,4 @@ pip install -r requirements.txt
 ```
 
 **Data**  
-This repository assumes that input data filescontains code which relies on Google's [DriveAPI](https://developers.google
-.com/drive/) and [SheetsAPI](https://developers.google.com/sheets/api/).
+This repository assumes that input data filescontains code which relies on Google's [DriveAPI](https://developers.google.com/drive/) and [SheetsAPI](https://developers.google.com/sheets/api/).
