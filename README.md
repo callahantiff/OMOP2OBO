@@ -1,4 +1,4 @@
-# BioLater
+# Biolater
 
 This repository provides code to map different sources of clinical data to the [Open Biomedical Repositories](http://www.obofoundry.org/).
 
@@ -12,7 +12,7 @@ This repository contains more than just code, it provides a detailed and transpa
 
 ### Project Stats
 
-![GitHub contributors](https://img.shields.io/github/contributors/callahantiff/BioLater.svg?color=yellow&style=flat-square) ![Github all releases](https://img.shields.io/github/downloads/callahantiff/BioLater/total.svg?color=dodgerblue&style=flat-square)
+![GitHub contributors](https://img.shields.io/github/contributors/callahantiff/Biolater.svg?color=yellow&style=flat-square) ![Github all releases](https://img.shields.io/github/downloads/callahantiff/Biolater/total.svg?color=dodgerblue&style=flat-square)
 
 <br>
 
