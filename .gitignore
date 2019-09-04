@@ -11,7 +11,6 @@ resources/mappings/
 !resources/mappings/laboratory_tests/.gitkeep
 !resources/mappings/condition_codes/.gitkeep
 resources/ontologies/
-resources/ontologies/ontology_metadata.txt
 resources/programming/
 
 ## scripts ##

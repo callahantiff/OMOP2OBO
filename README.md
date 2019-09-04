@@ -53,3 +53,4 @@ Please read [CONTRIBUTING.md](https://github.com/callahantiff/biolater/blob/mast
 
 <!--This project is licensed under 3-Clause BSD License - see the [LICENSE.md](https://github.com/callahantiff/biolater/blob/master/LICENSE) file for details.
 
+## add note on running `resources/programming/google_api/quickstart.py` to authenticate google sheet
