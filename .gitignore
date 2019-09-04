@@ -6,29 +6,16 @@
 
 ## Directories ##
 ########################
-!mappings/medication_codes/.gitkeep
-!mappings/laboratory_tests/.gitkeep
-!mappings/condition_codes/.gitkeep
-mappings/condition_codes/CONDS_Mapping_External_Files.xlsx
-mappings/condition_codes/HP_DOID_FULL.csv
-mappings/condition_codes/MAPPED_WIKI.csv
-mappings/condition_codes/MRCONSO.RRF
-mappings/condition_codes/SNOMED_CONDS_11.16.2018.xlsx
-mappings/laboratory_tests/survey/LOINC2HP_Survey_Results.xlsx
-mappings/laboratory_tests/survey/LOINC_LABS_09.10.18_mapped.xlsx
-mappings/laboratory_tests/survey/Mapping_Lab_Results_to_Phenotypes.qsf
-mappings/medication_codes/CHEBI.xlsx
-mappings/medication_codes/RXNORM_MEDS_10.08.18_mapped.xlsx
-mappings/laboratory_tests/loinc2hpoAnnotation
-mappings/laboratory_tests/Loinc_2.65_LoincTableCore/*
-mappings/laboratory_tests/survey/UCDenver_AMC_LOINC2HPO Mapping.pptx
-mappings/condition_codes/~$CONDS_Mapping_External_Files.xlsx
-mappings/condition_codes/~$SNOMED_CONDS_11.16.2018.xlsx
-mappings/laboratory_tests/survey/~$LOINC2HP_Survey_Results.xlsx
-mappings/medication_codes/~$RXNORM_MEDS_10.08.18_mapped.xlsx
+resources/mappings/
+!resources/mappings/medication_codes/.gitkeep
+!resources/mappings/laboratory_tests/.gitkeep
+!resources/mappings/condition_codes/.gitkeep
+resources/ontologies/
+resources/programming/
 
-resources/ontologies/*.owl
-resources/programming/google_api/*
-resources/programming/umls_api.txt
-resources/ontologies/*.pickle
-/scripts/*
+## scripts ##
+########################
+scripts/bash
+scripts/pythton/drafts.zip
+scripts/python/scratch.py
+scripts/tests/
