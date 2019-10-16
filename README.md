@@ -48,9 +48,24 @@ There are several important
 Please read [CONTRIBUTING.md](https://github.com/callahantiff/biolater/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 
+## License
 
-<!--## License
+This project is licensed under MIT License - see the [LICENSE.md](https://github.com/callahantiff/Biolater/blob/master/LICENSE) file for details.  
 
-<!--This project is licensed under 3-Clause BSD License - see the [LICENSE.md](https://github.com/callahantiff/biolater/blob/master/LICENSE) file for details.
+<!--
+**Citing this Work:**  
+```
+@misc{callahan_tj_2019_3401437,
+  author       = {Callahan, TJ},
+  title        = {Biolater},
+  month        = mar,
+  year         = 2019,
+  doi          = {10.5281/zenodo.3401437},
+  url          = {https://doi.org/10.5281/zenodo.3401437}
+}
+```   
 
-## add note on running `resources/programming/google_api/quickstart.py` to authenticate google sheet
+
+## add note on running `resources/programming/google_api/quickstart.py` to authenticate google sheet  
+
+-->   
