@@ -1,4 +1,4 @@
-# BioLater
+# OMOP2OBO
 
 This repository provides code to map different sources of clinical data to the [Open Biomedical Repositories](http://www.obofoundry.org/).
 
