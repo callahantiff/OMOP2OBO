@@ -17,18 +17,19 @@ class Ontology(object):
     """Download a list of ontologies listed in a text file.
 
     Attributes:
-            data_path: A string containing a file path/name to a txt file storing URLs of sources to download.
-            source_list (list): a list of URLs representing the data sources to download/process
-            data_files (list): the full file path and name of each downloaded data source
+            data_path: a string containing a file path/name to a txt file storing URLs of sources to download.
+            source_list: a list of URLs representing the data sources to download/process.
+            data_files: the full file path and name of each downloaded data source.
+            metadata: a list containing metadata information for each downloaded ontology.
     """
 
-    def __init__(self, data_path):
+    def __init__(self, data_path: str):
         self.data_path = data_path
-        self.source_list = []
-        self.data_files = []
-        self.metadata = []
+        self.source_list: list = []
+        self.data_files: list = []
+        self.metadata: list = []
 
-    def file_parser(self):
+    def _file_parser(self):
         """Gather and verify sources to download."""
 
         # CHECK - file has data
@@ -43,13 +44,17 @@ class Ontology(object):
             else:
                 raise Exception('ERROR: Not all URLs were formatted properly')
 
-    def get_source_list(self):
-        """Data sources parsed from input text file."""
-
-        return self.source_list
+        return None
 
     def url_download(self):
-        """Download each ontology from a list (including ontologies imported by each ontology."""
+        """Download each ontology from a list (including ontologies imported by each ontology.
+
+        Raises:
+            Exception: If not all of the ontologies is successfully downloaded.
+        """
+
+        # parse file containing ontology urls
+        self._file_parser()
 
         print('\n')
         print('#' * 100)
@@ -62,6 +67,7 @@ class Ontology(object):
 
             # check if ontology has already been downloaded
             file_path = './resources/ontologies/' + str(file_prefix) + '_without_imports.owl'
+
             if os.path.exists(file_path):
                 pass
             else:
@@ -76,20 +82,15 @@ class Ontology(object):
                 except subprocess.CalledProcessError as error:
                     print(error.output)
 
-            if 'Annotation properties' in open(file_path).read():
-                self.data_files.append(file_path)
-            else:
-                raise Exception('ERROR: incomplete ontology download')
+            # append to data_files
+            self.data_files.append(file_path)
 
         if len(self.source_list) != len(self.data_files):
-                raise Exception('ERROR: Not all URLs returned a data file')
+            raise Exception('ERROR: Not all URLs returned a data file')
 
-    def get_data_files(self):
-        """Data source paths."""
+        return None
 
-        return self.data_files
-
-    def source_metadata(self):
+    def _source_metadata(self):
         """Obtain metadata for each imported ontology."""
 
         self.metadata.append(['#' + str(datetime.utcnow().strftime('%a %b %d %X UTC %Y')) + ' \n'])
@@ -109,13 +110,13 @@ class Ontology(object):
 
             self.metadata.append(source_metadata)
 
-    def get_source_metadata(self):
-        """Data source metadata."""
-
-        return self.metadata
+        return None
 
     def write_source_metadata(self):
         """Store metadata for imported ontologies."""
+
+        # get metadata
+        self._source_metadata()
 
         print('\n')
         print('#' * 100)
@@ -135,3 +136,5 @@ class Ontology(object):
             outfile.write('\n')
 
         outfile.close()
+
+        return None
