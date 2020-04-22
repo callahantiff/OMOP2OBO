@@ -224,18 +224,18 @@ class OntologyEx(object):
 
             # get ontology classes
             ont_dict = self.ontology_dictionary(ont[0])
-            with open(str(ont[1][0].split('.')[0]) + '_classes.pickle', 'wb') as handle:
+            with open(str(ont[1][0][:-4]) + '_classes.pickle', 'wb') as handle:
                 pickle.dump(ont_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
             # get ontology synonyms
             syn = self.get_ontology_synonyms(ont[0])
-            with open(str(ont[1][0].split('.')[0]) + '_synonyms.pickle', 'wb') as handle:
+            with open(str(ont[1][0][:-4]) + '_synonyms.pickle', 'wb') as handle:
                 pickle.dump(syn, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
             # get ontology dbXrefs
             if None not in ont[1][1]:
                 dbxref = self.get_ontology_dbxrefs(ont[1][1], ont[0])
-                with open(str(ont[1][0].split('.')[0]) + '_DbXRef.pickle', 'wb') as handle:
+                with open(str(ont[1][0][:-4]) + '_DbXRef.pickle', 'wb') as handle:
                     pickle.dump(dbxref, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         return None
@@ -252,9 +252,8 @@ class OntologyEx(object):
             A dictionary where each key is a file name and each value is a dictionary.
 
         Raises:
-            An error occurs if the provided ontology name does not match any downloaded ontology files.
-            An error occurs if the number of dictionary entries does not equal the number of files in the files list.
-
+            ValueError: If the provided ontology name does not match any downloaded ontology files.
+            ValueError: If the number of dictionary entries does not equal the number of files in the files list.
         """
 
         # find files that match user input
