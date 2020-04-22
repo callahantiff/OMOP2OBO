@@ -13,14 +13,13 @@ from lxml.html import fromstring
 class Authentication(object):
 
     def __init__(self):
-        self.service = "http://umlsks.nlm.nih.gov"
-        self.uri = "https://utslogin.nlm.nih.gov"
-        self.auth_endpoint = "/cas/v1/api-key"
-        self.api_key = open("resources/programming/umls_api.txt").read()
+        self.service: str = "http://umlsks.nlm.nih.gov"
+        self.uri: str = "https://utslogin.nlm.nih.gov"
+        self.auth_endpoint: str = "/cas/v1/api-key"
+        self.api_key: str = open("resources/programming/umls_api.txt").read()
 
     def gettgt(self):
         params = {'apikey': self.api_key}
-
         h = {"Content-type": "application/x-www-form-urlencoded",
              "Accept": "text/plain",
              "User-Agent": "python"}
