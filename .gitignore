@@ -19,4 +19,5 @@ scripts/bash
 scripts/pythton/drafts.zip
 scripts/python/scratch.py
 scripts/tests/*
-scripts/python/drafts/UMLS_API.py
+scripts/python/drafts/*
+scripts/python/*.zip
