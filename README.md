@@ -4,6 +4,8 @@ This repository provides code to map different sources of clinical data to the [
 
 Please see the [Project Wiki](https://github.com/callahantiff/BioLater/wiki) for more information!
 
+**UPDATE:** Mapping is complete and a manuscript is in progress. All mappings will be publicly available once the manuscript is submitted.
+
 
 <br>
 
