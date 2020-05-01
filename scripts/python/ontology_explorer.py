@@ -3,204 +3,93 @@
 #############################
 
 
+# import needed libraries
 import glob
 import pickle
-import re
 
 from datetime import datetime
-from progressbar import ProgressBar, FormatLabel, Percentage, Bar
-from rdflib import Graph
+from rdflib import Graph, Namespace, URIRef, Literal
+from rdflib.namespace import RDF, RDFS, OWL
+from tqdm import tqdm
+
+# define global namespace
+obo = Namespace('http://purl.obolibrary.org/obo/')
+oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
 
 
 class OntologyEx(object):
     """Class creates an RDF graph from an OWL file and then performs queries to return DbXRefs, synonyms, and labels.
 
-    Args:
-        graph_path: A string that contains a filepath to an ontology file. If no string is passed the class is
-        initialized with an empty graph.
+    Attributes:
+        graph: An rdflib graph object.
     """
 
-    def __init__(self, graph_path: str = ''):
-        """ ."""
-        self.graph = graph_path
+    def __init__(self) -> None:
+        self.graph: Graph = Graph()
 
-    def set_graph(self):
-        self.graph = Graph().parse(self.graph, format='xml')
-
-    def get_graph(self):
-        return self.graph
-
-    def ontology_dictionary(self, ont_id: str):
-        """Queries an RDF graph for non-deprecated classes.
+    def get_ontology_information(self, ont_id: str, codes: list) -> dict:
+        """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all
+        non-deprecated ontology classes.
 
         Args:
             ont_id: A string containing part of an ontology ID.
-
-        Returns:
-            A dict mapping each classes label to a list containing the corresponding class ID and definition. For
-            example:
-            {'ankle joint effusion': ['http://purl.obolibrary.org/obo/HP_0032063',
-                                      'abnormal accumulation of fluid in or around the ankle joint'],
-             'macular hyperpigmentation': ['http://purl.obolibrary.org/obo/HP_0011509',
-                                      'increased amount of pigmentation in the macula lutea.']}
-
-        Raises:
-            ValueError: If the query returned no results.
-        """
-
-        start = datetime.now()
-        print('Started running query to identify all ontology classes: {}'.format(start))
-
-        query = """SELECT DISTINCT ?c ?c_label ?defn
-                    WHERE {?c rdf:type owl:Class .
-                           ?c rdfs:label ?c_label .
-                           optional {?c obo:IAO_0000115 ?defn}
-                           minus {?c owl:deprecated true}""" + \
-                'FILTER(STRSTARTS(STR(?c), "http://purl.obolibrary.org/obo/%s"))\n' % str(ont_id) + ' }\n'
-
-        query_results = self.graph.query(query, initNs={'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-                                                        'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
-                                                        'owl': 'http://www.w3.org/2002/07/owl#',
-                                                        'oboInOwl': 'http://www.geneontology.org/formats/oboInOwl#',
-                                                        'obo': 'http://purl.obolibrary.org/obo/'})
-
-        # create progress bar
-        widgets = [Percentage(), Bar(), FormatLabel('(elapsed: %(elapsed)s)')]
-        pbar = ProgressBar(widgets=widgets, maxval=len(query_results))
-        valid_res = {}
-
-        for row in pbar(query_results):
-            if row[2] is not None:
-                label = row[1].encode('ascii', 'ignore').lower().decode('utf-8')
-                defn = row[2].encode('ascii', 'ignore').lower().decode('utf-8')
-                valid_res[label] = [str(row[0]), defn]
-            else:
-                valid_res[row[1].encode('ascii', 'ignore').lower().decode('utf-8')] = [str(row[0]), '']
-
-        pbar.finish()
-        finish = datetime.now()
-        print("Finished processing query: {}".format(finish))
-
-        if not len(valid_res) > 1:
-            raise ValueError('Error - did not return any classes for graph: {0}'.format(valid_res))
-        else:
-            time_diff = round((finish - start).total_seconds() / 60, 2)
-            print('Query returned: {0} classes in {1} minutes \n'.format(len(valid_res), time_diff))
-            return valid_res
-
-    def get_ontology_synonyms(self, ont_id: str):
-        """Queries an RDF graph and returns exact, broad, narrow, and related synonyms.
-
-        Args:
-            ont_id: A string containing part of an ontology ID.
-
-        Returns:
-        A dict mapping each synonym to a list containing the corresponding class ID and label. For example:
-            {'unexpanded lung': ['http://purl.obolibrary.org/obo/NCIT_C2888', 'atelectasis']}
-
-        Raises:
-            ValueError: If the query returned no results.
-        """
-
-        start = datetime.now()
-        print('Started running query to identify all ontology class synonyms: {}'.format(start))
-        syn = {}
-
-        query = """SELECT DISTINCT ?syn ?c ?c_label ?p
-                   WHERE { ?c rdf:type owl:Class .
-                           ?c ?p ?syn .
-                           ?c rdfs:label ?c_label .
-                      FILTER(?p in (oboInOwl:hasSynonym, oboInOwl:hasExactSynonym, oboInOwl:hasBroadSynonym, 
-                      oboInOwl:hasNarrowSynonym, oboInOwl:hasRelatedSynonym))
-                      minus {?c owl:deprecated true}""" + \
-                'FILTER(STRSTARTS(STR(?c), "http://purl.obolibrary.org/obo/%s"))\n' % str(ont_id) + ' }\n'
-
-        query_results = self.graph.query(query, initNs={'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-                                                        'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
-                                                        'owl': 'http://www.w3.org/2002/07/owl#',
-                                                        'oboInOwl': 'http://www.geneontology.org/formats/oboInOwl#'})
-
-        # create progress bar
-        widgets = [Percentage(), Bar(), FormatLabel('(elapsed: %(elapsed)s)')]
-        pbar = ProgressBar(widgets=widgets, maxval=len(query_results))
-
-        for row in pbar(query_results):
-            key = row[0].encode('ascii', 'ignore').lower().decode('utf-8')
-            if key in syn.keys():
-                defin = row[2].encode('ascii', 'ignore').lower().decode('utf-8')
-                if str(row[1]) not in syn[key] and defin not in syn[key]:
-                    syn[key] += [str(row[1]), row[2].encode('ascii', 'ignore').lower().decode('utf-8')]
-            else:
-                syn[key] = [str(row[1]), row[2].encode('ascii', errors='replace').lower().decode('utf-8')]
-
-        pbar.finish()
-        finish = datetime.now()
-        print("Finished processing query: {}".format(finish))
-
-        if not len(syn) > 1:
-            raise ValueError('Error - did not return any synonyms for graph: {0}'.format(len(syn)))
-        else:
-            time_diff = round((finish - start).total_seconds() / 60, 2)
-            print('Query returned: {0} synonyms in {1} minutes \n'.format(len(syn), time_diff))
-            return syn
-
-    def get_ontology_dbxrefs(self, codes: list, ont_id: str):
-        """Function queries an RDF graph and returns DbXRefs.
-
-        Args:
             codes: A list of strings that represent terminology names.
-            ont_id: A string containing part of an ontology ID.
 
-        Returns:
-        A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
-            {'UMLS:C4022824': ['http://purl.obolibrary.org/obo/HP_0012604', 'Hyponatriuria'],
-             'SNOMED:38599001': ['http://purl.obolibrary.org/obo/HP_0012231', 'Exudative retinal detachment']}
-
-        Raises:
-            ValueError: If the query returned no results.
+        Returns: A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
+            {'http://purl.obolibrary.org/obo/HP_0007321': {
+                'label': ['deep white matter hypodensities'],
+                'definition': ['multiple areas of darker than expected signal on magnetic resonance imaging emanating
+                               from the deep cerebral white matter.'],
+                'dbxref': ['UMLS:C1856979'],
+                'synonyms': ['deep cerebral white matter hypodensities']}
         """
 
         start = datetime.now()
-        print('Started running query to identify all ontology class DbXRefs: {}'.format(start))
-        xref = {}
+        print('Identifying ontology information: {}'.format(start))
+        res = {}
 
-        query = """SELECT DISTINCT ?dbref ?c ?c_label 
-               WHERE {?c rdf:type owl:Class .
-                     ?c oboInOwl:hasDbXref ?dbref .
-                     ?c rdfs:label ?c_label .
-                     minus {?c owl:deprecated true}""" + \
-                'FILTER(STRSTARTS(STR(?c), "http://purl.obolibrary.org/obo/%s"))\n' % str(ont_id) + ' }\n'
+        # get classes
+        class_ids = [x for x in self.graph.subjects(RDF.type, OWL.Class) if isinstance(x, URIRef)]
+        class_dep = self.graph.subjects(OWL.deprecated,
+                                        Literal('true',
+                                                datatype=URIRef('http://www.w3.org/2001/XMLSchema#boolean')))
 
-        query_results = self.graph.query(query, initNs={'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-                                                        'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
-                                                        'owl': 'http://www.w3.org/2002/07/owl#',
-                                                        'oboInOwl': 'http://www.geneontology.org/formats/oboInOwl#'})
+        for cls in tqdm(class_ids):
+            if ont_id in str(cls) and cls not in list(class_dep):
+                res[str(cls)] = {}
 
-        # create progress bar
-        widgets = [Percentage(), Bar(), FormatLabel('(elapsed: %(elapsed)s)')]
-        pbar = ProgressBar(widgets=widgets, maxval=len(query_results))
+                # labels
+                res[str(cls)]['label'] = [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
+                                          for x in list(self.graph.objects(cls, RDFS.label))]
 
-        for row in pbar(query_results):
-            for code in codes:
-                if code in str(row[0]):
-                    key = str(code) + ':' + str(str(row[0]).split(':')[-1])
-                    if key in xref.keys():
-                        xref[key] += [str(row[1]), str(row[2])]
-                    else:
-                        xref[key] = [str(row[1]), str(row[2])]
+                # definitions
+                res[str(cls)]['definition'] = [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
+                                               for x in list(self.graph.objects(cls, URIRef(obo + 'IAO_0000115')))]
 
-        pbar.finish()
+                # dbXRef
+                if codes:
+                    res[str(cls)]['dbxref'] = [str(x) for x in
+                                               list(self.graph.objects(cls, URIRef(oboinowl + 'hasDbXref')))
+                                               if any(i for i in codes if i in str(x))]
+                # synonyms
+                syns = [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
+                        for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasSynonym')))]
+                syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
+                         for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasExactSynonym')))]
+                syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
+                         for x in list(self.graph.objects(cls, URIRef(oboinowl + '#hasBroadSynonym')))]
+                syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
+                         for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasNarrowSynonym')))]
+                syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
+                         for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasRelatedSynonym')))]
+                res[str(cls)]['synonyms'] = syns
+
         finish = datetime.now()
         print("Finished processing query: {}".format(finish))
 
-        if not len(xref) > 1:
-            raise ValueError('Error - did not return any DbXRefs for graph: {0}'.format(len(xref)))
-        else:
-            time_diff = round((finish - start).total_seconds() / 60, 2)
-            print('Query returned: {0} DbXRefs in {1} minutes \n'.format(len(xref), time_diff))
-            return xref
+        return res
 
-    def ontology_info_getter(self, ont_info_dictionary: dict):
+    def ontology_info_getter(self, ont_info_dictionary: dict) -> None:
         """Using different information from the user, this function retrieves all class labels, definitions,
         synonyms, and database cross-references (dbXref). The function expects a dictionary as input where the keys are
         short nick-names or OBO abbreviations for ontologies and the values are lists, where the first item is a string
@@ -217,36 +106,26 @@ class OntologyEx(object):
         """
 
         for ont in ont_info_dictionary.items():
-            print('Processing Ontology: {0} \n'.format(ont[0]))
+            print('\n****** Processing Ontology: {0}'.format(ont[0]))
 
             # create graph
+            print('Loading RDF Graph')
             self.graph = Graph().parse(ont[1][0], format='xml')
 
-            # get ontology classes
-            ont_dict = self.ontology_dictionary(ont[0])
-            with open(str(ont[1][0][:-4]) + '_classes.pickle', 'wb') as handle:
+            # get ontology information
+            ont_dict = self.get_ontology_information(ont[0], ont[1][1])
+            with open(str(ont[1][0][:-4]) + '_class_information.pickle', 'wb') as handle:
                 pickle.dump(ont_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-            # get ontology synonyms
-            syn = self.get_ontology_synonyms(ont[0])
-            with open(str(ont[1][0][:-4]) + '_synonyms.pickle', 'wb') as handle:
-                pickle.dump(syn, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-            # get ontology dbXrefs
-            if None not in ont[1][1]:
-                dbxref = self.get_ontology_dbxrefs(ont[1][1], ont[0])
-                with open(str(ont[1][0][:-4]) + '_DbXRef.pickle', 'wb') as handle:
-                    pickle.dump(dbxref, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         return None
 
     @staticmethod
-    def ontology_loader(ontology_name: list):
+    def ontology_loader(ontologies: list) -> dict:
         """Function takes a list of file paths to pickled data, loads the data, and then saves each file as a dictionary
         entry.
 
         Args:
-            ontology_name: A list of strings representing ontologies
+            ontologies: A list of strings representing ontologies.
 
         Returns:
             A dictionary where each key is a file name and each value is a dictionary.
@@ -257,20 +136,17 @@ class OntologyEx(object):
         """
 
         # find files that match user input
-        ont_files = [glob.glob('resources/ontologies/' + str(e.lower()) + '*.pickle') for e in ontology_name][0]
+        ont_files = [(e, glob.glob('resources/ontologies/' + str(e.lower()) + '*.pickle')[0]) for e in ontologies]
 
-        if len(ont_files) > 0:
-            # input files to dictionary
+        if len(ont_files) == 0:
+            raise ValueError('Unable to find files that include that ontology name')
+        else:
             ontology_data = {}
-
-            for f in [x for y in ont_files for x in y]:
+            for ont, f in tqdm(ont_files):
                 with open(f, 'rb') as _file:
-                    f_name = re.search(r'(\w+_.*.)[^pickle]', f).group(1)
-                    ontology_data[f_name] = pickle.load(_file)
+                    ontology_data[ont] = pickle.load(_file)
 
             if len(ont_files) != len(ontology_data):
                 raise ValueError('Unable to load all of files referenced in the file path')
             else:
                 return ontology_data
-        else:
-            raise ValueError('Unable to find files that include that ontology name')
