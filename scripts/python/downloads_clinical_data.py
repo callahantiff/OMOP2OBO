@@ -38,7 +38,7 @@ def download_data(files: page_iterator.HTTPIterator, folder: str) -> None:
 
 @click.command()
 @click.option('--bucket_name', prompt='The name of the GCS bucket')
-@click.option('--file_name', prompt='The name of the GCS directory to download files from')
+@click.option('--file_name', prompt='The name of the GCS bucket directory to download data from')
 @click.option('--auth_json', prompt='The filepath to service_account.json file')
 def main(bucket_name: str, file_name: str, auth_json: str) -> None:
 
