@@ -1,11 +1,13 @@
-## Compiled source ##
+## compiled source ##
 #######################
 *.pyc
 *.exe
 .idea/*
 
-## Directories ##
+## directories ##
 ########################
+resources/clinical_data
+!resources/clinical_data/README.md
 resources/mappings/
 !resources/mappings/medication_codes/.gitkeep
 !resources/mappings/laboratory_tests/.gitkeep
