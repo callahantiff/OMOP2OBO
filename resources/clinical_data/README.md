@@ -1,8 +1,9 @@
 
 ## Clinical Data
 
-**Dependencies:** [Observational Medical Outcomes Partnership](https://www.ohdsi.org/data-standardization/the-common-data-model/) formatted data   
-**Resources:** [Accessing Google Service Account Json]( https://stackoverflow.com/questions/46287267/how-can-i-get-the-file-service-account-json-for-google-translate-api)
+**Dependencies:**  
+- [Observational Medical Outcomes Partnership](https://www.ohdsi.org/data-standardization/the-common-data-model/) formatted data  
+- [Accessing Google Service Account Json]( https://stackoverflow.com/questions/46287267/how-can-i-get-the-file-service-account-json-for-google-translate-api)
 
 ***
 
