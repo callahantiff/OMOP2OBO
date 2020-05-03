@@ -20,6 +20,8 @@ class Ontology(object):
             data_path: a string containing a file path/name to a txt file storing URLs of sources to download.
             source_list: a list of URLs representing the data sources to download/process.
             data_files: the full file path and name of each downloaded data source.
+            data_dict: a dictionary where keys are ontology identifiers ("HP", "DOID") and values are strings
+                containing the filepath to where the ontology was downloaded.
             metadata: a list containing metadata information for each downloaded ontology.
     """
 
@@ -27,6 +29,7 @@ class Ontology(object):
         self.data_path = data_path
         self.source_list: list = []
         self.data_files: list = []
+        self.data_dict: dict = {}
         self.metadata: list = []
 
     def _file_parser(self):
@@ -37,7 +40,7 @@ class Ontology(object):
             raise Exception('ERROR: input file: {} is empty'.format(self.data_path))
         else:
             source_list = list(filter(None, [row.strip() for row in open(self.data_path).read().split('\n')]))
-            good_sources = [url for url in source_list if 'purl.obolibrary.org/obo' in url]
+            good_sources = [url for url in source_list if 'purl.obolibrary.org/obo' in url.split(', ')[-1]]
 
             if len(source_list) == len(good_sources):
                 self.source_list = source_list
@@ -62,7 +65,7 @@ class Ontology(object):
         print('\n')
 
         for i in range(0, len(self.source_list)):
-            source = self.source_list[i]
+            ont_type, source = self.source_list[i].split(', ')
             file_prefix = source.split('/')[-1].split('.')[0]
 
             # check if ontology has already been downloaded
@@ -84,6 +87,7 @@ class Ontology(object):
 
             # append to data_files
             self.data_files.append(file_path)
+            self.data_dict[ont_type] = file_path
 
         if len(self.source_list) != len(self.data_files):
             raise Exception('ERROR: Not all URLs returned a data file')
@@ -97,12 +101,12 @@ class Ontology(object):
 
         for i in range(0, len(self.data_files)):
             source = self.data_files[i]
-            file_info = requests.head(self.source_list[i])
+            file_info = requests.head(self.source_list[i].split(', ')[-1])
             mod_info = file_info.headers[[x for x in file_info.headers.keys() if 'Date' in x][0]]
             mod_date = datetime.strptime(mod_info, '%a, %d %b %Y %X GMT').strftime('%m/%d/%Y')
             diff_date = (datetime.now() - datetime.strptime(mod_date, '%m/%d/%Y')).days
 
-            source_metadata = ['DOWNLOAD_URL= %s' % str(self.source_list[i]),
+            source_metadata = ['DOWNLOAD_URL= %s' % str(self.source_list[i].split(', ')[-1]),
                                'DOWNLOAD_DATE= %s' % str(datetime.now().strftime('%m/%d/%Y')),
                                'FILE_SIZE_IN_BYTES= %s' % str(os.stat(source).st_size),
                                'FILE_AGE_IN_DAYS= %s' % str(diff_date),
