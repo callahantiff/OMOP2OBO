@@ -1,4 +1,4 @@
-#Sun May 03 00:57:30 UTC 2020 
+#Sun May 03 01:50:21 UTC 2020 
 DOWNLOAD_URL= http://purl.obolibrary.org/obo/hp.owl
 DOWNLOAD_DATE= 05/02/2020
 FILE_SIZE_IN_BYTES= 83563127

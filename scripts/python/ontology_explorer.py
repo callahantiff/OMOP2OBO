@@ -27,7 +27,7 @@ class OntologyEx(object):
     def __init__(self) -> None:
         self.graph: Graph = Graph()
 
-    def get_ontology_information(self, ont_id: str, codes: list) -> dict:
+    def get_ontology_information(self, ont_id: str, codes: list = None) -> dict:
         """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all
         non-deprecated ontology classes.
 
@@ -46,31 +46,33 @@ class OntologyEx(object):
 
         start = datetime.now()
         print('Identifying ontology information: {}'.format(start))
-        res = {}
+        res = {'label': {}, 'definition': {}, 'dbxref': {}, 'synonyms': {}}
 
         # get classes
         class_ids = [x for x in self.graph.subjects(RDF.type, OWL.Class) if isinstance(x, URIRef)]
-        class_dep = self.graph.subjects(OWL.deprecated,
-                                        Literal('true',
-                                                datatype=URIRef('http://www.w3.org/2001/XMLSchema#boolean')))
+        class_dep = list(self.graph.subjects(OWL.deprecated,
+                                             Literal('true',
+                                                     datatype=URIRef('http://www.w3.org/2001/XMLSchema#boolean'))))
 
         for cls in tqdm(class_ids):
-            if ont_id in str(cls) and cls not in list(class_dep):
-                res[str(cls)] = {}
+            if ont_id in str(cls) and cls not in class_dep:
 
                 # labels
-                res[str(cls)]['label'] = [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
-                                          for x in list(self.graph.objects(cls, RDFS.label))]
+                for x in list(self.graph.objects(cls, RDFS.label)):
+                    res['label'][str(x).encode('ascii', 'ignore').lower().decode('utf-8')] = str(cls)
 
                 # definitions
-                res[str(cls)]['definition'] = [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
-                                               for x in list(self.graph.objects(cls, URIRef(obo + 'IAO_0000115')))]
+                for x in list(self.graph.objects(cls, URIRef(obo + 'IAO_0000115'))):
+                    res['definition'][str(x).encode('ascii', 'ignore').lower().decode('utf-8')] = str(cls)
 
                 # dbXRef
-                if codes:
-                    res[str(cls)]['dbxref'] = [str(x) for x in
-                                               list(self.graph.objects(cls, URIRef(oboinowl + 'hasDbXref')))
-                                               if any(i for i in codes if i in str(x))]
+                for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasDbXref'))):
+                    if codes:
+                        if any(i for i in codes if i in str(x)):
+                            res['dbxref'][str(x)] = str(cls)
+                    else:
+                        res['dbxref'][str(x)] = str(cls)
+
                 # synonyms
                 syns = [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
                         for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasSynonym')))]
@@ -82,14 +84,16 @@ class OntologyEx(object):
                          for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasNarrowSynonym')))]
                 syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
                          for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasRelatedSynonym')))]
-                res[str(cls)]['synonyms'] = syns
+
+                for x in syns:
+                    res['synonyms'][x] = str(cls)
 
         finish = datetime.now()
         print("Finished processing query: {}".format(finish))
 
         return res
 
-    def ontology_info_getter(self, ont_info_dictionary: dict) -> None:
+    def ontology_processor(self, ont_info_dictionary: dict) -> None:
         """Using different information from the user, this function retrieves all class labels, definitions,
         synonyms, and database cross-references (dbXref). The function expects a dictionary as input where the keys are
         short nick-names or OBO abbreviations for ontologies and the values are lists, where the first item is a string
@@ -110,11 +114,11 @@ class OntologyEx(object):
 
             # create graph
             print('Loading RDF Graph')
-            self.graph = Graph().parse(ont[1][0], format='xml')
+            self.graph = Graph().parse(ont[1], format='xml')
 
             # get ontology information
-            ont_dict = self.get_ontology_information(ont[0], ont[1][1])
-            with open(str(ont[1][0][:-4]) + '_class_information.pickle', 'wb') as handle:
+            ont_dict = self.get_ontology_information(ont[0])
+            with open(str(ont[1][:-4]) + '_class_information.pickle', 'wb') as handle:
                 pickle.dump(ont_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         return None
