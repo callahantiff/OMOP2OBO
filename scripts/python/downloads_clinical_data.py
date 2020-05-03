@@ -30,7 +30,7 @@ def download_data(files: page_iterator.HTTPIterator, folder: str) -> None:
     for file in files:
         logging.info('GCS File: {}'.format(file.name))
         destination_uri = '{}/{}'.format(folder, file.name.split('/')[-1])
-        file.download_to_filename(destination_uri if destination_uri.endswitth('.csv') else destination_uri + '.csv')
+        file.download_to_filename(destination_uri if destination_uri.endswith('.csv') else destination_uri + '.csv')
         logging.info('Exported {} to {}'.format(file.name, destination_uri))
 
     return None
