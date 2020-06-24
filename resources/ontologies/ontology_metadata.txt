@@ -1,37 +1,37 @@
-#Sun May 03 01:50:21 UTC 2020 
+#Wed Jun 24 16:21:10 UTC 2020 
 DOWNLOAD_URL= http://purl.obolibrary.org/obo/hp.owl
-DOWNLOAD_DATE= 05/02/2020
+DOWNLOAD_DATE= 06/24/2020
 FILE_SIZE_IN_BYTES= 83563127
-FILE_AGE_IN_DAYS= -1
+FILE_AGE_IN_DAYS= 0
 DOWNLOADED_FILE= ./resources/ontologies/hp_without_imports.owl
 
 DOWNLOAD_URL= http://purl.obolibrary.org/obo/pr.owl
-DOWNLOAD_DATE= 05/02/2020
+DOWNLOAD_DATE= 06/24/2020
 FILE_SIZE_IN_BYTES= 1164569868
-FILE_AGE_IN_DAYS= -1
+FILE_AGE_IN_DAYS= 0
 DOWNLOADED_FILE= ./resources/ontologies/pr_without_imports.owl
 
-DOWNLOAD_URL= http://purl.obolibrary.org/obo/doid.owl
-DOWNLOAD_DATE= 05/02/2020
-FILE_SIZE_IN_BYTES= 25555236
-FILE_AGE_IN_DAYS= -1
-DOWNLOADED_FILE= ./resources/ontologies/doid_without_imports.owl
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/mondo.owl
+DOWNLOAD_DATE= 06/24/2020
+FILE_SIZE_IN_BYTES= 229489560
+FILE_AGE_IN_DAYS= 0
+DOWNLOADED_FILE= ./resources/ontologies/mondo_without_imports.owl
 
 DOWNLOAD_URL= http://purl.obolibrary.org/obo/vo.owl
-DOWNLOAD_DATE= 05/02/2020
+DOWNLOAD_DATE= 06/24/2020
 FILE_SIZE_IN_BYTES= 7695511
-FILE_AGE_IN_DAYS= -1
+FILE_AGE_IN_DAYS= 0
 DOWNLOADED_FILE= ./resources/ontologies/vo_without_imports.owl
 
 DOWNLOAD_URL= http://purl.obolibrary.org/obo/chebi.owl
-DOWNLOAD_DATE= 05/02/2020
+DOWNLOAD_DATE= 06/24/2020
 FILE_SIZE_IN_BYTES= 514460490
-FILE_AGE_IN_DAYS= -1
+FILE_AGE_IN_DAYS= 0
 DOWNLOADED_FILE= ./resources/ontologies/chebi_without_imports.owl
 
 DOWNLOAD_URL= http://purl.obolibrary.org/obo/ncbitaxon.owl
-DOWNLOAD_DATE= 05/02/2020
+DOWNLOAD_DATE= 06/24/2020
 FILE_SIZE_IN_BYTES= 1733782754
-FILE_AGE_IN_DAYS= -1
+FILE_AGE_IN_DAYS= 0
 DOWNLOADED_FILE= ./resources/ontologies/ncbitaxon_without_imports.owl
 

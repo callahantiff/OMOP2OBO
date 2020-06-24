@@ -1,6 +1,6 @@
 HP, http://purl.obolibrary.org/obo/hp.owl
 PR, http://purl.obolibrary.org/obo/pr.owl
-DOID, http://purl.obolibrary.org/obo/doid.owl
+MONDO, http://purl.obolibrary.org/obo/mondo.owl
 VO, http://purl.obolibrary.org/obo/vo.owl
 CHEBI, http://purl.obolibrary.org/obo/chebi.owl
 NCBITaxon, http://purl.obolibrary.org/obo/ncbitaxon.owl
