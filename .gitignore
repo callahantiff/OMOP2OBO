@@ -23,3 +23,7 @@ scripts/python/scratch.py
 scripts/tests/*
 scripts/python/drafts/*
 scripts/python/*.zip
+
+## Project Files ##
+########################
+scripts/R/*.Rproj
