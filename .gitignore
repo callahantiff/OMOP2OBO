@@ -27,3 +27,4 @@ scripts/python/*.zip
 ## Project Files ##
 ########################
 scripts/R/*.Rproj
+scripts/R/.Rproj.user*
