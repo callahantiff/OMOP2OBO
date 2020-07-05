@@ -80,7 +80,7 @@ def gets_deprecated_ontology_classes(graph: Graph) -> Set:
     return class_list
 
 
-def gets_ontology_statistics(file_location: str, owltools_location: str = './pkt_kg/libs/owltools') -> None:
+def gets_ontology_statistics(file_location: str, owltools_location: str = './omop2obo/libs/owltools') -> None:
     """Uses the OWL Tools API to generate summary statistics (i.e. counts of axioms, classes, object properties, and
     individuals).
 
