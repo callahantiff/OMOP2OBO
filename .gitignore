@@ -4,6 +4,10 @@
 *.exe
 .idea/*
 
+## testing resources ##
+########################
+*.mypy*
+
 ## directories ##
 ########################
 resources/clinical_data
