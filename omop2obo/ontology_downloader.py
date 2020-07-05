@@ -42,7 +42,6 @@ class OntologyDownloader(object):
             raise TypeError('Input file: {} is empty'.format(data_path))
         else:
             self.data_path: str = data_path
-            self.data_type: str = data_path.split('/')[-1].split('.')[0]
 
         self.source_list: Dict[str, str] = {}
         self.data_files: Dict[str, str] = {}
@@ -67,8 +66,11 @@ class OntologyDownloader(object):
             raise TypeError('ERROR: input file: {} is empty'.format(self.data_path))
         else:
             with open(self.data_path, 'r') as file_name:
-                source_list = {row.strip().split(',')[0]: row.strip().split(',')[1].strip()
-                               for row in file_name.read().splitlines()}
+                try:
+                    source_list = {row.strip().split(',')[0]: row.strip().split(',')[1].strip()
+                                   for row in file_name.read().splitlines()}
+                except IndexError:
+                    raise Exception('ERROR: input file: {} has incorrectly formatted data'.format(self.data_path))
             file_name.close()
 
             # CHECK - verify formatting of urls

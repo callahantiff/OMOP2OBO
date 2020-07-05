@@ -45,6 +45,10 @@ class TestOntData(TestCase):
         self.assertIsInstance(self.ontologies.data_path, str)
         self.assertTrue(os.stat(self.ontologies.data_path).st_size != 0)
 
+        # make sure that bad input data is caught
+        self.ontologies.data_path = self.dir_loc + '/ontology_source_bad_format.txt'
+        self.assertRaises(Exception, self.ontologies.parses_resource_file)
+
         return None
 
     def test_downloads_data_from_url(self):
