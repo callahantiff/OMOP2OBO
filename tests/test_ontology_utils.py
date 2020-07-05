@@ -18,10 +18,10 @@ class TestOntologyUtils(unittest.TestCase):
         self.dir_loc = os.path.abspath(dir_loc)
 
         # set some real and fake file name variables
-        self.not_string_filename = [self.dir_loc + '/empty_hp_with_imports.owl']
-        self.not_real_file_name = self.dir_loc + '/sop_with_imports.owl'
-        self.empty_ontology_file_location = self.dir_loc + '/empty_hp_with_imports.owl'
-        self.good_ontology_file_location = self.dir_loc + '/so_with_imports.owl'
+        self.not_string_filename = [self.dir_loc + '/empty_hp_without_imports.owl']
+        self.not_real_file_name = self.dir_loc + '/sop_without_imports.owl'
+        self.empty_ontology_file_location = self.dir_loc + '/empty_hp_without_imports.owl'
+        self.good_ontology_file_location = self.dir_loc + '/so_without_imports.owl'
 
         # pointer to owltools
         dir_loc2 = os.path.join(current_directory, 'utils/owltools')
