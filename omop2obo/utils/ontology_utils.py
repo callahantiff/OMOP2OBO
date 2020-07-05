@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Knowledge Graph Utility Functions.
+Ontology Utility Functions.
 
 Interacts with OWL Tools API
 * gets_ontology_classes

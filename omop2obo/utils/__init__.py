@@ -3,7 +3,7 @@
 
 
 from .data_utils import *
-from .kg_utils import *
+from .ontology_utils import *
 
 
 __all__ = ['url_download', 'ftp_url_download', 'gzipped_ftp_url_download', 'zipped_url_download',

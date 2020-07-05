@@ -1,4 +1,3 @@
-import glob
 import os
 import os.path
 import unittest
@@ -9,8 +8,8 @@ from rdflib import Graph
 from omop2obo.utils import gets_ontology_statistics, gets_ontology_classes, gets_deprecated_ontology_classes
 
 
-class TestKGUtils(unittest.TestCase):
-    """Class to test knowledge graph utility methods."""
+class TestOntologyUtils(unittest.TestCase):
+    """Class to test ontology utility methods."""
 
     def setUp(self):
         # initialize data location
