@@ -67,7 +67,7 @@ The repo comes with functionality to help users download data from a Google Clou
 Once the required information described above has been obtianed, run the following script from the terminal:  
    
 ```bash
-python3 scripts/python/downloads_clinical_data.py 
+python3 google_cloud_storage_downloader.py 
 ``` 
    
 <br>
