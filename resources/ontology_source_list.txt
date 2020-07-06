@@ -1,6 +1,6 @@
 cl, http://purl.obolibrary.org/obo/cl.owl
 chebi, http://purl.obolibrary.org/obo/chebi.owl
-hpo, http://purl.obolibrary.org/obo/hp.owl
+hp, http://purl.obolibrary.org/obo/hp.owl
 mondo, http://purl.obolibrary.org/obo/mondo.owl
 ncbitaxon, http://purl.obolibrary.org/obo/ncbitaxon.owl
 pro, http://purl.obolibrary.org/obo/pr.owl
