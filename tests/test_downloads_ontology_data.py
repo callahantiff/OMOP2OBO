@@ -13,7 +13,7 @@ class TestOntData(TestCase):
 
     def setUp(self):
 
-        # initialize OntData instance
+        # initialize OntologyDownloader instance
         current_directory = os.path.dirname(__file__)
         dir_loc = os.path.join(current_directory, 'data')
         self.dir_loc = os.path.abspath(dir_loc)
