@@ -3,7 +3,7 @@
 
 **Dependencies:**  
 - [Observational Medical Outcomes Partnership](https://www.ohdsi.org/data-standardization/the-common-data-model/) formatted data  
-- [Accessing Google Service Account Json](https://stackoverflow.com/questions/46287267/how-can-i-get-the-file-service-account-json-for-google-translate-api)
+- [Accessing Google Service Account Json](https://stackoverflow.com/questions/46287267/how-can-i-get-the-file-service-account-json-for-google-translate-api)  
 
 ***
 
@@ -12,6 +12,9 @@
 <br>
 
  _CONDITIONS (OMOP `condition_occurrence`)_  
+   - **[`Condition_Occurrence Wiki Page`](https://github.com/callahantiff/OMOP2OBO/wiki/Conditions)**  
+  - **[`Condition_Occurrence SQl Query`](https://gist.github.com/callahantiff/7b84c1bc063ad162bf5bdf5e578d402f/raw/2c002478192ba376b608bbcb638ce5960a4338a7/OMOPConcepts_ConditionOccurrence.sql)** 
+ 
 CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION
 -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
 4331309 | 22653005 | Myocarditis due to infectious   agent | SNOMED | SnomedCT Release 20180131 | Myocarditis due to infectious   agent \| Infective myocarditis \| Myocarditis due to infectious agent   (disorder) | 4027384 \| 4027255 \| 4178818 | 128139000 \| 128599005 \|   251052000 | Arthropod-borne disease \|   Inflammatory disorder of mediastinum \| Finding by site | MedDRA \| SNOMED | MedDRA version 19.1 \| SnomedCT   Release 20180131
@@ -20,16 +23,22 @@ CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB
 
 <br>
 
-_MEDICATIONS (OMOP `drug_exposure`)_  
-CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION | INGREDIENT_CONCEPT_ID | INGREDIENT_SOURCE_CODE | INGREDIENT_LABEL | INGREDIENT_VOCAB | INGREDIENT_VOCAB_VERSION | INGRED_ANCESTOR_CONCEPT_ID | INGRED_ANCESTOR_SOURCE_CODE | INGRED_ANCESTOR_LABEL | INGRED_ANCESTOR_VOCAB | INGRED_ANCESTOR_VOCAB_VERSION
--- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
-19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | Vitamin B Complex | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507
-19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507 | Bifidobacterium Infantis | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507 | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507
-1401440 | 198644 | Garlic preparation 100 MG Oral Tablet | RxNorm | RxNorm Full 20180507 | Garlic preparation 100 MG Oral Tablet | 40047801 \| 1401500 \| 36222902 \| 36217214 \| 1401440 \| 36222903 \| 1401437 \|   36217216 | 1163937 \| 198644 \| 1163938 \| 265647 \| 375084 \| 331973 \| 1151131 \| 1151133 | Garlic preparation 100 MG \| Oral Product \| Pill \| Garlic preparation Oral   Tablet \| Garlic preparation Oral Product \| Garlic preparation 100 MG Oral   Tablet \| Garlic preparation Pill \| Garlic preparation | RxNorm | RxNorm | 1401437 | 265647 | Garlic preparation | RxNorm | RxNorm Full 20180507 | 1401440 \| 36222903 \| 1401437 \| 36217216 \| 40047801 \| 1401500 \| 36222902 \|   36217214 | 375084 \| 331973 \| 1151131 \| 1151133 \| 198644 \| 1163938 \| 1163937 \| 265647 | Garlic preparation 100 MG Oral Tablet \| Garlic preparation Oral Tablet \|   Garlic preparation Pill \| Garlic preparation Oral Product \| Garlic   preparation \| Garlic preparation 100 MG \| Oral Product \| Pill | RxNorm | RxNorm Full 20180507
+_MEDICATIONS (OMOP `drug_exposure`)_   
+  - **[`Drug Exposure Wiki Page`](https://github.com/callahantiff/OMOP2OBO/wiki/Medications)**  
+  - **[`Drug Exposure SQl Query`](https://gist.github.com/callahantiff/7b84c1bc063ad162bf5bdf5e578d402f/raw/2c002478192ba376b608bbcb638ce5960a4338a7/OMOPConcepts_DrugExposure.sql)**  
+
+CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION | INGREDIENT_CONCEPT_ID | INGREDIENT_SOURCE_CODE | INGREDIENT_LABEL | INGREDIENT_VOCAB | INGREDIENT_VOCAB_VERSION | INGREDIENT_SYNONYM | INGRED_ANCESTOR_CONCEPT_ID | INGRED_ANCESTOR_SOURCE_CODE | INGRED_ANCESTOR_LABEL | INGRED_ANCESTOR_VOCAB | INGRED_ANCESTOR_VOCAB_VERSION
+-- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
+19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | Vitamin B Complex | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | Vitamin B Complex | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507
+19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507 | Bifidobacterium Infantis | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507 | Bifidobacterium Infantis | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507
+1401440 | 198644 | Garlic preparation 100 MG Oral   Tablet | RxNorm | RxNorm Full 20180507 | Garlic preparation 100 MG Oral   Tablet | 40047801 \| 1401500 \| 36222902 \|   36217214 \| 1401440 \| 36222903 \| 1401437 \| 36217216 | 198644 \| 1163938 \| 1163937 \|   265647 \| 375084 \| 331973 \| 1151133 \| 1151131 | Garlic preparation 100 MG \| Pill \|   Oral Product \| Garlic preparation 100 MG Oral Tablet \| Garlic preparation   Oral Tablet \| Garlic preparation Pill \| Garlic preparation Oral Product \|   Garlic preparation | RxNorm | RxNorm | 1401437 | 265647 | Garlic preparation | RxNorm | RxNorm Full 20180507 | Garlic preparation | 40047801 \| 36222902 \| 1401500 \|   36217214 \| 1401440 \| 1401437 \| 36222903 \| 36217216 | 1163937 \| 198644 \| 265647 \|   1163938 \| 375084 \| 331973 \| 1151131 \| 1151133 | Garlic preparation 100 MG \| Oral   Product \| Pill \| Garlic preparation Oral Tablet \| Garlic preparation Oral   Product \| Garlic preparation 100 MG Oral Tablet \| Garlic preparation \| Garlic   preparation Pill | RxNorm | RxNorm Full 20180507
 
 <br>
 
 _MEASUREMENTS (OMOP `measurements`)_  
+  - **[`Measurement Wiki Page`](https://github.com/callahantiff/OMOP2OBO/wiki/Laboratory-Tests)**  
+  - **[`Measurement SQl Query`](https://gist.github.com/callahantiff/7b84c1bc063ad162bf5bdf5e578d402f/raw/2c002478192ba376b608bbcb638ce5960a4338a7/OMOPConcepts_Measurements.sql)**  
+
 CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION | SCALE | RESULT_TYPE
 -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
 40771573 | 69052-9 | Flow cytometry specialist review of results | LOINC | LOINC 2.64 | Flow cytometry specialist review of results \| Flow cytometry specialist   review \| Dynamic; Impression; Impression/interpretation of study;   Impressions; Interp; Interpretation; Misc; Miscellaneous; Narrative; Other;   Point in time; Random; Report; To be specified in another part of the   message; Unspecified | 36208195 \| 36206173 \| 40771573 \| 45876017 | LP248770-2 \| 69052-9 \| LP29693-6 \| MISC | Laboratory Categories \| Miscellaneous \| Lab terms not yet categorized \|   Flow cytometry specialist review of results | LOINC | LOINC 2.64 | NAR | Normal/Low/High
