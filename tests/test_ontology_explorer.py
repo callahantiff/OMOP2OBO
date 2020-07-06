@@ -12,11 +12,9 @@ from omop2obo.ontology_explorer import OntologyInfoExtractor
 
 
 class TestOntologyInfoExtractor(TestCase):
-    """Class to test functions used when downloading ontology data sources."""
+    """Class to test functions used when extracting data from ontologies."""
 
     def setUp(self):
-
-        # create new temp directory to store ontologies
 
         # initialize OntologyInfoExtractor instance
         current_directory = os.path.dirname(__file__)
