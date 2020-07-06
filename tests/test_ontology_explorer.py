@@ -23,7 +23,8 @@ class TestOntologyInfoExtractor(TestCase):
         dir_loc = os.path.join(current_directory, 'data')
         self.dir_loc = os.path.abspath(dir_loc)
         self.ontology_directory = self.dir_loc + '/ontologies'
-        self.ontologies = OntologyInfoExtractor(self.ontology_directory)
+        self.ont_dictionary = {'so': self.ontology_directory + '/so_without_imports.owl'}
+        self.ontologies = OntologyInfoExtractor(self.ontology_directory, self.ont_dictionary)
 
         return None
 
@@ -40,10 +41,10 @@ class TestOntologyInfoExtractor(TestCase):
         os.remove(self.ontology_directory + '/so_without_imports.owl')
 
         # test when resource/ontologies directory does not exist
-        self.assertRaises(OSError, OntologyInfoExtractor, 'ontologies')
+        self.assertRaises(OSError, OntologyInfoExtractor, 'ontologies', self.ont_dictionary)
 
         # test if file is empty
-        self.assertRaises(TypeError, OntologyInfoExtractor, self.ontology_directory)
+        self.assertRaises(TypeError, OntologyInfoExtractor, self.ontology_directory, self.ont_dictionary)
 
         # move files back
         shutil.copyfile(self.dir_loc + '/empty_hp_without_imports.owl',

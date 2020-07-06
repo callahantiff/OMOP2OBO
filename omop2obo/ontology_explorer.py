@@ -6,7 +6,6 @@
 import glob
 import os
 import pickle
-import re
 
 from datetime import datetime
 from rdflib import Graph, Namespace, URIRef, Literal
@@ -29,8 +28,9 @@ class OntologyInfoExtractor(object):
         ont_directory: A string containing the filepath to the ontology data directory.
     """
 
-    def __init__(self, ontology_directory: str) -> None:
+    def __init__(self, ontology_directory: str, ont_dictionary: Dict) -> None:
         self.graph: Graph = Graph()
+        self.ont_dictionary = ont_dictionary
 
         # check for ontology data
         if not os.path.exists(ontology_directory):
@@ -38,17 +38,14 @@ class OntologyInfoExtractor(object):
         elif len(glob.glob(ontology_directory + '/*.owl')) == 0:
             raise TypeError('The ontologies directory is empty')
         else:
-            dict_files = glob.glob(ontology_directory + '/*.owl')
-            self.ont_dictionary: Dict[str] = {x.split('/')[-1].split('_')[0]: x for x in dict_files
-                                              if os.stat(x).st_size != 0}
-            self.ont_directory: str = ontology_directory
+            self.ont_directory = ontology_directory
 
     def get_ontology_information(self, ont_id: str, codes: List = None) -> Dict:
         """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all
         non-deprecated ontology classes.
 
         Args:
-            ont_id: A string containing part of an ontology ID.
+            ont_id: A string containing an ontology namespace.
             codes: A list of strings that represent terminology names.
 
         Returns: A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
@@ -63,7 +60,7 @@ class OntologyInfoExtractor(object):
         print('Identifying ontology information: {}'.format(start))
         res = {'label': {}, 'definition': {}, 'dbxref': {}, 'synonyms': {}}
 
-        # get classes
+        # get ontology classes
         class_ids = [x for x in self.graph.subjects(RDF.type, OWL.Class) if isinstance(x, URIRef)]
         class_dep = list(self.graph.subjects(OWL.deprecated,
                                              Literal('true',
@@ -154,9 +151,12 @@ class OntologyInfoExtractor(object):
         """
 
         # find files that match user input
-        ont_files = [(e, glob.glob(self.ont_directory + '/' + str(e.lower()) + '*.pickle')[0])
-                     for e in self.ont_dictionary.keys() if
-                     len(glob.glob(self.ont_directory + '/' + str(e.lower()) + '*.pickle')) != 0]
+        ont_files = []
+        for key, val in self.ont_dictionary.items():
+            prefix = val.split('/')[-1].replace('_without_imports.owl', '')
+            pickle_file = glob.glob(self.ont_directory + '/' + str(prefix.lower()) + '*.pickle')
+            if len(pickle_file) != 0:
+                ont_files.append((key, pickle_file[0]))
 
         if len(ont_files) == 0:
             raise ValueError('Unable to find files that include that ontology name')
