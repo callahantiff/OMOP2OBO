@@ -3,6 +3,6 @@ chebi, http://purl.obolibrary.org/obo/chebi.owl
 hp, http://purl.obolibrary.org/obo/hp.owl
 mondo, http://purl.obolibrary.org/obo/mondo.owl
 ncbitaxon, http://purl.obolibrary.org/obo/ncbitaxon.owl
-pro, http://purl.obolibrary.org/obo/pr.owl
+pr, http://purl.obolibrary.org/obo/pr.owl
 uberon, http://purl.obolibrary.org/obo/uberon/ext.owl
 vo, http://purl.obolibrary.org/obo/vo.owl
