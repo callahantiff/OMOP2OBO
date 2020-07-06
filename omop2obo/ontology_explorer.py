@@ -1,6 +1,5 @@
-#############################
-# ontology_explorer.py
-#############################
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 
 # import needed libraries
@@ -11,13 +10,14 @@ from datetime import datetime
 from rdflib import Graph, Namespace, URIRef, Literal
 from rdflib.namespace import RDF, RDFS, OWL
 from tqdm import tqdm
+from typing import Dict, List
 
 # define global namespace
 obo = Namespace('http://purl.obolibrary.org/obo/')
 oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
 
 
-class OntologyEx(object):
+class OntologyInfoExtractor(object):
     """Class creates an RDF graph from an OWL file and then performs queries to return DbXRefs, synonyms, and labels.
 
     Attributes:
@@ -27,7 +27,9 @@ class OntologyEx(object):
     def __init__(self) -> None:
         self.graph: Graph = Graph()
 
-    def get_ontology_information(self, ont_id: str, codes: list = None) -> dict:
+        #
+
+    def get_ontology_information(self, ont_id: str, codes: List = None) -> Dict:
         """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all
         non-deprecated ontology classes.
 
@@ -36,12 +38,11 @@ class OntologyEx(object):
             codes: A list of strings that represent terminology names.
 
         Returns: A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
-            {'http://purl.obolibrary.org/obo/HP_0007321': {
-                'label': ['deep white matter hypodensities'],
-                'definition': ['multiple areas of darker than expected signal on magnetic resonance imaging emanating
-                               from the deep cerebral white matter.'],
-                'dbxref': ['UMLS:C1856979'],
-                'synonyms': ['deep cerebral white matter hypodensities']}
+            {'HP': {
+                'label': {'narrow naris': 'http://purl.obolibrary.org/obo/HP_0009933'},
+                'definition': {'agenesis of lower primary incisor.': 'http://purl.obolibrary.org/obo/HP_0011047'},
+                'dbxref': {'SNOMEDCT_US:88598008': 'http://purl.obolibrary.org/obo/HP_0000735'},
+                'synonyms': { 'open bite': 'http://purl.obolibrary.org/obo/HP_0010807'}}
         """
 
         start = datetime.now()
@@ -93,7 +94,7 @@ class OntologyEx(object):
 
         return res
 
-    def ontology_processor(self, ont_info_dictionary: dict) -> None:
+    def ontology_processor(self, ont_info_dictionary: Dict) -> None:
         """Using different information from the user, this function retrieves all class labels, definitions,
         synonyms, and database cross-references (dbXref). The function expects a dictionary as input where the keys are
         short nick-names or OBO abbreviations for ontologies and the values are lists, where the first item is a string
@@ -123,34 +124,34 @@ class OntologyEx(object):
 
         return None
 
-    @staticmethod
-    def ontology_loader(ontologies: list) -> dict:
-        """Function takes a list of file paths to pickled data, loads the data, and then saves each file as a dictionary
-        entry.
-
-        Args:
-            ontologies: A list of strings representing ontologies.
-
-        Returns:
-            A dictionary where each key is a file name and each value is a dictionary.
-
-        Raises:
-            ValueError: If the provided ontology name does not match any downloaded ontology files.
-            ValueError: If the number of dictionary entries does not equal the number of files in the files list.
-        """
-
-        # find files that match user input
-        ont_files = [(e, glob.glob('resources/ontologies/' + str(e.lower()) + '*.pickle')[0]) for e in ontologies]
-
-        if len(ont_files) == 0:
-            raise ValueError('Unable to find files that include that ontology name')
-        else:
-            ontology_data = {}
-            for ont, f in tqdm(ont_files):
-                with open(f, 'rb') as _file:
-                    ontology_data[ont] = pickle.load(_file)
-
-            if len(ont_files) != len(ontology_data):
-                raise ValueError('Unable to load all of files referenced in the file path')
-            else:
-                return ontology_data
+    # @staticmethod
+    # def ontology_loader(ontologies: List) -> Dict:
+    #     """Function takes a list of file paths to pickled data, loads the data, and then saves each file as a dictionary
+    #     entry.
+    #
+    #     Args:
+    #         ontologies: A list of strings representing ontologies.
+    #
+    #     Returns:
+    #         A dictionary where each key is a file name and each value is a dictionary.
+    #
+    #     Raises:
+    #         ValueError: If the provided ontology name does not match any downloaded ontology files.
+    #         ValueError: If the number of dictionary entries does not equal the number of files in the files list.
+    #     """
+    #
+    #     # find files that match user input
+    #     ont_files = [(e, glob.glob('resources/ontologies/' + str(e.lower()) + '*.pickle')[0]) for e in ontologies]
+    #
+    #     if len(ont_files) == 0:
+    #         raise ValueError('Unable to find files that include that ontology name')
+    #     else:
+    #         ontology_data = {}
+    #         for ont, f in tqdm(ont_files):
+    #             with open(f, 'rb') as _file:
+    #                 ontology_data[ont] = pickle.load(_file)
+    #
+    #         if len(ont_files) != len(ontology_data):
+    #             raise ValueError('Unable to load all of files referenced in the file path')
+    #         else:
+    #             return ontology_data
