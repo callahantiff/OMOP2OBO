@@ -12,31 +12,28 @@
 <br>
 
  _CONDITIONS_  
- 
-OMOP | SNOMED | SNOMED LABEL | SNOMED SYNONYM | SNOMED ANCESTOR | SNOMED ANCESTOR LABEL
--- | -- | -- | -- | -- | --
-4243060 | 6002006 | 10p partial monosomy syndrome | 10p partial monosomy syndrome (disorder)\|10p partial monosomy syndrome | 726380001 | deletion of part of chromosome 10
-4266333 | 400153009 | abdominal fibromatosis | abdominal desmoid tumourvabdominal fibromatosis (disorder)\|abdominal desmoid tumor\|abdominal fibromatosis | 399994005 | desmoid fibromatosis
-4160896 | 398963001 | abducens nerve weakness | abducens nerve weakness\|sixth cranial nerve weakness\|abducens nerve weakness (disorder) | 398925009 | abducens nerve disorder
+CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION
+-- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
+4331309 | 22653005 | Myocarditis due to infectious   agent | SNOMED | SnomedCT Release 20180131 | Myocarditis due to infectious   agent \| Infective myocarditis \| Myocarditis due to infectious agent   (disorder) | 4027384 \| 4027255 \| 4178818 | 128139000 \| 128599005 \|   251052000 | Arthropod-borne disease \|   Inflammatory disorder of mediastinum \| Finding by site | MedDRA \| SNOMED | MedDRA version 19.1 \| SnomedCT   Release 20180131
+37018594 | 8.0251E+13 | Complement level below reference   range | SNOMED | SnomedCT Release 20180131 | Complement level below reference   range \| Complement level below reference range (finding) | 36402192 \| 36313966 \| 36303153 | 10061253 \| 404684003 \| 10027428 | Evaluation finding \| Metabolic   disorders NEC \| Measurement finding below reference range | MedDRA \| SNOMED | MedDRA version 19.1 \| SnomedCT   Release 20180131
+442264 | 68172002 | Disorder of tendon | SNOMED | SnomedCT Release 20180131 | Disorder of tendon (disorder) \|   Disorder of tendon \| Tendon disorder | 36503288 \| 36516772 \| 36303153 | 10022891 \| 10061253 \| 123946008 | Connective tissue disorder \|   Musculoskeletal finding \| Disorder of body system | MedDRA \| SNOMED | MedDRA version 19.1 \| SnomedCT   Release 20180131
 
 <br>
 
 _MEDICATIONS_  
-
-OMOP_ID | RXNORM_ID | RXNORM_Label | Ingredient_OMOP | Ingredient | Ingredient_Label
--- | -- | -- | -- | -- | --
-1036941 | 644287 | lidocaine 70 mg / tetracaine 70 mg medicated patch | 989878 | 6387 | lidocaine
-1037006 | 197634 | tetrahydrocannabinol 10 mg oral capsule | 1037005 | 10402 | tetrahydrocannabinol
-1036233 | 314234 | sucralfate 1000 mg oral tablet | 1036228 | 10156 | sucralfate
+CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION | INGREDIENT_CONCEPT_ID | INGREDIENT_SOURCE_CODE | INGREDIENT_LABEL | INGREDIENT_VOCAB | INGREDIENT_VOCAB_VERSION | INGRED_ANCESTOR_CONCEPT_ID | INGRED_ANCESTOR_SOURCE_CODE | INGRED_ANCESTOR_LABEL | INGRED_ANCESTOR_VOCAB | INGRED_ANCESTOR_VOCAB_VERSION
+-- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
+19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | Vitamin B Complex | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507
+19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507 | Bifidobacterium Infantis | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507 | 19136097 | 100213 | Bifidobacterium Infantis | RxNorm | RxNorm Full 20180507
+1401440 | 198644 | Garlic preparation 100 MG Oral Tablet | RxNorm | RxNorm Full 20180507 | Garlic preparation 100 MG Oral Tablet | 40047801 \| 1401500 \| 36222902 \| 36217214 \| 1401440 \| 36222903 \| 1401437 \|   36217216 | 1163937 \| 198644 \| 1163938 \| 265647 \| 375084 \| 331973 \| 1151131 \| 1151133 | Garlic preparation 100 MG \| Oral Product \| Pill \| Garlic preparation Oral   Tablet \| Garlic preparation Oral Product \| Garlic preparation 100 MG Oral   Tablet \| Garlic preparation Pill \| Garlic preparation | RxNorm | RxNorm | 1401437 | 265647 | Garlic preparation | RxNorm | RxNorm Full 20180507 | 1401440 \| 36222903 \| 1401437 \| 36217216 \| 40047801 \| 1401500 \| 36222902 \|   36217214 | 375084 \| 331973 \| 1151131 \| 1151133 \| 198644 \| 1163938 \| 1163937 \| 265647 | Garlic preparation 100 MG Oral Tablet \| Garlic preparation Oral Tablet \|   Garlic preparation Pill \| Garlic preparation Oral Product \| Garlic   preparation \| Garlic preparation 100 MG \| Oral Product \| Pill | RxNorm | RxNorm Full 20180507
 
 <br>
 
 _MEASUREMENTS_  
-
-OMOP_ID | LOINC_ID | LOINC Label | LOINC_SYN | Ancestor | Ancestor_Label | Result
--- | -- | -- | -- | -- | -- | --
-3000185 | 2502-3 | Iron saturation [Mass Fraction] in Serum or Plasma | Iron saturation [Mass Fraction] in Serum or Plasma\|Iron Satn MFr SerPl\|Chemistry\|Fe\|FE/TIBC\|Iron Satn\|Iron/Iron binding capacity.total\|Mass fraction\|Percent\|Pl\|Plasma\|Plsm\|Point in time\|QNT\|Quan\|Quant\|Quantitative\|Random\|SAT\|Satn\|SerP\|SerPl\|SerPlas\|Serum\|Serum or plasma\|SR\| Transferrin saturation | 50190-8\|70299-3\|CHEM\|LP248770-2 | Iron and Iron binding capacity panel - Serum or Plasma\|Lab terms not yet categorized\|ESRD anemia management panel\|Chemistry | Low
-3000185 | 2502-3 | Iron saturation [Mass Fraction] in Serum or Plasma | Iron Satn MFr SerPl\|Chemistry\|Fe\|FE/TIBC\|Iron Satn\|Iron/Iron binding capacity.total\|Mass fraction\|Percent\|Pl\|Plasma\|Plsm\|Point in time\|QNT\|Quan\|Quant\|Quantitative\|Random\|SAT\|Satn\|SerP\|SerPl\|SerPlas\|Serum\|Serum or plasma\|SR\|Transferrin saturation\|Iron saturation [Mass Fraction] in Serum or Plasma | LP248770-2\|50190-8\|CHEM\|70299-3 | Iron and Iron binding capacity panel - Serum or Plasma\|Chemistry\|ESRD anemia management panel\|Lab terms not yet categorized | High
+CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION | SCALE | RESULT_TYPE
+-- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
+40771573 | 69052-9 | Flow cytometry specialist review of results | LOINC | LOINC 2.64 | Flow cytometry specialist review of results \| Flow cytometry specialist   review \| Dynamic; Impression; Impression/interpretation of study;   Impressions; Interp; Interpretation; Misc; Miscellaneous; Narrative; Other;   Point in time; Random; Report; To be specified in another part of the   message; Unspecified | 36208195 \| 36206173 \| 40771573 \| 45876017 | LP248770-2 \| 69052-9 \| LP29693-6 \| MISC | Laboratory Categories \| Miscellaneous \| Lab terms not yet categorized \|   Flow cytometry specialist review of results | LOINC | LOINC 2.64 | NAR | Normal/Low/High
+3050001 | 46252-3 | Acylcarnitine pattern [Interpretation] in Serum or Plasma | LOINC | LOINC 2.64 | Acylcarnitine pattern SerPl-Imp \| Acyl carnitine; Acylcarni; Chemistry;   Impression; Impression/interpretation of study; Impressions; Interp;   Interpretation; Nominal; Pl; Plasma; Plsm; Point in time; Random; SerP;   SerPl; SerPlas; Serum; Serum or plasma; SR \| Acylcarnitine pattern   [Interpretation] in Serum or Plasma | 3047123 \| 40785853 \| 40789215 \| 21496441 \| 40792372 \| 36206173 \| 36208195   \| 45876002 \| 40772935 \| 3050001 \| 45876249 \| 40783186 \| 45876033 \| 40794997 \|   40785803 \| 40796128 | 43433-2 \| LP15318-6 \| CHEM \| LP31388-9 \| LP29693-6 \| PANEL.CHEM \|   LP71614-9 \| LP248770-2 \| LP14482-1 \| LP32744-2 \| LP15705-4 \| 46252-3 \|   LP30844-2 \| PANEL \| LP14483-9 \| LP40271-6 | Acylcarnitine panel - Serum or Plasma \| Chemistry \| Order set \|   Chemistry, challenge \| Acylcarnitine pattern \| Bld-Ser-Plas \| Carnitine \|   Urinalysis \| Acylcarnitine \| Lipids \| Acylcarnitine pattern [Interpretation]   in Serum or Plasma \| Acylcarnitine pattern \| Carnitine esters \| Laboratory   Categories \| Chemistry order set \| Lab terms not yet categorized | LOINC | LOINC 2.64 | NOM | Normal/Low/High
 
 ***  
 
