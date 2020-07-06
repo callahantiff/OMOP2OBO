@@ -64,6 +64,14 @@ class TestOntologyInfoExtractor(TestCase):
 
         return None
 
+    def test_initialization_ont_directory(self):
+        """Test class initialization for creation of the ont_directory object."""
+
+        # verify that graph object is created
+        self.assertIsInstance(self.ontologies.ont_directory, str)
+
+        return None
+
     def test_ontology_dictionary(self):
         """Tests the ontology_dictionary object created after initializing the class."""
 
