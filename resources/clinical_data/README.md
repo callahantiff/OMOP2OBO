@@ -11,7 +11,7 @@
  
 <br>
 
- _CONDITIONS_  
+ _CONDITIONS (OMOP `condition_occurrence`)_  
 CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION
 -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
 4331309 | 22653005 | Myocarditis due to infectious   agent | SNOMED | SnomedCT Release 20180131 | Myocarditis due to infectious   agent \| Infective myocarditis \| Myocarditis due to infectious agent   (disorder) | 4027384 \| 4027255 \| 4178818 | 128139000 \| 128599005 \|   251052000 | Arthropod-borne disease \|   Inflammatory disorder of mediastinum \| Finding by site | MedDRA \| SNOMED | MedDRA version 19.1 \| SnomedCT   Release 20180131
@@ -20,7 +20,7 @@ CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB
 
 <br>
 
-_MEDICATIONS_  
+_MEDICATIONS (OMOP `drug_exposure`_  
 CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION | INGREDIENT_CONCEPT_ID | INGREDIENT_SOURCE_CODE | INGREDIENT_LABEL | INGREDIENT_VOCAB | INGREDIENT_VOCAB_VERSION | INGRED_ANCESTOR_CONCEPT_ID | INGRED_ANCESTOR_SOURCE_CODE | INGRED_ANCESTOR_LABEL | INGRED_ANCESTOR_VOCAB | INGRED_ANCESTOR_VOCAB_VERSION
 -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | Vitamin B Complex | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507 | 19010970 | 11251 | Vitamin B Complex | RxNorm | RxNorm Full 20180507
@@ -29,7 +29,7 @@ CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB
 
 <br>
 
-_MEASUREMENTS_  
+_MEASUREMENTS (OMOP `measurements`)_  
 CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB_VERSION | CONCEPT_SYNONYM | ANCESTOR_CONCEPT_ID | ANCESTOR_SOURCE_CODE | ANCESTOR_LABEL | ANCESTOR_VOCAB | ANCESTOR_VOCAB_VERSION | SCALE | RESULT_TYPE
 -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
 40771573 | 69052-9 | Flow cytometry specialist review of results | LOINC | LOINC 2.64 | Flow cytometry specialist review of results \| Flow cytometry specialist   review \| Dynamic; Impression; Impression/interpretation of study;   Impressions; Interp; Interpretation; Misc; Miscellaneous; Narrative; Other;   Point in time; Random; Report; To be specified in another part of the   message; Unspecified | 36208195 \| 36206173 \| 40771573 \| 45876017 | LP248770-2 \| 69052-9 \| LP29693-6 \| MISC | Laboratory Categories \| Miscellaneous \| Lab terms not yet categorized \|   Flow cytometry specialist review of results | LOINC | LOINC 2.64 | NAR | Normal/Low/High
