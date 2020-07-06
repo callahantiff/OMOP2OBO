@@ -42,6 +42,11 @@ def download_data(files: page_iterator.HTTPIterator, folder: str) -> None:
 @click.option('--auth_json', prompt='The filepath to service_account.json file')
 def main(bucket_name: str, file_name: str, auth_json: str) -> None:
 
+    # EXAMPLE INPUT ARGUMENTS
+    # bucket_name = 'sandbox-tc.appspot.com'
+    # file_name = 'OMOP2OBO_2020/'
+    # auth_json = 'resources/programming/google_api/sandbox-tc-43a70953c062.json'
+
     # connect to GCS bucket
     storage_client = storage.Client.from_service_account_json(auth_json)
     bucket = storage_client.get_bucket(bucket_name)
