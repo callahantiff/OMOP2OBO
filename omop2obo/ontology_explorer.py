@@ -6,6 +6,7 @@
 import glob
 import os
 import pickle
+import re
 
 from datetime import datetime
 from rdflib import Graph, Namespace, URIRef, Literal
@@ -124,14 +125,19 @@ class OntologyInfoExtractor(object):
         for ont in self.ont_dictionary.items():
             print('\n****** Processing Ontology: {0}'.format(ont[0]))
 
-            # create graph
-            print('Loading RDF Graph')
-            self.graph = Graph().parse(ont[1], format='xml')
+            # check and make sure that we are not re-running a file we have already processed
+            if ont[1].replace('.owl', '_class_information.pickle').split('/')[-1] in os.listdir(self.ont_directory):
+                pass
+            else:
+                print('Loading RDF Graph')
+                self.graph = Graph().parse(ont[1], format='xml')
 
-            # get ontology information
-            ont_dict = self.get_ontology_information(ont[0])
-            with open(str(ont[1][:-4]) + '_class_information.pickle', 'wb') as handle:
-                pickle.dump(ont_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                # get ontology information
+                ont_dict = self.get_ontology_information(ont[0])
+
+                with open(str(ont[1][:-4]) + '_class_information.pickle', 'wb') as handle:
+                    pickle.dump(ont_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                handle.close()
 
         return None
 
