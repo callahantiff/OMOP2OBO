@@ -165,6 +165,7 @@ class OntologyInfoExtractor(object):
             for ont, f in tqdm(ont_files):
                 with open(f, 'rb') as _file:
                     ontology_data[ont] = pickle.load(_file)
+            _file.close()
 
             if len(ont_files) != len(ontology_data):
                 raise ValueError('Unable to load all of files referenced in the file path')
