@@ -26,6 +26,10 @@ class OntologyInfoExtractor(object):
         ont_dictionary: A dictionary, where keys are a string aliasing an ontology and values are a string pointing
             the local location where the ontology was downloaded.
         ont_directory: A string containing the filepath to the ontology data directory.
+
+    Raises:
+        OSError: If the ontology_dictionary cannot be found.
+        TypeError: If ontology_dictionary is empty.
     """
 
     def __init__(self, ontology_directory: str, ont_dictionary: Dict) -> None:
