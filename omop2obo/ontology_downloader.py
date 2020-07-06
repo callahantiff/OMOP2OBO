@@ -119,7 +119,7 @@ class OntologyDownloader(object):
 
             # don't re-download ontologies
             if any(x for x in os.listdir(file_loc) if re.sub('_without.*.owl', '', x) == file_prefix):
-                self.data_files[i] = glob.glob(file_loc + '*' + file_prefix + '*')[0]
+                self.data_files[i] = glob.glob(file_loc + '*' + file_prefix + '*.owl')[0]
             else:
                 if 'purl' in source:
                     try:
