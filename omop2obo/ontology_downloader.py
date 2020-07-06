@@ -167,10 +167,7 @@ class OntologyDownloader(object):
     def _writes_source_metadata(self):
         """Store metadata for imported ontologies."""
 
-        print('\n')
-        print('#' * 100)
-        print('Writing downloaded ontology metadata')
-        print('\n')
+        print('\n*** Writing Metadata ***\n')
 
         # open file to write to and specify output location
         write_loc_part = str('/'.join(list(self.data_files.values())[0].split('/')[:-1]) + '/')
