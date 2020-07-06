@@ -1,0 +1,44 @@
+===================================
+#Mon Jul 06 07:19:47 UTC 2020 
+===================================
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/cl.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 45760719
+DOWNLOADED_FILE_LOCATION= resources/ontologies/cl_without_imports.owl
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/chebi.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 564718781
+DOWNLOADED_FILE_LOCATION= resources/ontologies/chebi_without_imports.owl
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/hp.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 84027972
+DOWNLOADED_FILE_LOCATION= resources/ontologies/hp_without_imports.owl
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/mondo.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 229533005
+DOWNLOADED_FILE_LOCATION= resources/ontologies/mondo_without_imports.owl
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/ncbitaxon.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 1733782754
+DOWNLOADED_FILE_LOCATION= resources/ontologies/ncbitaxon_without_imports.owl
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/pr.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 1168475742
+DOWNLOADED_FILE_LOCATION= resources/ontologies/pr_without_imports.owl
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/uberon/ext.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 71199523
+DOWNLOADED_FILE_LOCATION= resources/ontologies/ext_without_imports.owl
+
+DOWNLOAD_URL= http://purl.obolibrary.org/obo/vo.owl
+DOWNLOAD_DATE= 07/06/2020
+FILE_SIZE_IN_BYTES= 7767003
+DOWNLOADED_FILE_LOCATION= resources/ontologies/vo_without_imports.owl
+
