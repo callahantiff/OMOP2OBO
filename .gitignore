@@ -1,35 +1,38 @@
-
-!resources/clinical_data/README.md
-!resources/mappings/condition_codes/.gitkeep
-!resources/mappings/laboratory_tests/.gitkeep
-!resources/mappings/medication_codes/.gitkeep
-!resources/ontologies/ontology_source_metadata.txt
-## compiled source ##
-## directories ##
-## scripts ##
-## testing resources ##
-#######################
-########################
+## compiled source/environment ##
+#################################
+.DS_Store
 *.egg-info
 *.exe
-*.mypy*
-*.pyc
-.DS_Store
-.coverage*
 .idea
 .idea/*
+*.pyc
+__pycache__
+
+## testing resources ##
+#################################
+*.mypy*
+.coverage*
+coverage.xml
 .notipy.json
 .single_run
 .vscode/
-__pycache__
-coverage.xml
+
+## directories ##
+#################################
 resources/clinical_data
+!resources/clinical_data/README.md
 resources/mappings/
+!resources/mappings/medication_codes/.gitkeep
+!resources/mappings/laboratory_tests/.gitkeep
+!resources/mappings/condition_codes/.gitkeep
 resources/ontologies/
+!resources/ontologies/ontology_source_metadata.txt
 resources/programming/
-scripts/bash
-scripts/python/*.zip
-scripts/python/drafts/*
-scripts/python/scratch.py
-scripts/pythton/drafts.zip
-scripts/tests/*
+
+## scripts ##
+#################################
+scripts/*
+
+
+
+
