@@ -3,9 +3,7 @@
 
 import os.path
 import pickle
-import shutil
 
-from typing import Dict
 from unittest import TestCase
 
 from omop2obo.clinical_concept_annotator import ConceptAnnotator
@@ -80,4 +78,3 @@ class TestConceptAnnotator(TestCase):
         self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dictionary, mrconso_empty)
 
         return None
-
