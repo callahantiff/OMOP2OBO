@@ -116,7 +116,7 @@ class ConceptAnnotator(object):
             updated_cols = ['CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
             umls_cui_semtype.columns = updated_cols
 
-            return umls_cui_semtype
+        return umls_cui_semtype
 
     @abstractmethod
     def gets_clinical_domain(self) -> str:
