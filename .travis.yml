@@ -1,0 +1,74 @@
+dist: trusty
+git:
+  depth: false
+addons:
+  sonarcloud:
+    organization: "callahantiff"
+    token:
+      secure: Usage: travis COMMAND ...
+
+Available commands:
+
+	accounts               displays accounts and their subscription status
+	branches               displays the most recent build for each branch
+	cache                  lists or deletes repository caches
+	cancel                 cancels a job or build
+	console                interactive shell
+	disable                disables a project
+	enable                 enables a project
+	encrypt                encrypts values for the .travis.yml
+	encrypt-file           encrypts a file and adds decryption steps to .travis.yml
+	endpoint               displays or changes the API endpoint
+	env                    show or modify build environment variables
+	help                   helps you out when in dire need of information
+	history                displays a projects build history
+	init                   generates a .travis.yml and enables the project
+	lint                   display warnings for a .travis.yml
+	login                  authenticates against the API and stores the token
+	logout                 deletes the stored API token
+	logs                   streams test logs
+	monitor                live monitor for what's going on
+	open                   opens a build or job in the browser
+	pubkey                 prints out a repository's public key
+	raw                    makes an (authenticated) API call and prints out the result
+	report                 generates a report useful for filing issues
+	repos                  lists repositories the user has certain permissions on
+	requests               lists recent requests
+	restart                restarts a build or job
+	settings               access repository settings
+	setup                  sets up an addon or deploy target
+	show                   displays a build or job
+	sshkey                 checks, updates or deletes an SSH key
+	status                 checks status of the latest build
+	sync                   triggers a new sync with GitHub
+	token                  outputs the secret API token
+	version                outputs the client version
+	whatsup                lists most recent builds
+	whoami                 outputs the current user
+
+run `/usr/local/Cellar/travis/1.8.11/libexec/bin/travis help COMMAND` for more infos
+language: python
+python:
+- '3.6'
+before_install:
+  - pip install --upgrade pytest
+install:
+- pip install .[test]
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+script:
+- rm -rf .coverage
+- coverage erase
+- pytest --cov=omop2obo --cov-report xml:coverage.xml 
+- coverage combine --append || true
+- coverage report
+- coverage xml
+- 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi' # sonar only on non-PRs
+
+after_success:
+  - coveralls
+  - python-codacy-coverage -r coverage.xml
