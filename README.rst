@@ -61,12 +61,11 @@ Dependencies
 
 - This software also relies on `OWLTools <https://github.com/owlcollab/owltools>`__. If cloning the repository, the ``owltools`` library file will automatically be included and placed in the correct repository.
 
--  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO.RRF <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__. Using this data requires a license agreement. Once the data is obtained, please download the file and place it in the ``resources/mappings`` directory.
+-  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__ and `MRSTY <https://www.ncbi.nlm.nih.gov/books/NBK9685/table/ch03.Tf/>`_. Using these data requires a license agreement. Note that in order to get the `MRSTY` file you will need to download the UMLS Metathesaurus and run MetamorphoSys. Once both data sources are obtained, please place the files in the ``resources/mappings`` directory.
 
 *DATA*
 
-- **Clinical Data:** This repository assumes that the clinical data that needs mapping has
-been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to extracted from the OMOP CDM. An example of what is expected for input clinical data can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
+- **Clinical Data:** This repository assumes that the clinical data that needs mapping has been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to extracted from the OMOP CDM. An example of what is expected for input clinical data can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
 
 - **Ontology Data:** Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
 
