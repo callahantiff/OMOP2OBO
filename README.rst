@@ -61,7 +61,7 @@ Dependencies
 
 - This software also relies on `OWLTools <https://github.com/owlcollab/owltools>`__. If cloning the repository, the ``owltools`` library file will automatically be included and placed in the correct repository.
 
--  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO.RRF <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__. Using this data requires a license agreement. Once the data is obtained, please download the file and place it in the ``resources/mappings`` directory.
+-  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__ and `MRDEF <https://metamap.nlm.nih.gov/SemanticTypesAndGroups.shtml>`_. Using these data requires a license agreement. Note that in order to get the `SRDEF` file you will need to download the UMLS Metathesaurus and run MetamorphoSys. Once both data sources are obtained, please place the files in the ``resources/mappings`` directory.
 
 *DATA*
 
