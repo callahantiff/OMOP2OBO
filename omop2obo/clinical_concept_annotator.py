@@ -4,7 +4,7 @@
 
 # import needed libraries
 import os
-import pandas as pd
+import pandas as pd  # type: ignore
 
 from abc import ABCMeta, abstractmethod
 from pandas import errors
@@ -77,7 +77,7 @@ class ConceptAnnotator(object):
                                              usecols=[0, 11, 13]).drop_duplicates().astype(str)
                 self.umls_data = self.umls_data[self.umls_data.CODE != 'NOCODE'].drop_duplicates()  # remove 'NOCODE'
 
-    def umls_annotator(self, code_type: str) -> pd.DataFrame:
+    def umls_annotator(self, code_type: str) -> Optional[pd.DataFrame]:
         """Method maps concepts in the map_column in a clinical data file to UMLS concepts in the umls_mrconso Pandas
         DataFrame.
 
@@ -90,13 +90,17 @@ class ConceptAnnotator(object):
         """
 
         # subset DataFrames to only include columns needed for merge
-        umls_cui = self.umls_data[self.umls_data.apply(lambda x: code_type in x['SAB'], axis=1)].drop_duplicates()
-        clinical_ids = self.clinical_data[['CONCEPT_ID', 'CONCEPT_SOURCE_CODE']].drop_duplicates()
+        if self.umls_data:
+            umls_cui = self.umls_data[self.umls_data.apply(lambda x: code_type in x['SAB'], axis=1)].drop_duplicates()
+            clinical_ids = self.clinical_data[['CONCEPT_ID', 'CONCEPT_SOURCE_CODE']].drop_duplicates()
 
-        # merge reduced concepts
-        umls_merged = clinical_ids.merge(umls_cui, how='left', left_on='CONCEPT_SOURCE_CODE', right_on='CODE')
+            # merge reduced concepts
+            umls_merged = clinical_ids.merge(umls_cui, how='left', left_on='CONCEPT_SOURCE_CODE', right_on='CODE')
 
-        return umls_merged[['CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'CUI']].drop_duplicates()
+            return umls_merged[['CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'CUI']].drop_duplicates()
+
+        else:
+            return None
 
     @abstractmethod
     def gets_clinical_domain(self) -> str:

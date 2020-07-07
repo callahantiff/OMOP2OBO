@@ -8,9 +8,9 @@ import os
 import pickle
 
 from datetime import datetime
-from rdflib import Graph, Namespace, URIRef, Literal
-from rdflib.namespace import RDF, RDFS, OWL
-from tqdm import tqdm
+from rdflib import Graph, Namespace, URIRef, Literal  # type: ignore
+from rdflib.namespace import RDF, RDFS, OWL  # type: ignore
+from tqdm import tqdm  # type: ignore
 from typing import Dict, List
 
 # define global namespace
@@ -62,7 +62,7 @@ class OntologyInfoExtractor(object):
 
         start = datetime.now()
         print('Identifying ontology information: {}'.format(start))
-        res = {'label': {}, 'definition': {}, 'dbxref': {}, 'synonyms': {}}
+        res: Dict = {'label': {}, 'definition': {}, 'dbxref': {}, 'synonyms': {}}
 
         # get ontology classes
         class_ids = [x for x in self.graph.subjects(RDF.type, OWL.Class) if isinstance(x, URIRef)]

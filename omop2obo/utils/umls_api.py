@@ -9,7 +9,7 @@ import json
 import requests
 import sys
 
-from lxml.html import fromstring
+from lxml.html import fromstring  # type: ignore  # pylint: disable=import-error
 from time import sleep
 from typing import Dict
 
@@ -68,8 +68,8 @@ def cui_search(cui: str) -> Dict:
     tries, r = 0, ''
     while r == '' and tries != 20:
         try:
-            r = requests.get('https://uts-ws.nlm.nih.gov' + content_endpoint, params=query)
-            r.encoding = 'utf-8'
+            r = requests.get('https://uts-ws.nlm.nih.gov' + content_endpoint, params=query)  # type: ignore
+            r.encoding = 'utf-8'  # type: ignore
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             sleep(10)
             tries += 1
@@ -77,4 +77,4 @@ def cui_search(cui: str) -> Dict:
             print(e)
             sys.exit(1)
 
-    return json.loads(r.text)['result']
+    return json.loads(r.text)['result']  # type: ignore
