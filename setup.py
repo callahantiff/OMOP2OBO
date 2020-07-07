@@ -59,6 +59,16 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     tests_require=test_deps,
     # Add here the package dependencies
-    install_requires=[],
+    install_requires=['click'
+                      'google-api-core==1.17.0',
+                      'google-auth==1.14.1',
+                      'google-auth-oauthlib==0.4.1'
+                      'google-cloud==0.34.0',
+                      'google-cloud-core==1.3.0',
+                      'google-cloud-storage==1.28.0',
+                      'lxml',
+                      'oauth2client==4.1.3',
+                      'pandas==1.0.3',
+                      'rdflib==5.0.0'],
     extras_require=extras,
 )

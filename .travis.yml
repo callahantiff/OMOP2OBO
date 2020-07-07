@@ -6,13 +6,14 @@ addons:
     organization: "callahantiff"
     token:
       secure: "alU20ydv+wOvFB6GkrFcdXvJqsPSkHyax83YU6e2cRNR5yPUMyJGe7huPAXZOKtKcGPGwbb6wdXEs2xV12+kOaB7dLjt90eVqPh3STj6AMr05aF311vXKELv47rwtFG1QZASAB3+Mjg8hPmfzxFZm0oCb3U1OkyicmTHfXZOXw7GUOD/GPFct2ALJBlsO5EMBZqImR2QIBolJ8yFghpy+rfJ0MkYuZSmhdrL26afI78H46kugYZ4IVgFEISmenvAnHn9X1qwekQ6Zz06xAC0tD7+OD6do61zSgBzRA7CKKgsoRvoGzPasyTHNHVTdN6SSZv+mXqBYMSpY6WGSPcLcj03A1nuNnOn01AImasRC2BQLUsl/1rl1IGb8D2rTDGJV4E6t5AnkXK/TG0zGiGvW05O2RmhEViHE1Ulpdae1bAE7OdOHqMikszEkqCAsF1bChclmXzxg2utfgoRsrVAIO2D6LrYAifkmiuSiXDMw339PMBHd7nzi0IQZRm478amJKYgbg6G05hENMNqUNVFV9QGutkHdJTWvjbz1Bq/7Av1Ln9P/97SDhbBPdy+SaDDEbDjglKIn/gl4/sRFtWWxthSSyo8fLjZm0yFwD+Bx2zZunkjJGwRL0DOp876kKnQSXM8iyrTfaqQjLjsxNY9In17QzKokytgpj7cOoxP5Us="
-
-
 language: python
 python:
 - '3.6'
 before_install:
-  - pip install --upgrade pytest
+- pip install pip --upgrade
+- pip install --upgrade pytest
+- pip install --upgrade mypy
+- pip install --upgrade pylint
 install:
 - pip install .[test]
 before_script:
@@ -28,8 +29,9 @@ script:
 - coverage combine --append || true
 - coverage report
 - coverage xml
+- pylint --errors-only --exit-zero pkt_kg
+- mypy --strict-optional pkt_kg
 - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi' # sonar only on non-PRs
-
 after_success:
   - coveralls
   - python-codacy-coverage -r coverage.xml
