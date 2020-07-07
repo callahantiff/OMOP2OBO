@@ -3,8 +3,6 @@
 ########################
 
 
-import gspread
-import hashlib
 import pandas as pd
 import re as re
 
@@ -13,46 +11,69 @@ from nltk.corpus import stopwords
 # nltk.download("wordnet")
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import RegexpTokenizer
-import numpy as np
-from oauth2client.service_account import ServiceAccountCredentials
-from progressbar import ProgressBar, FormatLabel, Percentage, Bar
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+from tqdm import tqdm
 
-from scripts.python.umls_api import *
+from omop2obo.utils.umls_api import *
 
 
-class Annotator(object):
+class ConceptAnnotator(object):
     """An annotator to map clinical codes to ontology terms.
 
     Attributes:
-        input_file: A list string containing the filepath or url to data.
+        input_file: A string containing a file path to a csv of clinical data.
+        ont_dict: A nested dictionary containing ontology data, where outer keys are ontology identifiers (e.g. "HP",
+        DOID"), inner keys are data types (e.g. "
         data: A place holder for a pandas data frame.
-
+        data_id_tracker: A dictionary where keys are
     """
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, input_file):
+    def __init__(self, input_file: str, ont_dict: dict):
         self.input_file = input_file
-        self.data = ''
+        self.ont_dict = ont_dict
+        self.data: pd.DataFrame = pd.DataFrame()
+        self.data_id_tracker: dict =
 
-    def read_data(self):
-        """Return a pandas data frame from a Google Sheet."""
+    def read_data(self) -> None:
+        """Method reads in a csv file from a user passed file path and returns a pandas DataFrame object from reading
+        in a csv file.
 
-        cred = ServiceAccountCredentials.from_json_keyfile_name(self.input_file[0], self.input_file[1])
-        worksheet = gspread.authorize(cred).open(self.input_file[2])
-        self.data = pd.DataFrame(worksheet.worksheet(self.input_file[3]).get_all_records())
+        Returns:
+            None.
+        """
 
-        return self.data
+        self.data = pd.read_csv(self.input_file, sep=',', header=0)
 
-    def get_data(self):
-        return self.data
+        return None
 
-    def set_data(self, new_data):
-        self.data = new_data
+    def maps_identifiers(self):
 
-    def umls_mapper(self, col_name):
+
+
+
+    def process_dbxrefs(self, id_types: list, id_columns: list):
+        """
+
+        Args:
+            id_types: A list of ontology identifiers (e.g. ['HP', 'DOID']).
+            id_columns: A list of identifier columns indices, ordered by importance, that should be mapped to dbxrefs
+                in ontologies (e.g. [1, 4]).
+
+        Returns:
+
+        """
+
+
+        for idx in tqdm(id_types):
+
+            # loop over
+
+
+
+
+    def umls_mapper(self, col_name: str):
         """Map terminology codes to UMLS CUIs and retrieve their semantic types.
 
         Args:
@@ -62,22 +83,15 @@ class Annotator(object):
             A pandas data frame.
         """
 
-        widgets = [Percentage(), Bar(), FormatLabel('(elapsed: %(elapsed)s)')]
-        pbar = ProgressBar(widgets=widgets, maxval=len(self.data))
-
         data_umls = pd.DataFrame(index=range(0, len(self.data)),
                                  columns=[str(col_name), str(col_name) + '_CUI', str(col_name) + '_SEM_TYPE'])
 
-        for row, val in pbar(self.data.iterrows()):
-            cui_map = []
-            tui_map = []
+        for row, val in tqdm(self.data.iterrows()):
+            cui_map, tui_map = [], []
             codes = val[str(col_name)].split('|') if '|' in str(val[str(col_name)]) else [val[str(col_name)]]
-
             for x in codes:
-                res = code_search(x)
-                cui = res[0] if len(res) > 0 else None
+                res, cui = code_search(x), res[0] if len(res) > 0 else None
                 cui_map.append(cui)
-
                 if cui != '':
                     for i in [cui]:
                         cui_res = cui_search(i)
@@ -87,22 +101,20 @@ class Annotator(object):
             data_umls[str(col_name) + '_CUI'][row] = '|'.join(cui_map)
             data_umls[str(col_name) + '_SEM_TYPE'] = '|'.join(tui_map)
 
-        pbar.finish()
         return data_umls
 
-    def data_update(self, data_merge, col_name):
+    def data_update(self, data_merge: pd.DataFrame, col_name: str):
         """Update the instance of data by merging it with another data frame.
 
         Args:
-            data_merge: A pandas data frame
+            data_merge: A pandas data frame.
             col_name: A string containing the column name to merge on.
 
         Returns:
             None.
 
         Raises:
-            ValueError: An error occurred when attempting to merge two pandas data frames because they were different
-            lengths.
+            ValueError: If two pandas data frames are different lengths when merging.
         """
 
         if len(data_merge) != len(self.data):
@@ -110,15 +122,14 @@ class Annotator(object):
 
         self.data = pd.merge(self.data, data_merge, on=col_name)
 
-    def data_pre_process(self, identifier, definition, splitter, gram_size):
-        """Using the input two lists, the function assembles an identifier and definition for each question. The definition
-        is then preprocessed by making all words lowercase, removing all punctuation, tokenizing by word,
+    def data_pre_process(self, identifier: list, definition: list, splitter: str, gram_size: list):
+        """Using the input two lists, the function assembles an identifier and definition for each question. The
+        definition is then preprocessed by making all words lowercase, removing all punctuation, tokenizing by word,
         removing english stop words, and lemmatization (via wordnet). The final step is to generate the n-grams of
         different lengths.
 
         Args:
-            identifier: A list of columns used to assemble question identifier. This function assumes that the list
-            contains 2 columns.
+            identifier: A list of columns used to assemble a question identifier. Assumes the list contains 2 columns.
             definition: A list of columns used to assemble question definition.
             splitter: A string that specifies the character to split synonyms.
             gram_size: A list of integers specifying different n-gram sizes.
@@ -126,38 +137,24 @@ class Annotator(object):
         Returns:
             A list of tuples, where the first item in each list is the identifier and the second item is a list
             containing the processed question definition.
-
         """
 
         widgets = [Percentage(), Bar(), FormatLabel("(elapsed: %(elapsed)s)")]
         pbar = ProgressBar(widgets=widgets, maxval=len(self.data))
-
-        # create a list to store
         vocab_list = []
 
         for index, row in pbar(self.data.iterrows()):
-
-            # create identifier (RowIndex_vocab_code)
             if len(identifier) > 1:
                 var = str(index) + '_' + str(row[str(identifier[0])]) + '_' + str(row[str(identifier[1])])
-
-                # create list of labels and synonyms (each synonym treated as an item in a list)
                 code_definition = [row[str(definition[0])]] + row[str(definition[1])].split(splitter)
             else:
                 var = str(row[str(identifier[0])])
                 code_definition = row[str(definition[0])].split(splitter)
 
             for item in code_definition:
-                # lowercase item
                 item_lower = item.lower()
-
-                # replace all none alphanumeric characters with spaces
                 item_lower_punctuation = re.sub(' +', ' ', re.sub(r'[^a-zA-Z0-9\s]', ' ', item_lower))
-
-                # tokenize & remove punctuation
                 item_token = RegexpTokenizer(r'\w+').tokenize(item_lower_punctuation)
-
-                # remove stop words & perform lemmatization
                 stop_words = stopwords.words('english')
                 item_token_lemma = [str(WordNetLemmatizer().lemmatize(x)) for x in item_token if x not in stop_words]
 
@@ -170,11 +167,10 @@ class Annotator(object):
                     res = [tuple([str(var) + '_' + str(n) + '_' + str(re.sub(r'\s', '.', i)), i]) for i in ngram_list]
                     vocab_list += res
 
-        # close progress bar and return vocab list
         pbar.finish()
         return vocab_list
 
-    def similarity_search(self, index_var, top_n):
+    def similarity_search(self, index_var: int, top_n: int):
         """Calculates the cosine similarity between the index variables and all other included variables in
         the matrix. The results are sorted and returned as a list of lists, where each list contains a variable
         identifier and the cosine similarity score for the top set of similar variables as indicated by the input
@@ -185,11 +181,10 @@ class Annotator(object):
             top_n: an integer representing the number of similar variables to return.
 
         Returns:
-            A list of lists where each list contains a variable identifier and the cosine similarity
-            score the top set of similar as indicated by the input argument are returned.
+            A list of lists where each list contains a variable identifier and the cosine similarity score and the top
+            set of similar as indicated by the input argument are returned.
         """
 
-        # calculate similarity
         cosine_similarities = linear_kernel(self.data[index_var:index_var + 1], self.data).flatten()
         rel_var_indices = [i for i in cosine_similarities.argsort()[::-1] if i != index_var]
         similar_variables = [(variable, cosine_similarities[variable]) for variable in rel_var_indices][0:top_n]
@@ -221,19 +216,17 @@ class Annotator(object):
 
         # matching data in filtered file
         for num, row in pbar(filter_data.iterrows()):
-            print(num,row)
-            # get index of filter data in corpus
-            matches = []
-            scores = []
+            print(num, row)
+            matches, scores = [], []
+
             # retrieve top_n similar variables
             for i in [x for x in corpus if x[0].split('_')[0] == str(num)]:
-
                 num = 2
                 row = data.loc[num]
                 i = [x for x in corpus if x[0].split('_')[0] == str(num)][0]
                 top_n = 200
 
-                for index, score in similarity_search(tfidf_matrix, corpus.index(i), top_n):
+                for index, score in self.similarity_search(tfidf_matrix, corpus.index(i), top_n):
                     if score > 0 and 'http' in corpus[index][0]:
                         print(corpus[index][0].split('_')[2], index, '_'.join(corpus[index][0].split('_')[0:2]),
                               corpus[index][1], score)
@@ -244,16 +237,10 @@ class Annotator(object):
 
                         matches.append(tuple([ngram, score, index, ontid, ontlabel]))
                         scores.append(tuple([score, ngram, index, ontid, ontlabel]))
-
                         matches.sort(reverse=True)
                         scores.sort(reverse=True)
-                        matches[0:10]
-                        scores[0:10]
 
-            sim_res.append([
-
-                corpus[index]
-            ])
+                    sim_res.append([corpus[index]])
 
         # create pandas data frame
         scored_vars = pd.DataFrame(dict(study1_random_id=[x[0] for x in sim_res],
@@ -274,7 +261,6 @@ class Annotator(object):
 
         pbar.finish()
 
-        # verify that we got all the matches we expected (assumes we matched all vars in filtered data)
         if matches != len(filter_data):
             matched = round(matches / float(len(filter_data)) * 100, 2)
             raise ValueError('ERROR: Only matched {0}% of filtered variables'.format(matched))
@@ -540,6 +526,22 @@ class Conditions(Annotator):
         """"A string representing the type annotator."""
         return 'condition codes'
 
+    def annotate_clinical_data(self) -> pd.DataFrame:
+        """Method reads in data from a csv file.
+
+        Returns:
+
+        """
+
+        # STEP 1 - read in csv file
+        self.read_data()
+
+        # STEP 2 - process dbxrefs
+        self.process_dbxrefs(['HP', 'DOID'], ['SNOMED_ID', 'ANCESTOR_ID'])
+
+
+
+
 
 class Medications(Annotator):
     """An annotator to map clinical condition codes to ontology terms."""
@@ -547,11 +549,3 @@ class Medications(Annotator):
     def annotator_type(self):
         """"A string representing the type annotator."""
         return 'medication codes'
-
-
-class Procedures(Annotator):
-    """An annotator to map clinical procedure codes to ontology terms."""
-
-    def annotator_type(self):
-        """"A string representing the type annotator."""
-        return 'procedure codes'

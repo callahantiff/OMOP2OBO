@@ -14,10 +14,13 @@ There is one way to run PheKnowLator:
 """
 
 __all__ = [
+    'ConceptAnnotator',
+
     'OntologyDownloader',
 
     'OntologyInfoExtractor'
 ]
 
+from omop2obo.clinical_concept_annotator import ConceptAnnotator
 from omop2obo.ontology_downloader import OntologyDownloader
 from omop2obo.ontology_explorer import OntologyInfoExtractor
