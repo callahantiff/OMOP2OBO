@@ -8,7 +8,7 @@ import pandas as pd  # type: ignore
 
 from abc import ABCMeta, abstractmethod
 from pandas import errors
-from typing import Optional
+from typing import Dict, Optional
 
 from omop2obo.utils.umls_api import *
 
