@@ -5,48 +5,9 @@ addons:
   sonarcloud:
     organization: "callahantiff"
     token:
-      secure: Usage: travis COMMAND ...
+		secure: "alU20ydv+wOvFB6GkrFcdXvJqsPSkHyax83YU6e2cRNR5yPUMyJGe7huPAXZOKtKcGPGwbb6wdXEs2xV12+kOaB7dLjt90eVqPh3STj6AMr05aF311vXKELv47rwtFG1QZASAB3+Mjg8hPmfzxFZm0oCb3U1OkyicmTHfXZOXw7GUOD/GPFct2ALJBlsO5EMBZqImR2QIBolJ8yFghpy+rfJ0MkYuZSmhdrL26afI78H46kugYZ4IVgFEISmenvAnHn9X1qwekQ6Zz06xAC0tD7+OD6do61zSgBzRA7CKKgsoRvoGzPasyTHNHVTdN6SSZv+mXqBYMSpY6WGSPcLcj03A1nuNnOn01AImasRC2BQLUsl/1rl1IGb8D2rTDGJV4E6t5AnkXK/TG0zGiGvW05O2RmhEViHE1Ulpdae1bAE7OdOHqMikszEkqCAsF1bChclmXzxg2utfgoRsrVAIO2D6LrYAifkmiuSiXDMw339PMBHd7nzi0IQZRm478amJKYgbg6G05hENMNqUNVFV9QGutkHdJTWvjbz1Bq/7Av1Ln9P/97SDhbBPdy+SaDDEbDjglKIn/gl4/sRFtWWxthSSyo8fLjZm0yFwD+Bx2zZunkjJGwRL0DOp876kKnQSXM8iyrTfaqQjLjsxNY9In17QzKokytgpj7cOoxP5Us="
 
-Available commands:
 
-	accounts               displays accounts and their subscription status
-	branches               displays the most recent build for each branch
-	cache                  lists or deletes repository caches
-	cancel                 cancels a job or build
-	console                interactive shell
-	disable                disables a project
-	enable                 enables a project
-	encrypt                encrypts values for the .travis.yml
-	encrypt-file           encrypts a file and adds decryption steps to .travis.yml
-	endpoint               displays or changes the API endpoint
-	env                    show or modify build environment variables
-	help                   helps you out when in dire need of information
-	history                displays a projects build history
-	init                   generates a .travis.yml and enables the project
-	lint                   display warnings for a .travis.yml
-	login                  authenticates against the API and stores the token
-	logout                 deletes the stored API token
-	logs                   streams test logs
-	monitor                live monitor for what's going on
-	open                   opens a build or job in the browser
-	pubkey                 prints out a repository's public key
-	raw                    makes an (authenticated) API call and prints out the result
-	report                 generates a report useful for filing issues
-	repos                  lists repositories the user has certain permissions on
-	requests               lists recent requests
-	restart                restarts a build or job
-	settings               access repository settings
-	setup                  sets up an addon or deploy target
-	show                   displays a build or job
-	sshkey                 checks, updates or deletes an SSH key
-	status                 checks status of the latest build
-	sync                   triggers a new sync with GitHub
-	token                  outputs the secret API token
-	version                outputs the client version
-	whatsup                lists most recent builds
-	whoami                 outputs the current user
-
-run `/usr/local/Cellar/travis/1.8.11/libexec/bin/travis help COMMAND` for more infos
 language: python
 python:
 - '3.6'
@@ -72,3 +33,8 @@ script:
 after_success:
   - coveralls
   - python-codacy-coverage -r coverage.xml
+env:
+  global:
+  - secure: "FUczwdtYYnJR4vvfwTcYZr3p+nHHKUiqr0481zM8IrLj4J2V96RFSLaDWeLsO+6pkZ6goYYjMcP+ixnmb0Tsk8Rmkb+4awQ2co0hQE+wG8NSdQuCYX7dJuV7dFjRtdPtmgDDDn201Elo18aFzxm2H9QKy4QXucVtkNHflJpdHt8pbp9y6IyXJp9a43+qkbywAy96+Mc6XouSQ/dmCdGhBF0Aq2YBdXwdyqmCf2wwqNqECi8HBdC6WRw8MHYTNCRfJg5AjLIkLMm8Hp9MZl4s0cFC37IDRKbcfoZXg2LkYuLta+Bq5e4lZB0Dinyx4YJQYDkNX8UhLFUm9WZa5z9KFSjDrC4uHYSllBOjUUvY5K+MQoF8LfFa/kdKnyptWHIEkboas2W+rngHVaveCYW2ZvftJGRXMC568PKA6c7OUbv1mIVOJmAT8TGjMgo8b2VqhtfKTjLD9E95OCJ1sbXg4+jSwF15WSOr3c5GtCwcfSnzLZ0kCTbQsd/N3Og8SMgN1Cdb9PAGS30Nj+hxfD1LS3QH2jwKMGnlNAteV7iRJ7K7HFjzKtKPdF4JSHbPdeEZz5Y2okGgCK//D7Drir1dd2QTKRCvQFV4Jgl9x93jBL6c5IqdB0CVCqeOgVbkgbjMYMFqPdAFVn+o/u5hFsGVeD181nvO7MPFYkUwv5DIBCw="
+  - secure: "RgZA8G5fWz1OdWTz5jrglHH5LFMLncrkPcYSEMtorukDiT429I/3enjx4Rt9D4WALJSGdeboSNG6/JarCcvHKVIt557OnmbAY0P//CeKqAO4OAsx8V/QF+R0Atmp1l0nA1Un1aYI7aZRDXf23jkVtpErTU83FYzCJQQYKwvds4rXT3y9XQbtku8e0cbhLAdyyFjb0Z2Pb5vFqgiaJGIZ6pN8f2c8FBKg78WIVYVm6lXhg9G9qWbsaRF/jBUicG73D51RokFTkNyhRPnPJsh8jXSMEtCPdvczNUp+V50XPAlyE2sBGm+/uUi8ZF5gO3IlXw9eMmgNISxhxZeHALXOCHPtZkPAphS/zIzKN2l9dGmYl9+RlX1oxfe0Dk1D39gzZOvqnE2bvCgSeBP14G23dxilIsezBFhtm/QQKkg7ZMPgXoOwwbiiThUI+SLgqkUvFXldwBZyRRIohBGQ9yLjL8MLqzAbcrW4A53Z4bfMovzdvYgdl9ZMUSJMa70rRX9HOu8uh661EUP62Nj10+2EwIhuB7EpimAdCs1wMyiFtCSlI329i4XUBx5QAPZ1v2yuLuZVIXxsZw4XqdsgodfHvuC8t7ON9pwNS4M9oZIPSq2HMwVeJpiiFzZcC4GlOPdbY+XACTUZ+bG/g3HpjxeGngJ0cLfg54CJCelHOWY8qEY="
+
