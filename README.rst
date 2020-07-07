@@ -1,6 +1,9 @@
 omop2obo
 =========================================================================================
-|travis| |sonar_quality| |sonar_maintainability| |codacy| |coveralls| |sonar_coverage| |code_climate_coverage|
+|travis| |sonar_quality| |sonar_maintainability| |codacy| 
+
+|coveralls| |sonar_coverage| |code_climate_coverage|  
+
 |ABRA|
 
 .. |pip| |downloads|
@@ -58,14 +61,10 @@ Dependencies
 
 *DATA*
 
-**Clinical Data**
-
-This repository assumes that the clinical data that needs mapping has
+- **Clinical Data:** This repository assumes that the clinical data that needs mapping has
 been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to extracted from the OMOP CDM. An example of what is expected for input clinical data can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
 
-**Ontology Data**
-
-Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
+- **Ontology Data:** Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
 
 |
 
