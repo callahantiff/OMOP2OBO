@@ -59,7 +59,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     tests_require=test_deps,
     # Add here the package dependencies
-    install_requires=['click'
+    install_requires=['click',
                       'google-api-core==1.17.0',
                       'google-auth==1.14.1',
                       'google-auth-oauthlib==0.4.1'
