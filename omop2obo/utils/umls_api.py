@@ -7,10 +7,8 @@
 # import needed libraries
 import json
 import requests
-import sys
 
 from lxml.html import fromstring  # type: ignore  # pylint: disable=import-error
-from time import sleep
 from typing import Dict
 
 
@@ -65,16 +63,21 @@ def cui_search(cui: str) -> Dict:
     content_endpoint = '/rest/content/' + 'current' + '/CUI/' + str(cui)
     query = {'ticket': auth_client.getst(tgt)}
 
-    tries, r = 0, ''
-    while r == '' and tries != 20:
-        try:
-            r = requests.get('https://uts-ws.nlm.nih.gov' + content_endpoint, params=query)  # type: ignore
-            r.encoding = 'utf-8'  # type: ignore
-        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-            sleep(10)
-            tries += 1
-        except requests.exceptions.RequestException as e:
-            print(e)
-            sys.exit(1)
+    # ping API
+    r = requests.get('https://uts-ws.nlm.nih.gov' + content_endpoint, params=query)  # type: ignore
+    r.encoding = 'utf-8'
+
+    #
+    # tries, r = 0, ''
+    # while r == '' and tries != 20:
+    #     try:
+    #         r = requests.get('https://uts-ws.nlm.nih.gov' + content_endpoint, params=query)  # type: ignore
+    #         r.encoding = 'utf-8'  # type: ignore
+    #     except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+    #         sleep(10)
+    #         tries += 1
+    #     except requests.exceptions.RequestException as e:
+    #         print(e)
+    #         sys.exit(1)
 
     return json.loads(r.text)['result']  # type: ignore
