@@ -70,6 +70,8 @@ setup(
         'lxml',
         'oauth2client==4.1.3',
         'pandas==1.0.3',
-        'rdflib==5.0.0'],
+        'rdflib==5.0.0',
+        'responses==0.10.12',
+        'tqdm==4.42.0'],
     extras_require=extras,
 )
