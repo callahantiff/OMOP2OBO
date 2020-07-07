@@ -8,7 +8,7 @@ from unittest import TestCase
 from omop2obo.ontology_downloader import OntologyDownloader
 
 
-class OntologyDownloader(TestCase):
+class TestOntologyDownloader(TestCase):
     """Class to test functions used when downloading ontology data sources."""
 
     def setUp(self):

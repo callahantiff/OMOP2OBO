@@ -33,7 +33,7 @@ class TestConceptAnnotator(TestCase):
         self.umls_mrconso = self.mapping_directory + '/MRCONSO_FAKE.RRF'
 
         # initialize the class
-        self.annotator = ConceptAnnotator(self.clinical_directory, self.ont_dictionary, self.umls_mrconso)
+        self.annotator = ConceptAnnotator(self.clinical_file, self.ont_dictionary, self.umls_mrconso)
 
         return None
 

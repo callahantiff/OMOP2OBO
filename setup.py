@@ -43,7 +43,9 @@ extras = {
 setup(
     name='omop2obo',
     version=__version__,
-    description="TODO - update",
+    description="OMOP2OBO is the first health system-wide, disease-agnostic mappings between standardized clinical "
+                "terminologies in the Observational Medical Outcomes Partnership (OMOP) common data model and several "
+                "Open Biomedical Ontologies (OBO).",
     long_description=long_description,
     url="https://github.com/callahantiff/OMOP2OBO",
     author="callahantiff@gmail.com",
