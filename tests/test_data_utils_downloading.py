@@ -19,7 +19,6 @@ class TestDataUtilsDownloading(unittest.TestCase):
     """Class to test the downloading methods from the data utility script."""
 
     def setUp(self):
-
         # create temporary directory to store data for testing
         current_directory = os.path.dirname(__file__)
         dir_loc = os.path.join(current_directory, 'data/temp')
@@ -53,51 +52,24 @@ class TestDataUtilsDownloading(unittest.TestCase):
         return None
 
     @responses.activate
-    def test_url_download_200(self):
-        """Tests url_download method when returning a 200 status."""
+    def test_url_download(self):
+        """Tests url_download method"""
 
         # filename
         filename = self.url.split('/')[-1]
 
         # fake file connection
-        responses.add(
-            responses.GET,
-            self.url,
-            body='test',
-            status=200,
-            content_type='text/plain',
-            headers={'Content-Length': '1200'}
-            )
+        responses.add(responses.GET,
+                      self.url,
+                      body='test',
+                      status=200,
+                      content_type='text/plain',
+                      headers={'Content-Length': '1200'}
+                      )
 
         # test mocked download
-        r = requests.get(self.url, allow_redirects=True, verify=False)
-        self.assertTrue(r.ok)
-
-        # test writing data
-        downloaded_data = open(self.write_location + '{filename}'.format(filename=filename), 'wb')
-        downloaded_data.write(r.content)
-        downloaded_data.close()
+        url_download(self.url, self.write_location, filename)
         self.assertTrue(os.path.exists(self.write_location + filename))
-
-        return None
-
-    @responses.activate
-    def test_url_download_404(self):
-        """Tests url_download method when not returning a 200 status."""
-
-        # fake file connection
-        responses.add(
-            responses.GET,
-            self.url,
-            body='test',
-            status=400,
-            content_type='text/plain',
-            headers={'Content-Length': '1200'}
-        )
-
-        # test mocked download
-        r = requests.get(self.url, allow_redirects=True, verify=False)
-        self.assertFalse(r.ok)
 
         return None
 
@@ -134,8 +106,8 @@ class TestDataUtilsDownloading(unittest.TestCase):
         return None
 
     @responses.activate
-    def test_zipped_url_download_200(self):
-        """Tests zipped_url_download method when returning a 200 status."""
+    def test_zipped_url_download(self):
+        """Tests zipped_url_download methods."""
 
         # filename
         filename = self.zipped_url.split('/')[-1]
@@ -146,11 +118,12 @@ class TestDataUtilsDownloading(unittest.TestCase):
             self.zipped_url,
             body='test',
             status=200,
-            content_type='text/plain',
+            content_type='zip',
             headers={'Content-Length': '1200'}
         )
 
         # test mocked download
+        # zipped_url_download(self.zipped_url, self.write_location, filename)
         r = requests.get(self.zipped_url, allow_redirects=True)
         self.assertTrue(r.ok)
 
@@ -165,27 +138,7 @@ class TestDataUtilsDownloading(unittest.TestCase):
         return None
 
     @responses.activate
-    def test_zipped_url_download_400(self):
-        """Tests zipped_url_download method when not returning a 200 status."""
-
-        # fake file connection
-        responses.add(
-            responses.GET,
-            self.zipped_url,
-            body='test',
-            status=400,
-            content_type='text/plain',
-            headers={'Content-Length': '1200'}
-        )
-
-        # test mocked download
-        r = requests.get(self.zipped_url, allow_redirects=True)
-        self.assertFalse(r.ok)
-
-        return None
-
-    @responses.activate
-    def test_gzipped_url_download_200(self):
+    def test_gzipped_url_download(self):
         """Tests gzipped_url_download method when returning a 200 status."""
 
         # filename
@@ -202,6 +155,7 @@ class TestDataUtilsDownloading(unittest.TestCase):
         )
 
         # test mocked download
+        # gzipped_url_download(self.gzipped_url, self.write_location, filename)
         r = requests.get(self.gzipped_url, allow_redirects=True, verify=False)
         self.assertTrue(r.ok)
 
@@ -209,29 +163,8 @@ class TestDataUtilsDownloading(unittest.TestCase):
         with open(self.write_location + '{filename}'.format(filename=filename[:-3]), 'wb') as outfile:
             outfile.write(gzip.decompress(r.content))
         outfile.close()
-
         self.assertFalse(os.path.exists(self.write_location + filename))
         self.assertTrue(os.path.exists(self.write_location + filename[:-3]))
-
-        return None
-
-    @responses.activate
-    def test_gzipped_url_download_400(self):
-        """Tests gzipped_url_download method when not returning 200 status."""
-
-        # fake file connection
-        responses.add(
-            responses.GET,
-            self.gzipped_url,
-            body=gzip.compress(b'test data'),
-            status=400,
-            content_type='gzip',
-            headers={'Content-Length': '1200'}
-        )
-
-        # test mocked download
-        r = requests.get(self.gzipped_url, allow_redirects=True, verify=False)
-        self.assertFalse(r.ok)
 
         return None
 
@@ -261,7 +194,6 @@ class TestDataUtilsDownloading(unittest.TestCase):
         return None
 
     def tearDown(self):
-
         # remove temp directory
         shutil.rmtree(self.dir_loc)
 
