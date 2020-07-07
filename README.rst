@@ -13,9 +13,13 @@ omop2obo
 
 Please see the Project `Wiki`_ for more information!
 
-.. Releases
-.. ----------------------------------------------
-.. 
+|
+
+Releases
+----------------------------------------------
+
+Coming soon!
+
 .. All code and output for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__ for full release .. archive.
 .. 
 .. **Current Release:**  
