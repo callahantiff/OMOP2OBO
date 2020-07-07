@@ -1,124 +1,113 @@
 omop2obo
 =========================================================================================
-|travis| |sonar_quality| |sonar_maintainability| |codacy|
-|code_climate_maintainability| |pip| |downloads|
+|travis| |sonar_quality| |sonar_maintainability| |codacy| 
 
-TODO - update
+|coveralls| |sonar_coverage| |code_climate_coverage|  
 
-How do I install this package?
+|ABRA|
+
+.. |pip| |downloads|
+
+
+``omop2obo`` is the first health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBO`_) foundry ontologies. These mappings were validated by domain experts and their coverage was examined in several health systems.
+
+Please see the Project `Wiki`_ for more information!
+
+|
+
+Releases
 ----------------------------------------------
-As usual, just download it using pip:
+
+Coming soon!
+
+.. All code and output for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__ for full release .. archive.
+.. 
+.. **Current Release:**  
+.. 
+.. - ``v2.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/PheKnowLator/wiki/v2.0.0>`__.
+.. 
+.. **Prior Releases:**  
+.. 
+.. - ``v1.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/PheKnowLator/wiki/v1.0.0>`__.
+.. 
+
+|
+
+Getting Started
+------------------------------------------
+
+**Install Library**   
+
+This program requires Python version 3.6. To install the library from PyPI, run:
 
 .. code:: shell
 
-    pip install omop2obo
+  pip install omop2obo
 
-Tests Coverage
-----------------------------------------------
-Since some software handling coverages sometimes
-get slightly different results, here's three of them:
+|
 
-|coveralls| |sonar_coverage| |code_climate_coverage|
+You can also clone the repository directly from GitHub by running:
 
-OMOP2OBO is the first health system-wide, disease-agnostic mappings
-between standardized clinical
+.. code:: shell
 
-terminologies in the `Observational Medical Outcomes Partnership
-(OMOP) <https://www.ohdsi.org/data-standardization/the-common-data-model/>`__
-common data model and several [Open
+  git clone https://github.com/callahantiff/OMOP2OBO.git
 
-::
-
-    Biomedical Ontologies (OBO)](http://www.obofoundry.org/) foundry ontologies. These mappings were validated by domain experts and their coverage was examined in several health systems.
-
-Please see the `Project
-Wiki <https://github.com/callahantiff/BioLater/wiki>`__ for more
-information!
-
-This is a Reproducible Research Repository
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This repository contains more than just code, it provides a detailed and
-transparent narrative of our research process. For detailed information
-on how we use GitHub as a reproducible research platform, click
-`here <https://github.com/callahantiff/PheKnowVec/wiki/Using-GitHub-as-a-Reproducible-Research-Platform>`__.
-
---------------
-
-Getting Started
-~~~~~~~~~~~~~~~
+|
 
 Dependencies
 ^^^^^^^^^^^^
 
-This repository is built using Python 3.6.2. To install the libraries
-used in this repository, run the line of code
+*APPLICATIONS* 
 
-shown below from the within the project directory.
+- This software also relies on `OWLTools <https://github.com/owlcollab/owltools>`__. If cloning the repository, the ``owltools`` library file will automatically be included and placed in the correct repository.
 
-::
+-  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO.RRF <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__. Using this data requires a license agreement. Once the data is obtained, please download the file and place it in the ``resources/mappings`` directory.
 
+*DATA*
 
-    pip install -r requirements.txt
+- **Clinical Data:** This repository assumes that the clinical data that needs mapping has
+been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to extracted from the OMOP CDM. An example of what is expected for input clinical data can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
 
-This software also relies on
-```OWLTools`` <https://github.com/owlcollab/owltools>`__. If cloning the
-repository, the
+- **Ontology Data:** Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
 
-``owltools`` library file will automatically be included and placed in
-the correct repository.
-
--  The National of Library Medicine's Unified Medical Language System
-   (UMLS)
-   ```MRCONSO.RRF`` <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__.
-   Using this data requires a
-
-license agreement. Once the data is obtained, please download the file
-and place it in the \`resources/mappings
-
-/\` directory.
-
-Data
-^^^^
-
-**Clinical Data**
-
-This repository assumes that the clinical data that needs mapping has
-been placed in the \`resources/clinical\_data
-
-\` repository. Each data source provided in this repository is assumed
-to extracted from the OMOP CDM. An example of
-
-what is expected for input clinical data can be found
-`here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
-
-**Ontology Data**
-
-Ontology data is automatically downloaded from the user provided input
-file
-```ontology_source_list.txt`` <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__.
-
-.. raw:: html
-
-   <!--### Installation
-
-
-
-   <!--To install and execute the program designate the cloned project folder as the current working directory. Place any outside <!--files within the working directory prior to executing the program.-->
+|
 
 Contributing
-~~~~~~~~~~~~
+------------------------------------------
 
-Please read
-`CONTRIBUTING.md <https://github.com/callahantiff/biolater/blob/master/CONTRIBUTING.md>`__
-for details on our code of conduct, and the process for submitting pull
-requests to us.
+Please read `CONTRIBUTING.md <https://github.com/callahantiff/biolater/blob/master/CONTRIBUTING.md>`__ for details on our code of conduct, and the process for submitting pull requests to us.
 
-<!--## License
+|
 
-<!--This project is licensed under 3-Clause BSD License - see the
-`LICENSE.md <https://github.com/callahantiff/biolater/blob/master/LICENSE>`__
-file for details.
+License
+------------------------------------------
+This project is licensed under MIT - see the `LICENSE.md <https://github.com/callahantiff/OMOP2OBO/blob/master/LICENSE>`__ file for details.
+
+|
+
+Citing this Work
+--------------
+
+.. code:: shell
+
+   @software{callahan_tiffany_j_2020_3902767,  
+             author     =  {Callahan, Tiffany J},  
+             title      = {OMOP2OBO},  
+             month      = jun,  
+             year       = 2020,  
+             publisher  = {Zenodo},   
+             version    = {v1.0.0},   
+             doi        = {10.5281/zenodo.3902767},   
+             url        = {https://doi.org/10.5281/zenodo.3902767}.  
+      }
+
+|
+
+Contact
+--------------
+
+We’d love to hear from you! To get in touch with us, please `create an issue`_ or `send us an email`_ 💌
+
 
 .. |travis| image:: https://travis-ci.org/callahantiff/OMOP2OBO.png
    :target: https://travis-ci.org/callahantiff/OMOP2OBO
@@ -159,3 +148,16 @@ file for details.
 .. |code_climate_coverage| image:: https://api.codeclimate.com/v1/badges/5ad93b637f347255c848/test_coverage
     :target: https://codeclimate.com/github/callahantiff/OMOP2OBO/test_coverage
     :alt: Code Climate Coverage
+    
+.. |ABRA| image:: https://img.shields.io/badge/ReproducibleResearch-AbraCollaboratory-magenta.svg
+   :target: https://github.com/callahantiff/Abra-Collaboratory 
+    
+.. _OMOP: https://www.ohdsi.org/data-standardization/the-common-data-model/
+
+.. _OBO: http://www.obofoundry.org/
+
+.. _Wiki: https://github.com/callahantiff/BioLater/wiki
+
+.. _`create an issue`: https://github.com/callahantiff/OMOP2OBO/issues/new/choose
+
+.. _`send us an email`: https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=callahantiff@gmail.com
