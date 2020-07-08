@@ -3,6 +3,7 @@
 
 import gzip
 import os.path
+import pandas as pd
 import requests
 import responses
 import shutil
@@ -48,6 +49,20 @@ class TestDataUtilsDownloading(unittest.TestCase):
 
         # set write location
         self.write_location = self.dir_loc + '/'
+
+        # create some fake Pandas DataFrames
+        self.clin_data = pd.DataFrame({'CONCEPT_ID': ['4331309', '4331309', '37018594', '37018594', '442264'],
+                                       'CONCEPT_SOURCE_CODE': ['2265305', '2265305', '802510', '802510', '6817202'],
+                                       'UMLS_CUI': ['C0729608', 'C0729608', 'C4075981', 'C4075981', 'C0151936'],
+                                       'UMLS_CODE': ['2265305', '2265305', '802510', '802510', '6817202']
+                                       })
+        self.subset_clin_data = pd.DataFrame({'CONCEPT_ID': ['4331309', '4331309', '37018594', '37018594', '442264',
+                                                             '4331309', '4331309', '37018594', '37018594', '442264',
+                                                             '4331309', '4331309', '37018594', '37018594', '442264'],
+                                              'CODE': ['2265305', '2265305', '802510', '802510', '6817202',
+                                                       'C0729608', 'C0729608', 'C4075981', 'C4075981', 'C0151936',
+                                                       '2265305', '2265305', '802510', '802510', '6817202']
+                                              })
 
         return None
 
@@ -116,7 +131,7 @@ class TestDataUtilsDownloading(unittest.TestCase):
         responses.add(
             responses.GET,
             self.zipped_url,
-            body='test',
+            body=b'1F   8B  08  00  00  00  00  00  00  0B',
             status=200,
             content_type='zip',
             headers={'Content-Length': '1200'}
@@ -190,6 +205,19 @@ class TestDataUtilsDownloading(unittest.TestCase):
         # gzipped data
         data_downloader(self.gzipped_url, self.write_location)
         self.assertTrue(os.path.exists(self.write_location + self.gzipped_url.split('/')[-1][:-3]))
+
+        return None
+
+    def test_data_frame_subsetter(self):
+        """Tests the data_frame_subsetter method."""
+
+        # run method and test output
+        subset_data = data_frame_subsetter(self.clin_data, 'CONCEPT_ID',
+                                           ['CONCEPT_SOURCE_CODE', 'UMLS_CUI', 'UMLS_CODE'])
+
+        self.assertIsInstance(subset_data, pd.DataFrame)
+        self.assertTrue(len(subset_data) == 15)
+        self.assertEqual(list(subset_data.columns), ['CONCEPT_ID', 'CODE', 'CODE_COLUMN'])
 
         return None
 
