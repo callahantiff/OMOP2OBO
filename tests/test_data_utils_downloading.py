@@ -61,7 +61,10 @@ class TestDataUtilsDownloading(unittest.TestCase):
                                                              '4331309', '4331309', '37018594', '37018594', '442264'],
                                               'CODE': ['2265305', '2265305', '802510', '802510', '6817202',
                                                        'C0729608', 'C0729608', 'C4075981', 'C4075981', 'C0151936',
-                                                       '2265305', '2265305', '802510', '802510', '6817202']
+                                                       '2265305', '2265305', '802510', '802510', '6817202'],
+                                              'CODE_COLUMN': ['CONCEPT_SOURCE_CODE']*5 +
+                                                             ['UMLS_CUI']*5 +
+                                                             ['UMLS_CODE']*5
                                               })
 
         return None
@@ -218,6 +221,18 @@ class TestDataUtilsDownloading(unittest.TestCase):
         self.assertIsInstance(subset_data, pd.DataFrame)
         self.assertTrue(len(subset_data) == 15)
         self.assertEqual(list(subset_data.columns), ['CONCEPT_ID', 'CODE', 'CODE_COLUMN'])
+
+        return None
+
+    def test_data_frame_supersetter(self):
+        """Tests the data_frame_supersetter method."""
+
+        # run method and test output
+        subset_data = data_frame_supersetter(self.subset_clin_data, 'CONCEPT_ID', ('CODE_COLUMN'), ('CODE'))
+
+        self.assertIsInstance(subset_data, pd.DataFrame)
+        self.assertTrue(len(subset_data) == 3)
+        self.assertEqual(list(subset_data.columns), ['CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'UMLS_CODE', 'UMLS_CUI'])
 
         return None
 
