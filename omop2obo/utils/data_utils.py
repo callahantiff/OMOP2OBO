@@ -274,7 +274,7 @@ def data_frame_subsetter(data: pd.DataFrame, primary_key: str, subset_columns: L
     # convert list to single concatenated Pandas DataFrame
     subset_data = pd.concat(subset_data_frames)
 
-    return subset_data
+    return subset_data.drop_duplicates()
 
 
 def data_frame_supersetter(data: pd.DataFrame, index: str, columns: List, values: List) -> pd.DataFrame:
@@ -314,4 +314,4 @@ def data_frame_supersetter(data: pd.DataFrame, index: str, columns: List, values
     superset_data_frame.reset_index(level=0, inplace=True)
     superset_data_frame.columns.name = None
 
-    return superset_data_frame
+    return superset_data_frame.drop_duplicates()

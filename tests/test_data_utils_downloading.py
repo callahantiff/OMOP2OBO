@@ -219,7 +219,7 @@ class TestDataUtilsDownloading(unittest.TestCase):
                                            ['CONCEPT_SOURCE_CODE', 'UMLS_CUI', 'UMLS_CODE'])
 
         self.assertIsInstance(subset_data, pd.DataFrame)
-        self.assertTrue(len(subset_data) == 15)
+        self.assertTrue(len(subset_data) == 9)
         self.assertEqual(list(subset_data.columns), ['CONCEPT_ID', 'CODE', 'CODE_COLUMN'])
 
         return None
