@@ -97,7 +97,7 @@ class ConceptAnnotator(object):
                 self.umls_tui_data = pd.read_csv(umls_mrsty_file, header=None, sep='|', names=headers,
                                                  low_memory=False, usecols=[0, 3]).drop_duplicates().astype(str)
 
-    def umls_cui_annotator(self, primary_key: str, code_level: str) -> Optional[pd.DataFrame]:
+    def umls_cui_annotator(self, primary_key: str, code_level: str) -> pd.DataFrame:
         """Method maps concepts in a clinical data file to UMLS concepts and semantic types from the umls_cui_data
         and umls_tui_data Pandas Data Frames.
 
@@ -174,15 +174,17 @@ class Conditions(ConceptAnnotator):
         # primary_key, code_level = 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE'
 
         # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
-        umls_annotations = self.umls_cui_annotator(primary_key, code_level)
+        if self.umls_cui_data and self.umls_tui_data:
+            umls_annotations = self.umls_cui_annotator(primary_key, code_level)
+            data_stacked = data_frame_subsetter(umls_annotations[[primary_key, code_level]], primary_key, [code_level])
+        else:
+            # prepare clinical data -- stack data
+            subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
+            data_stacked = data_frame_subsetter(self.clinical_data[[primary_key] + subset_cols],
+                                                primary_key, subset_cols)
 
         # STEP 2 - DBXREF ANNOTATION
-        # prepare clinical data -- stack data
-        subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
-        umls_data_stack = data_frame_subsetter(umls_annotations[[primary_key] + subset_cols], primary_key, subset_cols)
-
-        # get dbxrefs
-        stacked_dbxref = self.dbxref_mapper(umls_data_stack)
+        stacked_dbxref = self.dbxref_mapper(data_stacked)
 
         # STEP 3 - EXACT STRING MAPPING
 

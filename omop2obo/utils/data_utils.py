@@ -331,7 +331,7 @@ def merge_dictionaries(dictionaries: Dict, key_type: str) -> Dict:
         combined_dictionary: A dictionary object containing.
     """
 
-    combined_dictionary = {}
+    combined_dictionary: Dict = {}
 
     for dictionary in dictionaries.keys():
         combined_dictionary.update(dictionaries[dictionary][key_type])
