@@ -9,7 +9,9 @@ import pandas as pd  # type: ignore
 from abc import ABCMeta, abstractmethod
 from pandas import errors
 from tqdm import tqdm  # type: ignore
-from typing import Dict, Optional
+from typing import Dict, List, Optional
+
+from omop2obo.utils import data_frame_subsetter, data_frame_supersetter, merge_dictionaries
 
 
 class ConceptAnnotator(object):
@@ -95,28 +97,53 @@ class ConceptAnnotator(object):
                 self.umls_tui_data = pd.read_csv(umls_mrsty_file, header=None, sep='|', names=headers,
                                                  low_memory=False, usecols=[0, 3]).drop_duplicates().astype(str)
 
-    def umls_cui_annotator(self) -> Optional[pd.DataFrame]:
+    def umls_cui_annotator(self, primary_key: str, code_level: str) -> Optional[pd.DataFrame]:
         """Method maps concepts in a clinical data file to UMLS concepts and semantic types from the umls_cui_data
         and umls_tui_data Pandas Data Frames.
+
+        Args:
+            primary_key: A string containing the name of the primary key (i.e. CONCEPT_ID).
+            code_level: A string containing the name of the source code column (i.e. CONCEPT_SOURCE_CODE).
 
         Returns:
            umls_cui_semtype: A Pandas DataFrame containing clinical concept ids and source codes as well as UMLS
             CUIs, source codes, and semantic types.
         """
 
-        if self.umls_cui_data is not None:
-            # umls_cui = self.umls_data[self.umls_data.apply(lambda x: code_type in x['SAB'], axis=1)].drop_duplicates()
-            clin_ids = self.clinical_data[['CONCEPT_ID', 'CONCEPT_SOURCE_CODE']].drop_duplicates()
+        # reduce data to only those columns needed for merging
+        clinical_ids = self.clinical_data[[primary_key, code_level]].drop_duplicates()
 
-            # merge reduced clinical concepts with umls concepts
-            umls_cui = clin_ids.merge(self.umls_cui_data, how='inner', left_on='CONCEPT_SOURCE_CODE', right_on='CODE')
-            umls_cui_semtype = umls_cui.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
+        # merge reduced clinical concepts with umls concepts
+        umls_cui = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
+        umls_cui_semtype = umls_cui.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
 
-            # update column names
-            updated_cols = ['CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
-            umls_cui_semtype.columns = updated_cols
+        # update column names
+        updated_cols = [primary_key, code_level, 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
+        umls_cui_semtype.columns = updated_cols
 
         return umls_cui_semtype
+
+    def dbxref_mapper(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Takes a stacked Pandas DataFrame and merges it with a Pandas DataFrame version of the
+        ontology_dictionary_object.
+
+        Args:
+            data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method.
+
+        Returns:
+            merged_dbxrefs: A stacked
+        """
+
+        # prepare ontology data
+        combined_dictionaries = merge_dictionaries(self.ontology_dictionary, 'dbxref')
+        combo_dict_df = pd.DataFrame(combined_dictionaries.items(), columns=['dbxref', 'Ontology_URI'])
+        combo_dict_df['CODE'] = combo_dict_df['dbxref'].apply(lambda x: x.split(':')[-1])
+
+        # merge clinical data and combined ontology dict
+        merged_dbxrefs = data.merge(combo_dict_df, how='inner', on='CODE').drop_duplicates()
+        merged_dbxrefs['EVIDENCE'] = merged_dbxrefs['dbxref'].apply(lambda x: 'DbXRef_' + x.split(':')[0])
+
+        return merged_dbxrefs.drop_duplicates()
 
     @abstractmethod
     def gets_clinical_domain(self) -> str:
@@ -131,3 +158,32 @@ class Conditions(ConceptAnnotator):
         """"A string representing the clinical domain."""
 
         return 'Condition Occurrence'
+
+    def clinical_concept_mapper(self, primary_key: str, code_level: str):
+        """
+
+        Args:
+            primary_key:
+            code_level:
+
+        Returns:
+
+        """
+
+        # TODO: figure out how to do this for both concept and concept_ancestor, maybe this is done in main
+        # primary_key, code_level = 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE'
+
+        # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
+        umls_annotations = self.umls_cui_annotator(primary_key, code_level)
+
+        # STEP 2 - DBXREF ANNOTATION
+        # prepare clinical data -- stack data
+        subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
+        umls_data_stack = data_frame_subsetter(umls_annotations[[primary_key] + subset_cols], primary_key, subset_cols)
+
+        # get dbxrefs
+        stacked_dbxref = self.dbxref_mapper(umls_data_stack)
+
+        # STEP 3 - EXACT STRING MAPPING
+
+        return None
