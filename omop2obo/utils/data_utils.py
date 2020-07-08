@@ -275,3 +275,43 @@ def data_frame_subsetter(data: pd.DataFrame, primary_key: str, subset_columns: L
     subset_data = pd.concat(subset_data_frames)
 
     return subset_data
+
+
+def data_frame_supersetter(data: pd.DataFrame, index: str, columns: List, values: List) -> pd.DataFrame:
+    """Takes a stacked Pandas DataFrame and unstacks it according to row values specified in the index column.
+    This is equivalent to converting a DataFrame in long format to wide format. An example of the input and
+    generated output is shown below.
+
+        INPUT:
+              CONCEPT_ID                CODE          CODE_COLUMN       ONTOLOGY_ID     ONTOLOGY        EVIDENCE
+            0    4331309            22653005  CONCEPT_SOURCE_CODE
+            1    4331309            C0729608             UMLS_CUI
+            2   37018594            22653005            UMLS_CODE
+
+        OUTPUT:
+                 CONCEPT_ID CONCEPT_SOURCE_CODE  UMLS_CUI   UMLS_CODE
+            0    4331309            22653005  C0729608    22653005
+            1    4331310            22653011  C4075981    22653005
+
+    Args:
+        data: A Pandas DataFrame containing several columns of clinical codes (see INPUT for an example).
+        index: A string containing a column to be used as a primary key.
+        columns: A list of columns to unstack from row values into columns.
+        values: A list of columns whose values will be used to populate the unstacked DataFrame.
+
+    Returns:
+        superset_data_frame: An unstacked version of the input DataFrame (see OUTPUT above for an example).
+    """
+
+    # index = 'CONCEPT_ID'
+    # values = ('CODE')
+    # columns = ('CODE_COLUMN')
+
+    # unstack the DataFrame
+    superset_data_frame = data.drop_duplicates().pivot(index=index, columns=columns, values=values)
+
+    # reset index
+    superset_data_frame.reset_index(level=0, inplace=True)
+    superset_data_frame.columns.name = None
+
+    return superset_data_frame
