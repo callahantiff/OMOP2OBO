@@ -7,6 +7,7 @@ import pickle
 from unittest import TestCase
 
 from omop2obo.clinical_concept_annotator import ConceptAnnotator
+from omop2obo.utils import data_frame_subsetter
 
 
 class TestConceptAnnotator(TestCase):
@@ -101,9 +102,29 @@ class TestConceptAnnotator(TestCase):
         """Test the umls_cui_annotation method."""
 
         # run the method and verify the output
-        umls_annotated_data = self.annotator.umls_cui_annotator()
+        umls_annotated_data = self.annotator.umls_cui_annotator('CONCEPT_ID', 'CONCEPT_SOURCE_CODE')
         self.assertTrue(len(umls_annotated_data) == 1)
         self.assertTrue(len(umls_annotated_data.columns) == 6)
         self.assertEqual(umls_annotated_data.at[0, 'UMLS_SEM_TYPE'], 'Pharmacologic Substance')
+
+        return None
+
+    def test_dbxref_mapper(self):
+        """Tests the dbxref_mapper method."""
+
+        # set-up input parameters
+        primary_key, code_level = 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE'
+        subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
+
+        # run umls annotation
+        umls_annotated_data = self.annotator.umls_cui_annotator(primary_key, code_level)
+        umls_stack = data_frame_subsetter(umls_annotated_data[[primary_key] + subset_cols], primary_key, subset_cols)
+
+        # get dbxrefs
+        stacked_dbxref = self.annotator.dbxref_mapper(umls_stack)
+        self.assertTrue(len(stacked_dbxref) == 4)
+        self.assertTrue(len(stacked_dbxref.columns) == 6)
+        self.assertEqual(list(stacked_dbxref.columns),
+                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'dbxref', 'Ontology_URI', 'EVIDENCE'])
 
         return None
