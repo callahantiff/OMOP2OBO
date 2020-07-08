@@ -12,6 +12,10 @@ Downloads Data from a Url
 * gzipped_url_download
 * data_downloader
 
+Pandas DataFrame manipulations
+* data_frame_subsetter
+* data_frame_supersetter
+
 """
 
 # import needed libraries
@@ -26,6 +30,7 @@ import urllib3  # type: ignore
 
 from contextlib import closing
 from io import BytesIO
+from typing import List  # type: ignore
 from urllib.request import urlopen
 from zipfile import ZipFile
 
@@ -230,3 +235,43 @@ def data_downloader(url: str, write_location: str, filename: str = '') -> None:
             url_download(url, write_location, file)
 
     return None
+
+
+def data_frame_subsetter(data: pd.DataFrame, primary_key: str, subset_columns: List) -> pd.DataFrame:
+    """Takes a Pandas DataFrame and subsets it such that each subset represents an original column of codes, OMOP
+    concept identifiers, and a string containing the code's column name in the original DataFrame. An example of
+    the input and generated output is shown below.
+
+        INPUT:
+              CONCEPT_ID CONCEPT_SOURCE_CODE  UMLS_CUI   UMLS_CODE        UMLS_SEM_TYPE
+            0    4331309            22653005  C0729608    22653005  Disease or Syndrome
+            1    4331310            22653011  C4075981    22653005  Disease or Syndrome
+
+        OUTPUT:
+              CONCEPT_ID                CODE          CODE_COLUMN
+            0    4331309            22653005  CONCEPT_SOURCE_CODE
+            1    4331309            C0729608             UMLS_CUI
+            2   37018594            22653005            UMLS_CODE
+
+    Args:
+        data: A Pandas DataFrame containing several columns of clinical codes (see INPUT for an example).
+        primary_key: A string containing a column to be used as a primary key.
+        subset_columns: A list of columns to subset Pandas DataFrame on.
+
+    Returns:
+        subset_data_frames: A Pandas DataFrame containing stacked subsets of the original DataFrame.
+    """
+
+    # subset data
+    subset_data_frames = []
+
+    for col in subset_columns:
+        subset = data[[primary_key, col]]
+        subset['CODE_COLUMN'] = [col] * len(subset)
+        subset.columns = [primary_key, 'CODE', 'CODE_COLUMN']
+        subset_data_frames.append(subset)
+
+    # convert list to single concatenated Pandas DataFrame
+    subset_data = pd.concat(subset_data_frames)
+
+    return subset_data
