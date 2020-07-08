@@ -10,6 +10,8 @@ import shutil
 import unittest
 import urllib3
 
+from typing import Dict
+
 from omop2obo.utils import *
 
 # disable warnings
@@ -62,10 +64,28 @@ class TestDataUtilsDownloading(unittest.TestCase):
                                               'CODE': ['2265305', '2265305', '802510', '802510', '6817202',
                                                        'C0729608', 'C0729608', 'C4075981', 'C4075981', 'C0151936',
                                                        '2265305', '2265305', '802510', '802510', '6817202'],
-                                              'CODE_COLUMN': ['CONCEPT_SOURCE_CODE']*5 +
-                                                             ['UMLS_CUI']*5 +
-                                                             ['UMLS_CODE']*5
+                                              'CODE_COLUMN': ['CONCEPT_SOURCE_CODE'] * 5 +
+                                                             ['UMLS_CUI'] * 5 +
+                                                             ['UMLS_CODE'] * 5
                                               })
+
+        # create sample dictionaries
+        self.sample_dicts = {
+            'hp': {
+                'dbxref': {'UMLS:C4022916': 'http://purl.obolibrary.org/obo/HP_0012400',
+                           'UMLS:C4020882': 'http://purl.obolibrary.org/obo/HP_0000925',
+                           'UMLS:C4021789': 'http://purl.obolibrary.org/obo/HP_0000925'},
+                'label': {'abnormal aldolase level': 'http://purl.obolibrary.org/obo/HP_0012400',
+                          'abnormality of the vertebral column': 'http://purl.obolibrary.org/obo/HP_0000925',
+                          'patulous urethra': 'http://purl.obolibrary.org/obo/HP_0025417'}},
+            'mondo': {
+                'dbxref': {'GARD:0009221': 'http://purl.obolibrary.org/obo/MONDO_0022509',
+                           'DOID:5726': 'http://purl.obolibrary.org/obo/MONDO_0003611',
+                           'UMLS:C3642324': 'http://purl.obolibrary.org/obo/MONDO_0003611'},
+                'label': {'asternia': 'http://purl.obolibrary.org/obo/MONDO_0022509',
+                          'hyperekplexia 3': 'http://purl.obolibrary.org/obo/MONDO_0013827',
+                          'color vision disorder': 'http://purl.obolibrary.org/obo/MONDO_0001703'}}
+        }
 
         return None
 
@@ -233,6 +253,18 @@ class TestDataUtilsDownloading(unittest.TestCase):
         self.assertIsInstance(subset_data, pd.DataFrame)
         self.assertTrue(len(subset_data) == 3)
         self.assertEqual(list(subset_data.columns), ['CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'UMLS_CODE', 'UMLS_CUI'])
+
+        return None
+
+    def test_merge_dictionaries(self):
+        """Tests the merge_dictionaries method."""
+
+        # run method and test output
+        combined_dicts = merge_dictionaries(self.sample_dicts, 'dbxref')
+
+        self.assertIsInstance(combined_dicts, Dict)
+        self.assertTrue(len(combined_dicts.keys()) == 6)
+        self.assertTrue(len(combined_dicts.values()) == 6)
 
         return None
 
