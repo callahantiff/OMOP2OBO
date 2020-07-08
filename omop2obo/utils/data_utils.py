@@ -16,6 +16,9 @@ Pandas DataFrame manipulations
 * data_frame_subsetter
 * data_frame_supersetter
 
+Dictionary manipulations
+* merge_dictionaries
+
 """
 
 # import needed libraries
@@ -30,7 +33,7 @@ import urllib3  # type: ignore
 
 from contextlib import closing
 from io import BytesIO
-from typing import List  # type: ignore
+from typing import Dict, List, Tuple  # type: ignore
 from urllib.request import urlopen
 from zipfile import ZipFile
 
@@ -277,7 +280,7 @@ def data_frame_subsetter(data: pd.DataFrame, primary_key: str, subset_columns: L
     return subset_data.drop_duplicates()
 
 
-def data_frame_supersetter(data: pd.DataFrame, index: str, columns: List, values: List) -> pd.DataFrame:
+def data_frame_supersetter(data: pd.DataFrame, index: str, columns: Tuple, values: Tuple) -> pd.DataFrame:
     """Takes a stacked Pandas DataFrame and unstacks it according to row values specified in the index column.
     This is equivalent to converting a DataFrame in long format to wide format. An example of the input and
     generated output is shown below.
@@ -303,10 +306,6 @@ def data_frame_supersetter(data: pd.DataFrame, index: str, columns: List, values
         superset_data_frame: An unstacked version of the input DataFrame (see OUTPUT above for an example).
     """
 
-    # index = 'CONCEPT_ID'
-    # values = ('CODE')
-    # columns = ('CODE_COLUMN')
-
     # unstack the DataFrame
     superset_data_frame = data.drop_duplicates().pivot(index=index, columns=columns, values=values)
 
@@ -315,3 +314,26 @@ def data_frame_supersetter(data: pd.DataFrame, index: str, columns: List, values
     superset_data_frame.columns.name = None
 
     return superset_data_frame.drop_duplicates()
+
+
+def merge_dictionaries(dictionaries: Dict, key_type: str) -> Dict:
+    """Given any number of dictionaries, shallow copy and merge into a new dict, precedence goes to key value pairs
+    in latter dictionaries.
+
+    Function from StackOverFlow Post:
+        https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-in-python
+
+    Args:
+        dictionaries: A nested dictionary.
+        key_type: A string containing the key of one of the inner dictionaries.
+
+    Returns:
+        combined_dictionary: A dictionary object containing.
+    """
+
+    combined_dictionary = {}
+
+    for dictionary in dictionaries.keys():
+        combined_dictionary.update(dictionaries[dictionary][key_type])
+
+    return combined_dictionary
