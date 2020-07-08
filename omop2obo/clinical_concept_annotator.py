@@ -6,9 +6,7 @@
 import os
 import pandas as pd  # type: ignore
 
-from abc import ABCMeta, abstractmethod
 from pandas import errors
-from tqdm import tqdm  # type: ignore
 from typing import Dict, List, Optional
 
 from omop2obo.utils import data_frame_subsetter, data_frame_supersetter, merge_dictionaries
@@ -42,8 +40,6 @@ class ConceptAnnotator(object):
             If umls_mrconso_file does not exist.
             If umls_mrsty_file does not exist.
     """
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, clinical_file: str, ontology_dictionary: Dict, umls_mrconso_file: str = None,
                  umls_mrsty_file: str = None) -> None:
@@ -145,47 +141,33 @@ class ConceptAnnotator(object):
 
         return merged_dbxrefs.drop_duplicates()
 
-    @abstractmethod
-    def gets_clinical_domain(self) -> str:
-        """"A string representing the clinical domain."""
-
-        pass
-
-
-class Conditions(ConceptAnnotator):
-
-    def gets_clinical_domain(self) -> str:
-        """"A string representing the clinical domain."""
-
-        return 'Condition Occurrence'
-
-    def clinical_concept_mapper(self, primary_key: str, code_level: str):
-        """
-
-        Args:
-            primary_key:
-            code_level:
-
-        Returns:
-
-        """
-
-        # TODO: figure out how to do this for both concept and concept_ancestor, maybe this is done in main
-        # primary_key, code_level = 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE'
-
-        # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
-        if self.umls_cui_data and self.umls_tui_data:
-            umls_annotations = self.umls_cui_annotator(primary_key, code_level)
-            data_stacked = data_frame_subsetter(umls_annotations[[primary_key, code_level]], primary_key, [code_level])
-        else:
-            # prepare clinical data -- stack data
-            subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
-            data_stacked = data_frame_subsetter(self.clinical_data[[primary_key] + subset_cols],
-                                                primary_key, subset_cols)
-
-        # STEP 2 - DBXREF ANNOTATION
-        stacked_dbxref = self.dbxref_mapper(data_stacked)
-
-        # STEP 3 - EXACT STRING MAPPING
-
-        return None
+    # def clinical_concept_mapper(self, primary_key: str, code_level: str):
+    #     """
+    #
+    #     Args:
+    #         primary_key:
+    #         code_level:
+    #
+    #     Returns:
+    #
+    #     """
+    #
+    #     # TODO: figure out how to do this for both concept and concept_ancestor, maybe this is done in main
+    #     # primary_key, code_level = 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE'
+    #
+    #     # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
+    #     if self.umls_cui_data and self.umls_tui_data:
+    #         umls_annotations = self.umls_cui_annotator(primary_key, code_level)
+    #         data_stacked = data_frame_subsetter(umls_annotations[[primary_key, code_level]], primary_key, [code_level])
+    #     else:
+    #         # prepare clinical data -- stack data
+    #         subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
+    #         data_stacked = data_frame_subsetter(self.clinical_data[[primary_key] + subset_cols],
+    #                                             primary_key, subset_cols)
+    #
+    #     # STEP 2 - DBXREF ANNOTATION
+    #     stacked_dbxref = self.dbxref_mapper(data_stacked)
+    #
+    #     # STEP 3 - EXACT STRING MAPPING
+    #
+    #     return None
