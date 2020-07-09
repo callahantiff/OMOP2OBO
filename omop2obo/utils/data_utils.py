@@ -15,6 +15,7 @@ Downloads Data from a Url
 Pandas DataFrame manipulations
 * data_frame_subsetter
 * data_frame_supersetter
+* column_splitter
 
 Dictionary manipulations
 * merge_dictionaries
@@ -32,7 +33,9 @@ import shutil
 import urllib3  # type: ignore
 
 from contextlib import closing
+from functools import reduce
 from io import BytesIO
+from tqdm import tqdm
 from typing import Dict, List, Tuple  # type: ignore
 from urllib.request import urlopen
 from zipfile import ZipFile
@@ -314,6 +317,44 @@ def data_frame_supersetter(data: pd.DataFrame, index: str, columns: Tuple, value
     superset_data_frame.columns.name = None
 
     return superset_data_frame.drop_duplicates()
+
+
+def column_splitter(data: pd.DataFrame, delimited_columns: List, delimiter: str) -> pd.DataFrame:
+    """Takes a Pandas DataFrame and a string specifying a column in the DataFrame containing a delimiter and
+    expands the delimited string into separate rows. The expanded data is then merged with the original data.
+
+    Args:
+        data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method.
+        delimited_columns: A list of the column names which contain delimited data.
+        delimiter: A string specifying the delimiter type.
+
+    Returns:
+        merged_split_data: A Pandas DataFrame containing the expanded data.
+    """
+
+    delimited_data = []
+    key = [x for x in list(data.columns) if x not in delimited_columns][0]
+
+    for col in tqdm(delimited_columns):
+        subset_data = data[[key, col]]
+
+        # expand delimited column
+        split_data = subset_data[col].str.split(delimiter).apply(pd.Series, 1).stack()
+        split_data.index = split_data.index.droplevel(-1)
+        split_data.name = col
+
+        # drop original delimited column and merge expanded data
+        subset_data.drop(columns=[col], inplace=True)
+        merged_split_data = subset_data.join(split_data)
+
+        # clean up leading and trailing white space
+        merged_split_data[col] = merged_split_data[col].apply(lambda x: x.strip())
+        delimited_data.append(merged_split_data.drop_duplicates())
+
+    # merge delimited data
+    merged_delimited_data = reduce(lambda x, y: pd.merge(x, y, on=key), delimited_data)
+
+    return merged_delimited_data.drop_duplicates()
 
 
 def merge_dictionaries(dictionaries: Dict, key_type: str) -> Dict:
