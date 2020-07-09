@@ -132,7 +132,7 @@ class ConceptAnnotator(object):
 
     def umls_cui_annotator(self, primary_key: str, code_level: str) -> pd.DataFrame:
         """Method maps concepts in a clinical data file to UMLS concepts and semantic types from the umls_cui_data
-        and umls_tui_data Pandas Data Frames.
+        and umls_tui_data Pandas DataFrames.
 
         Args:
             primary_key: A string containing the name of the primary key (i.e. CONCEPT_ID).
@@ -140,7 +140,13 @@ class ConceptAnnotator(object):
 
         Returns:
            umls_cui_semtype: A Pandas DataFrame containing clinical concept ids and source codes as well as UMLS
-            CUIs, source codes, and semantic types.
+            CUIs, source codes, and semantic types. An example of the output data is shown below:
+
+                          CONCEPT_ID    CONCEPT_SOURCE_CODE     UMLS_CUI      UMLS_CODE           UMLS_SEM_TYPE
+                    0        4331309               22653005     C0729608       22653005     Disease or Syndrome
+                    1        4331309               22653005     C0729608       22653005     Disease or Syndrome
+                    2       37018594         80251000119104     C4075981 80251000119104                 Finding
+
         """
 
         # reduce data to only those columns needed for merging
@@ -160,11 +166,24 @@ class ConceptAnnotator(object):
         """Takes a stacked Pandas DataFrame and merges it with a Pandas DataFrame version of the
         ontology_dictionary_object.
 
+            INPUT (ignore all columns starting with "UMLS" if UMLS data is not provided):
+                      CONCEPT_ID            CODE          CODE_COLUMN
+                0        4331309        22653005  CONCEPT_SOURCE_CODE
+                1       37018594  80251000119104  CONCEPT_SOURCE_CODE
+                2         442264        68172002  CONCEPT_SOURCE_CODE
+
+            OUTPUT:
+                    CONCEPT_ID      CODE          CODE_COLUMN           DBXREF    ONT   ONT_URI          EVIDENCE
+                0       442264  68172002  CONCEPT_SOURCE_CODE   SCTID:68172002  MONDO       URL      DbXRef_SCTID
+                1       442264  68172002            UMLS_CODE   SCTID:68172002  MONDO       URL      DbXRef_SCTID
+                2      4029098 237913008  CONCEPT_SOURCE_CODE  SCTID:237913008  MONDO       URL      DbXRef_SCTID
         Args:
-            data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method.
+            data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method (see INPUT above
+                for an example).
 
         Returns:
-            merged_dbxrefs: A stacked
+            merged_dbxrefs: A stacked Pandas DataFrame containing the results from merging the ontology dbxrefs (see
+                OUTPUT above for an example).
         """
 
         # prepare ontology data
@@ -179,9 +198,49 @@ class ConceptAnnotator(object):
 
         return merged_dbxrefs.drop_duplicates()
 
-    # def concept_string_match(self, data: pd.DataFrame, string_columns: str) -> pd.DataFrame:
+    def exact_string_mapper(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Takes a stacked Pandas DataFrame and merges it with a Pandas DataFrame version of the ontology-dictionary
+        object 'label' and'synonym' data.
 
-    # def clinical_concept_mapper(self, primary_key: str, code_level: str):
+            INPUT:
+                    CONCEPT_ID                         CONCEPT_LABEL                                 CONCEPT_SYNONYM
+                0      4331309   Myocarditis due to infectious agent              Myocarditis due to infectious agent
+                1      4331309   Myocarditis due to infectious agent                            Infective myocarditis
+                2      4331309   Myocarditis due to infectious agent   Myocarditis due to infectious agent (disorder)
+
+            OUTPUT:
+                      CONCEPT_ID                  CODE     CODE_COLUMN   ONT_URI     ONT             EVIDENCE
+                0        4141365  engraftment syndrome   CONCEPT_LABEL       URL   MONDO     LABEL_CONCEPT_ID
+                1        4141365  engraftment syndrome  CONCEPT_SYNONYM      URL   MONDO     LABEL_CONCEPT_ID
+                2         133835                eczema    CONCEPT_LABEL      URL      HP     LABEL_CONCEPT_ID
+        Args:
+            data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method (see INPUT above
+                for an example).
+
+        Returns:
+            merged_strings: A Pandas DataFrame containing the results from string matching the ontology strings to
+                the clinical strings (see OUTPUT above for an example).
+        """
+
+        # prepare clinical data
+        data['CODE'] = data['CODE'].apply(lambda x: x.lower())
+
+        # prepare ontology data
+        ont_dfs = []
+        for str_col in ['label', 'synonyms']:
+            combined_dicts_label = merge_dictionaries(self.ontology_dictionary, str_col)
+            combo_dict_df_label = pd.DataFrame(combined_dicts_label.items(), columns=['CODE', 'ONT_URI'])
+
+            # merge data and ontologies
+            str_data = data.merge(combo_dict_df_label, how='inner', on='CODE').drop_duplicates()
+            str_data['ONT'] = str_data['ONT_URI'].apply(lambda x: x.split('/')[-1].split('_')[0].upper())
+            str_data['EVIDENCE'] = str_data['CODE'].apply(lambda x: str_col.upper() + '_' + self.primary_key)
+
+            ont_dfs.append(str_data)
+
+        return pd.concat(ont_dfs).drop_duplicates()
+
+    # def clinical_concept_mapper(self) -> pd.DataFrame:
     #     """
     #
     #     Args:
@@ -192,7 +251,6 @@ class ConceptAnnotator(object):
     #
     #     """
     #
-    #     # TODO: figure out how to do this for both concept and concept_ancestor, maybe this is done in main
     #     if self.ancestor_codes is not None:
     #         mapping_levels = {'concepts': {'codes': self.concept_codes, 'strings': self.concept_strings},
     #                           'ancestors': {'codes': self.ancestor_codes, 'strings': self.ancestor_strings}}
@@ -201,10 +259,8 @@ class ConceptAnnotator(object):
     #
     #     for concept_key in mapping_levels.keys():
     #         print('\n\n #### ANNOTATING {}.upper()'.format(concept_key))
-    #
     #         primary_key = self.primary_key
-    #         code_level = mapping_levels[concept_key]['codes'][0]
-    #         code_strings = mapping_levels[concept_key]['strings']
+    #         code_level, code_strings = mapping_levels[concept_key]['codes'][0], mapping_levels[concept_key]['strings']
     #
     #         # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
     #         print('\n*** STEP 1: Performing UMLS CUI + Semantic Type Annotation ***')
@@ -226,13 +282,16 @@ class ConceptAnnotator(object):
     #         clinical_strings = self.clinical_data.copy()
     #         clinical_strings = clinical_strings[[primary_key] + code_strings]
     #
-    #         # unstack "|" delimited data
-    #         string_columns = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
-    #         split_strings = column_splitter(clinical_strings, string_columns, '|')
+    #         # unlist "|" delimited data and stack string columns
+    #         split_strings = column_splitter(clinical_strings, code_strings, '|')[[primary_key] + code_strings]
+    #         split_strings_stacked = data_frame_subsetter(split_strings, primary_key, code_strings)
     #
     #         # find exact string matches
+    #         stacked_strings = self.exact_string_mapper(split_strings_stacked)
     #
-    #         # aggregate umls, dbxref, string mapping
+    #         # STEP 4 - COMBINE RESULTS
+    #
+    #         # add evidence for not mapped types
     #
     #         # add concepts to concept list
     #
