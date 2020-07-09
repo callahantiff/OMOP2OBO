@@ -6,10 +6,11 @@
 import os
 import pandas as pd  # type: ignore
 
+from functools import reduce
 from pandas import errors
 from typing import Dict, List, Optional
 
-from omop2obo.utils import column_splitter, data_frame_subsetter, data_frame_supersetter, merge_dictionaries
+from omop2obo.utils import aggregates_column_values, column_splitter, data_frame_subsetter, merge_dictionaries
 
 
 class ConceptAnnotator(object):
@@ -194,7 +195,8 @@ class ConceptAnnotator(object):
         # merge clinical data and combined ontology dict
         merged_dbxrefs = data.merge(combo_dict_df, how='inner', on='CODE').drop_duplicates()
         merged_dbxrefs['ONT'] = merged_dbxrefs['ONT_URI'].apply(lambda x: x.split('/')[-1].split('_')[0].upper())
-        merged_dbxrefs['EVIDENCE'] = merged_dbxrefs['DBXREF'].apply(lambda x: 'DbXRef_' + x.split(':')[0])
+        merged_dbxrefs['ONT_URI'] = merged_dbxrefs['ONT_URI'].apply(lambda x: x.split('/')[-1])
+        merged_dbxrefs['DBXREF_EVIDENCE'] = merged_dbxrefs['DBXREF'].apply(lambda x: 'DbXRef_' + x.split(':')[0])
 
         return merged_dbxrefs.drop_duplicates()
 
@@ -234,18 +236,23 @@ class ConceptAnnotator(object):
             # merge data and ontologies
             str_data = data.merge(combo_dict_df_label, how='inner', on='CODE').drop_duplicates()
             str_data['ONT'] = str_data['ONT_URI'].apply(lambda x: x.split('/')[-1].split('_')[0].upper())
-            str_data['EVIDENCE'] = str_data['CODE'].apply(lambda x: str_col.upper() + '_' + self.primary_key)
+            str_data['ONT_URI'] = str_data['ONT_URI'].apply(lambda x: x.split('/')[-1])
+            str_data['STR_EVIDENCE'] = str_data['CODE'].apply(lambda x: str_col.upper() + '_' + self.primary_key)
 
             ont_dfs.append(str_data)
 
         return pd.concat(ont_dfs).drop_duplicates()
 
     # def clinical_concept_mapper(self) -> pd.DataFrame:
-    #     """
-    #
-    #     Args:
-    #         primary_key:
-    #         code_level:
+    #     """This method serves as the main method for this class. it's purpose is to iterate over all relevant data in
+    #     an input clinical data file and generate several different kinds of mappings to a ontologies provided in an
+    #     input dictionary. The script annotates the data on two levels: concepts and concept ancestors. For both
+    #     levels, the following steps are completed to derive concept annotations:
+    #         1 - UMLS CUIS and semantics types to concept ids
+    #         2 - Ontology dbXRefs between concept ids and ontology ids
+    #         3 - Exact string matching concept labels and synonyms to ontology labels and synonyms
+    #         4 - Aggregating the results from steps 1-3 into a single Pandas DataFrame
+    #         5 - Combine results from each level into single Pandas DataFrame
     #
     #     Returns:
     #
@@ -257,6 +264,8 @@ class ConceptAnnotator(object):
     #     else:
     #         mapping_levels = {'concepts': {'codes': self.concept_codes, 'strings': self.concept_strings}}
     #
+    #     data = self.clinical_data.copy()
+    #
     #     for concept_key in mapping_levels.keys():
     #         print('\n\n #### ANNOTATING {}.upper()'.format(concept_key))
     #         primary_key = self.primary_key
@@ -265,12 +274,11 @@ class ConceptAnnotator(object):
     #         # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
     #         print('\n*** STEP 1: Performing UMLS CUI + Semantic Type Annotation ***')
     #         if self.umls_cui_data and self.umls_tui_data:
-    #             umls_annotations = self.umls_cui_annotator(primary_key, code_level)
-    #             subset = [code_level, 'UMLS_CODE', 'UMLS_CUI']
-    #             data_stacked = data_frame_subsetter(umls_annotations[[primary_key] + subset], primary_key, subset)
+    #             umls_map, sub = self.umls_cui_annotator(primary_key, code_level), [code_level, 'UMLS_CODE', 'UMLS_CUI']
+    #             data_stacked = data_frame_subsetter(umls_map[[primary_key] + sub], primary_key, sub)
     #         else:
     #             print('Did not provide MRCONSO and MRSTY Files -- Skipping UMLS Annotation Step')
-    #             clinical_subset = self.clinical_data[[primary_key, code_level]]
+    #             umls_map, clinical_subset = None, self.clinical_data[[primary_key, code_level]]
     #             data_stacked = data_frame_subsetter(clinical_subset, primary_key, [code_level])
     #
     #         # STEP 2 - DBXREF ANNOTATION
@@ -279,22 +287,39 @@ class ConceptAnnotator(object):
     #
     #         # STEP 3 - EXACT STRING MAPPING
     #         print('\n*** STEP 3: Performing Exact String Mapping ***')
-    #         clinical_strings = self.clinical_data.copy()
-    #         clinical_strings = clinical_strings[[primary_key] + code_strings]
-    #
-    #         # unlist "|" delimited data and stack string columns
+    #         clinical_strings = data[[primary_key] + code_strings]
     #         split_strings = column_splitter(clinical_strings, code_strings, '|')[[primary_key] + code_strings]
     #         split_strings_stacked = data_frame_subsetter(split_strings, primary_key, code_strings)
-    #
-    #         # find exact string matches
     #         stacked_strings = self.exact_string_mapper(split_strings_stacked)
     #
     #         # STEP 4 - COMBINE RESULTS
+    #         print('\n*** STEP 4: Aggregating Mapping Results ***')
+    #         # dbXRef annotations
+    #         agg_cols = ['DBXREF', 'ONT', 'ONT_URI', 'EVIDENCE']
+    #         dbxrefs = aggregates_column_values(stacked_dbxref.copy(), primary_key, agg_cols, ' | ')
+    #
+    #         # exact string annotations
+    #         agg_cols = ['CODE', 'ONT', 'ONT_URI', 'EVIDENCE']
+    #         str_matches = aggregates_column_values(stacked_strings.copy(), primary_key, agg_cols, ' | ')
+    #
+    #         # umls annotations
+    #         if umls_map is not None:
+    #             umls, agg_cols = umls_map[[primary_key, 'UMLS_CUI', 'UMLS_SEM_TYPE']], ['UMLS_CUI', 'UMLS_SEM_TYPE']
+    #             umls = aggregates_column_values(umls.copy(), primary_key, agg_cols, ' | ')
+    #         else:
+    #             umls = pd.DataFrame()
+    #
+    #         # combine all data
+    #         combo_map = reduce(lambda x, y: pd.merge(x, y, how='outer', on=primary_key), [dbxrefs, str_matches, umls])
     #
     #         # add evidence for not mapped types
     #
     #         # add concepts to concept list
     #
     #     # combine concept and ancestor-level results
+    #     # add both to original results
+    #     # self.clinical_data
+    #
+    #     # re-order columns
     #
     #     return None
