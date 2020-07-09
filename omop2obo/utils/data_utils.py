@@ -16,6 +16,7 @@ Pandas DataFrame manipulations
 * data_frame_subsetter
 * data_frame_supersetter
 * column_splitter
+* aggregates_column_values
 
 Dictionary manipulations
 * merge_dictionaries
@@ -35,7 +36,7 @@ import urllib3  # type: ignore
 from contextlib import closing
 from functools import reduce
 from io import BytesIO
-from typing import Dict, List, Tuple  # type: ignore
+from typing import Dict, List  # type: ignore
 from urllib.request import urlopen
 from zipfile import ZipFile
 
@@ -282,13 +283,13 @@ def data_frame_subsetter(data: pd.DataFrame, primary_key: str, subset_columns: L
     return subset_data.drop_duplicates()
 
 
-def data_frame_supersetter(data: pd.DataFrame, index: str, columns: Tuple, values: Tuple) -> pd.DataFrame:
+def data_frame_supersetter(data: pd.DataFrame, index: str, columns: str, values: str) -> pd.DataFrame:
     """Takes a stacked Pandas DataFrame and unstacks it according to row values specified in the index column.
     This is equivalent to converting a DataFrame in long format to wide format. An example of the input and
     generated output is shown below.
 
         INPUT:
-              CONCEPT_ID                CODE          CODE_COLUMN       ONTOLOGY_ID     ONTOLOGY        EVIDENCE
+              CONCEPT_ID                CODE          CODE_COLUMN
             0    4331309            22653005  CONCEPT_SOURCE_CODE
             1    4331309            C0729608             UMLS_CUI
             2   37018594            22653005            UMLS_CODE
@@ -355,6 +356,32 @@ def column_splitter(data: pd.DataFrame, delimited_columns: List, delimiter: str)
     merged_delimited_data = reduce(lambda x, y: pd.merge(x, y, on=key), delimited_data)
 
     return merged_delimited_data.drop_duplicates()
+
+
+def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: List, delimiter: str) -> pd.DataFrame:
+    """Takes a Pandas DataFrame, a string containing a primary key, a list of columns to aggregate, and a string
+    delimiter to use when aggregating the columns. The method then loops over each column in agg_cols and performs
+    the aggregation. The method joins all aggregated columns and merges it into a single Pandas DataFrame.
+
+    Args:
+        data: A Pandas DataFrame.
+        primary_key: A string containing a column name to be used as a primary key.
+        agg_cols: A list of columns to aggregate.
+        delimiter: A string containing a delimiter to aggregate results by.
+
+    Returns:
+        merged_combo: A Pandas DataFrame that includes the primary_key column and one
+            delimiter-aggregated column for each column in the agg_cols list.
+    """
+
+    # create list of aggregated groupby DataFrames
+    combo = [data.groupby([primary_key])[col].apply(lambda x: delimiter.join(list(set(x)))) for col in agg_cols]
+
+    # merge data frames by primary key and reset index
+    merged_combo = reduce(lambda x, y: pd.merge(x, y, on=primary_key), combo)
+    merged_combo.reset_index(level=0, inplace=True)
+
+    return merged_combo
 
 
 def merge_dictionaries(dictionaries: Dict, key_type: str) -> Dict:
