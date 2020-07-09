@@ -7,7 +7,7 @@ import pickle
 from unittest import TestCase
 
 from omop2obo.clinical_concept_annotator import ConceptAnnotator
-from omop2obo.utils import data_frame_subsetter
+from omop2obo.utils import column_splitter, data_frame_subsetter
 
 
 class TestConceptAnnotator(TestCase):
@@ -219,10 +219,30 @@ class TestConceptAnnotator(TestCase):
 
         # get dbxrefs
         stacked_dbxref = self.annotator.dbxref_mapper(umls_stack)
-        print(stacked_dbxref)
         self.assertTrue(len(stacked_dbxref) == 4)
         self.assertTrue(len(stacked_dbxref.columns) == 7)
         self.assertEqual(list(stacked_dbxref.columns),
                          ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'DBXREF', 'ONT_URI', 'ONT', 'EVIDENCE'])
+
+        return None
+
+    def test_exact_string_mapper(self):
+        """Tests the exact_string_mapper method."""
+
+        # prepare input data
+        primary_key, code_strings = 'CONCEPT_ID', ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+        clinical_strings = self.annotator.clinical_data.copy()
+        clinical_strings = clinical_strings[[primary_key] + code_strings]
+
+        # unlist "|" delimited data and stack string columns
+        split_strings = column_splitter(clinical_strings, code_strings, '|')[[primary_key] + code_strings]
+        split_strings_stacked = data_frame_subsetter(split_strings, primary_key, code_strings)
+
+        # test method
+        stacked_strings = self.annotator.exact_string_mapper(split_strings_stacked)
+        self.assertTrue(len(stacked_strings) == 4)
+        self.assertTrue(len(stacked_strings.columns) == 6)
+        self.assertEqual(list(stacked_strings.columns),
+                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'ONT_URI', 'ONT', 'EVIDENCE'])
 
         return None
