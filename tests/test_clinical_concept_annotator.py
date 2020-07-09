@@ -222,7 +222,7 @@ class TestConceptAnnotator(TestCase):
         self.assertTrue(len(stacked_dbxref) == 4)
         self.assertTrue(len(stacked_dbxref.columns) == 7)
         self.assertEqual(list(stacked_dbxref.columns),
-                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'DBXREF', 'ONT_URI', 'ONT', 'EVIDENCE'])
+                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'DBXREF', 'ONT_URI', 'ONT', 'DBXREF_EVIDENCE'])
 
         return None
 
@@ -243,6 +243,6 @@ class TestConceptAnnotator(TestCase):
         self.assertTrue(len(stacked_strings) == 4)
         self.assertTrue(len(stacked_strings.columns) == 6)
         self.assertEqual(list(stacked_strings.columns),
-                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'ONT_URI', 'ONT', 'EVIDENCE'])
+                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'ONT_URI', 'ONT', 'STR_EVIDENCE'])
 
         return None
