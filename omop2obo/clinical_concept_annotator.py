@@ -66,36 +66,34 @@ class ConceptAnnotator(object):
             except pd.errors.ParserError:
                 self.clinical_data = pd.read_csv(clinical_file, header=0, sep='\t', low_memory=False).astype(str)
 
-            # TODO - finish this and add the needed tests
-            # check primary key
-            if not isinstance(primary_key, str): raise TypeError('primary_key must be type str.')
-            else: self.primary_key: str = primary_key
+        # check primary key
+        if not isinstance(primary_key, str): raise TypeError('primary_key must be type str.')
+        else: self.primary_key: str = primary_key
 
-            # check for concept-level information
-            if not isinstance(concept_codes, List): raise TypeError('concept_codes must be type list.')
-            else: self.concept_codes: List = concept_codes
+        # check for concept-level information
+        if not isinstance(concept_codes, List): raise TypeError('concept_codes must be type list.')
+        else: self.concept_codes: List = concept_codes
 
-            # check concept-level string input (optional)
-            if not concept_strings:
-                self.concept_strings: Optional[List] = concept_strings
-            else:
-                if not isinstance(concept_strings, List): raise TypeError('concept_strings must be type list.')
-                else: self.concept_strings = concept_strings
+        # check concept-level string input (optional)
+        if not concept_strings:
+            self.concept_strings: Optional[List] = concept_strings
+        else:
+            if not isinstance(concept_strings, List): raise TypeError('concept_strings must be type list.')
+            else: self.concept_strings = concept_strings
 
-            # check for ancestor-level information
-            # check ancestor-level codes input (optional)
-            if not ancestor_codes:
-                self.ancestor_codes: Optional[List] = ancestor_codes
-            else:
-                if not isinstance(ancestor_codes, List): raise TypeError('ancestor_codes must be type list.')
-                else: self.ancestor_codes = ancestor_codes
+        # check ancestor-level codes input (optional)
+        if not ancestor_codes:
+            self.ancestor_codes: Optional[List] = ancestor_codes
+        else:
+            if not isinstance(ancestor_codes, List): raise TypeError('ancestor_codes must be type list.')
+            else: self.ancestor_codes = ancestor_codes
 
-            # check ancestor-level strings input (optional)
-            if not ancestor_strings:
-                self.ancestor_strings = ancestor_strings
-            else:
-                if not isinstance(ancestor_strings, List): raise TypeError('ancestor_strings must be type list.')
-                else: self.ancestor_strings = ancestor_strings
+        # check ancestor-level strings input (optional)
+        if not ancestor_strings:
+            self.ancestor_strings = ancestor_strings
+        else:
+            if not isinstance(ancestor_strings, List): raise TypeError('ancestor_strings must be type list.')
+            else: self.ancestor_strings = ancestor_strings
 
         # check ontology_dictionary
         if not isinstance(ontology_dictionary, Dict): raise TypeError('ontology_dictionary must be type dict.')
