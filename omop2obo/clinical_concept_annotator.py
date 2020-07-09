@@ -193,30 +193,49 @@ class ConceptAnnotator(object):
     #     """
     #
     #     # TODO: figure out how to do this for both concept and concept_ancestor, maybe this is done in main
-    #     # primary_key, code_level = 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE'
-    #
-    #     # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
-    #     if self.umls_cui_data and self.umls_tui_data:
-    #         umls_annotations = self.umls_cui_annotator(primary_key, code_level)
-    #         data_stacked = data_frame_subsetter(umls_annotations[[primary_key, code_level]], primary_key, [code_level])
+    #     if self.ancestor_codes is not None:
+    #         mapping_levels = {'concepts': {'codes': self.concept_codes, 'strings': self.concept_strings},
+    #                           'ancestors': {'codes': self.ancestor_codes, 'strings': self.ancestor_strings}}
     #     else:
-    #         # prepare clinical data -- stack data
-    #         subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
-    #         data_stacked = data_frame_subsetter(self.clinical_data[[primary_key] + subset_cols],
-    #                                             primary_key, subset_cols)
+    #         mapping_levels = {'concepts': {'codes': self.concept_codes, 'strings': self.concept_strings}}
     #
-    #     # STEP 2 - DBXREF ANNOTATION
-    #     stacked_dbxref = self.dbxref_mapper(data_stacked)
+    #     for concept_key in mapping_levels.keys():
+    #         print('\n\n #### ANNOTATING {}.upper()'.format(concept_key))
     #
-    #     # STEP 3 - EXACT STRING MAPPING
-    #     # start from clinical data
-    #     clinical_strings = self.clinical_data.copy()
-    #     clinical_strings = clinical_strings[['CONCEPT_ID', 'CONCEPT_LABEL', 'CONCEPT_SYNONYM']]
+    #         primary_key = self.primary_key
+    #         code_level = mapping_levels[concept_key]['codes'][0]
+    #         code_strings = mapping_levels[concept_key]['strings']
     #
-    #     # unstack "|" delimited data
-    #     string_columns = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
-    #     split_strings = column_splitter(clinical_strings, string_columns, '|')
+    #         # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
+    #         print('\n*** STEP 1: Performing UMLS CUI + Semantic Type Annotation ***')
+    #         if self.umls_cui_data and self.umls_tui_data:
+    #             umls_annotations = self.umls_cui_annotator(primary_key, code_level)
+    #             subset = [code_level, 'UMLS_CODE', 'UMLS_CUI']
+    #             data_stacked = data_frame_subsetter(umls_annotations[[primary_key] + subset], primary_key, subset)
+    #         else:
+    #             print('Did not provide MRCONSO and MRSTY Files -- Skipping UMLS Annotation Step')
+    #             clinical_subset = self.clinical_data[[primary_key, code_level]]
+    #             data_stacked = data_frame_subsetter(clinical_subset, primary_key, [code_level])
     #
-    #     # find exact string matches
+    #         # STEP 2 - DBXREF ANNOTATION
+    #         print('\n*** STEP 2: Performing DbXRef Annotation ***')
+    #         stacked_dbxref = self.dbxref_mapper(data_stacked)
+    #
+    #         # STEP 3 - EXACT STRING MAPPING
+    #         print('\n*** STEP 3: Performing Exact String Mapping ***')
+    #         clinical_strings = self.clinical_data.copy()
+    #         clinical_strings = clinical_strings[[primary_key] + code_strings]
+    #
+    #         # unstack "|" delimited data
+    #         string_columns = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+    #         split_strings = column_splitter(clinical_strings, string_columns, '|')
+    #
+    #         # find exact string matches
+    #
+    #         # aggregate umls, dbxref, string mapping
+    #
+    #         # add concepts to concept list
+    #
+    #     # combine concept and ancestor-level results
     #
     #     return None
