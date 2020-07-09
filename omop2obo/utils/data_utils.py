@@ -35,7 +35,6 @@ import urllib3  # type: ignore
 from contextlib import closing
 from functools import reduce
 from io import BytesIO
-from tqdm import tqdm
 from typing import Dict, List, Tuple  # type: ignore
 from urllib.request import urlopen
 from zipfile import ZipFile
@@ -320,8 +319,9 @@ def data_frame_supersetter(data: pd.DataFrame, index: str, columns: Tuple, value
 
 
 def column_splitter(data: pd.DataFrame, delimited_columns: List, delimiter: str) -> pd.DataFrame:
-    """Takes a Pandas DataFrame and a string specifying a column in the DataFrame containing a delimiter and
-    expands the delimited string into separate rows. The expanded data is then merged with the original data.
+    """Takes a Pandas DataFrame and a list of strings specifying columns in the DataFrame that may contain a delimiter
+    and expands the delimited strings within each column into separate rows. The expanded data are then merged with the
+    original data.
 
     Args:
         data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method.
@@ -335,7 +335,7 @@ def column_splitter(data: pd.DataFrame, delimited_columns: List, delimiter: str)
     delimited_data = []
     key = [x for x in list(data.columns) if x not in delimited_columns][0]
 
-    for col in tqdm(delimited_columns):
+    for col in delimited_columns:
         subset_data = data[[key, col]]
 
         # expand delimited column
