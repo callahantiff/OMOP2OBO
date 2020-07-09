@@ -266,7 +266,7 @@ class TestDataUtils(unittest.TestCase):
         """Tests the data_frame_supersetter method."""
 
         # run method and test output
-        subset_data = data_frame_supersetter(self.subset_clin_data, 'CONCEPT_ID', ('CODE_COLUMN'), ('CODE'))
+        subset_data = data_frame_supersetter(self.subset_clin_data, 'CONCEPT_ID', 'CODE_COLUMN', 'CODE')
 
         self.assertIsInstance(subset_data, pd.DataFrame)
         self.assertTrue(len(subset_data) == 3)
@@ -285,6 +285,19 @@ class TestDataUtils(unittest.TestCase):
         self.assertIsInstance(split_data, pd.DataFrame)
         self.assertTrue(len(split_data) == 13)
         self.assertEqual(list(split_data.columns), ['CONCEPT_ID', 'CONCEPT_LABEL', 'CONCEPT_SYNONYM'])
+
+        return None
+
+    def test_aggregates_column_values(self):
+        """Tests the aggregates_column_values method."""
+
+        # set-up input parameters
+        agg_data = aggregates_column_values(self.subset_clin_data, 'CONCEPT_ID', ['CODE', 'CODE_COLUMN'], '|')
+
+        # test method and output
+        self.assertIsInstance(agg_data, pd.DataFrame)
+        self.assertTrue(len(agg_data) == 3)
+        self.assertEqual(list(agg_data.columns), ['CONCEPT_ID', 'CODE', 'CODE_COLUMN'])
 
         return None
 
