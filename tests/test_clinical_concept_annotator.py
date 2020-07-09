@@ -34,8 +34,17 @@ class TestConceptAnnotator(TestCase):
         self.umls_cui = self.mapping_directory + '/MRCONSO_FAKE.RRF'
         self.umls_tui = self.mapping_directory + '/MRSTY_FAKE.RRF'
 
+        # add clinical_data file input parameters
+        self.primary_key = 'CONCEPT_ID'
+        self.concept_codes = ['CONCEPT_SOURCE_CODE']
+        self.concept_strings = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+        self.ancestor_codes = ['ANCESTOR_SOURCE_CODE']
+        self.ancestor_strings = ['ANCESTOR_LABEL']
+
         # initialize the class
-        self.annotator = ConceptAnnotator(self.clinical_file, self.ont_dict, self.umls_cui, self.umls_tui)
+        self.annotator = ConceptAnnotator(self.clinical_file, self.ont_dict, self.primary_key, self.concept_codes,
+                                          self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                                          self.umls_cui, self.umls_tui)
 
         return None
 
@@ -44,15 +53,21 @@ class TestConceptAnnotator(TestCase):
 
         # test if file is not type string
         clinical_file_type = 1234
-        self.assertRaises(TypeError, ConceptAnnotator, clinical_file_type, self.ont_dict, self.umls_cui, self.umls_tui)
+        self.assertRaises(TypeError, ConceptAnnotator, clinical_file_type, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          self.umls_cui, self.umls_tui)
 
         # test if file exists
         clinical_file_exists = self.clinical_directory + '/sample_omop_condition_occurrence.csv'
-        self.assertRaises(OSError, ConceptAnnotator, clinical_file_exists, self.ont_dict, self.umls_cui, self.umls_tui)
+        self.assertRaises(OSError, ConceptAnnotator, clinical_file_exists, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          self.umls_cui, self.umls_tui)
 
         # test if file is empty
         clinical_file_empty = self.clinical_directory + '/sample_omop_condition_occurrence_data_empty.csv'
-        self.assertRaises(TypeError, ConceptAnnotator, clinical_file_empty, self.ont_dict, self.umls_cui, self.umls_tui)
+        self.assertRaises(TypeError, ConceptAnnotator, clinical_file_empty, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          self.umls_cui, self.umls_tui)
 
         return None
 
@@ -60,7 +75,77 @@ class TestConceptAnnotator(TestCase):
         """Test class initialization for ontologies dictionary input argument."""
 
         # check if ontology_dict is not type dict
-        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, 12, self.umls_cui, self.umls_tui)
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, 12, self.primary_key, self.concept_codes,
+                          self.concept_strings, self.ancestor_codes, self.ancestor_strings, self.umls_cui,
+                          self.umls_tui)
+
+        return None
+
+    def test_initialization_primary_key(self):
+        """Test the primary_key input parameter."""
+
+        # check if primary_key is not a string
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, 123456, self.concept_codes,
+                          self.concept_strings, self.ancestor_codes, self.ancestor_strings, self.umls_cui,
+                          self.umls_tui)
+
+        return None
+
+    def test_initialization_concept_codes(self):
+        """Test the concept_codes input parameter."""
+
+        # check if clinical_codes are a list
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key, 'codes',
+                          self.concept_strings, self.ancestor_codes, self.ancestor_strings, self.umls_cui,
+                          self.umls_tui)
+
+        return None
+
+    def test_initialization_concept_strings(self):
+        """Test the concept_string input parameter."""
+
+        # check if clinical_strings are a list
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, 'labels', self.ancestor_codes, self.ancestor_strings, self.umls_cui,
+                          self.umls_tui)
+
+        # check if clinical_strings are none
+        annotator = ConceptAnnotator(self.clinical_file, self.ont_dict, self.primary_key, self.concept_codes,
+                                     None, self.ancestor_codes, self.ancestor_strings, self.umls_cui, self.umls_tui)
+
+        self.assertEqual(annotator.concept_strings, None)
+
+        return None
+
+    def test_initialization_ancestor_codes(self):
+        """Test the concept_codes input parameter."""
+
+        # check if ancestor_codes are a list
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, 'codes', self.ancestor_strings, self.umls_cui,
+                          self.umls_tui)
+
+        # check if ancestor_codes are none
+        annotator = ConceptAnnotator(self.clinical_file, self.ont_dict, self.primary_key, self.concept_codes,
+                                     self.concept_strings, None, self.ancestor_strings, self.umls_cui, self.umls_tui)
+
+        self.assertEqual(annotator.ancestor_codes, None)
+
+        return None
+
+    def test_initialization_ancestor_strings(self):
+        """Test the ancestor_string input parameter."""
+
+        # check if ancestor_strings are a list
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, 'labels', self.ancestor_strings, self.umls_cui,
+                          self.umls_tui)
+
+        # check if ancestor_strings are none
+        annotator = ConceptAnnotator(self.clinical_file, self.ont_dict, self.primary_key, self.concept_codes,
+                                     self.concept_strings, self.ancestor_codes, None, self.umls_cui, self.umls_tui)
+
+        self.assertEqual(annotator.ancestor_strings, None)
 
         return None
 
@@ -69,15 +154,21 @@ class TestConceptAnnotator(TestCase):
 
         # test if file is not type string
         mrconso_type = 1234
-        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, mrconso_type, self.umls_tui)
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          mrconso_type, self.umls_tui)
 
         # test if file exists
         mrconso_exists = self.mapping_directory + '/MRCONSO.RRF'
-        self.assertRaises(OSError, ConceptAnnotator, self.clinical_file, self.ont_dict, mrconso_exists, self.umls_tui)
+        self.assertRaises(OSError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          mrconso_exists, self.umls_tui)
 
         # test if file is empty
         mrconso_empty = self.mapping_directory + '/MRCONSO_EMPTY.RRF'
-        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, mrconso_empty, self.umls_tui)
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes,  self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          mrconso_empty, self.umls_tui)
 
         return None
 
@@ -86,15 +177,21 @@ class TestConceptAnnotator(TestCase):
 
         # test if file is not type string
         mrsty_type = 1234
-        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.umls_cui, mrsty_type)
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          self.umls_cui, mrsty_type)
 
         # test if file exists
         mrsty_exists = self.mapping_directory + '/MRSTY.RRF'
-        self.assertRaises(OSError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.umls_cui, mrsty_exists)
+        self.assertRaises(OSError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          self.umls_cui, mrsty_exists)
 
         # test if file is empty
         mrsty_empty = self.mapping_directory + '/MRSTY_EMPTY.RRF'
-        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.umls_cui, mrsty_empty)
+        self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes,
+                          self.ancestor_strings, self.umls_cui, mrsty_empty)
 
         return None
 
@@ -122,9 +219,10 @@ class TestConceptAnnotator(TestCase):
 
         # get dbxrefs
         stacked_dbxref = self.annotator.dbxref_mapper(umls_stack)
+        print(stacked_dbxref)
         self.assertTrue(len(stacked_dbxref) == 4)
-        self.assertTrue(len(stacked_dbxref.columns) == 6)
+        self.assertTrue(len(stacked_dbxref.columns) == 7)
         self.assertEqual(list(stacked_dbxref.columns),
-                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'dbxref', 'Ontology_URI', 'EVIDENCE'])
+                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'DBXREF', 'ONT_URI', 'ONT', 'EVIDENCE'])
 
         return None
