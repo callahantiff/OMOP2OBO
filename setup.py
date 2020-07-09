@@ -63,7 +63,6 @@ setup(
     # Add here the package dependencies
     install_requires=[
         'click',
-        'functools',
         'google-api-core==1.17.0',
         'google-auth==1.14.1',
         'google-auth-oauthlib==0.4.1',
