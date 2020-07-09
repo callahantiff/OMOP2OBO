@@ -9,7 +9,7 @@ import pandas as pd  # type: ignore
 from pandas import errors
 from typing import Dict, List, Optional
 
-from omop2obo.utils import data_frame_subsetter, data_frame_supersetter, merge_dictionaries
+from omop2obo.utils import column_splitter, data_frame_subsetter, data_frame_supersetter, merge_dictionaries
 
 
 class ConceptAnnotator(object):
@@ -26,6 +26,11 @@ class ConceptAnnotator(object):
             (e.g. "hp", "mondo"), inner keys are data types (e.g. "label", "definition", "dbxref", and "synonyms").
             For each inner key, there is a third dictionary keyed by a string of that item type and with values that
             are the ontology URI for that string type.
+        primary_key: A string containing the column name of the primary key.
+        concept_codes: A list of column names containing concept-level codes (optional).
+        concept_strings: A list of column names containing concept-level labels and synonyms (optional).
+        ancestor_codes: A list of column names containing ancestor concept-level codes (optional).
+        ancestor_strings: A list of column names containing ancestor concept-level labels and synonyms (optional).
         umls_cui_data: A Pandas DataFrame containing UMLS CUI data from MRCONSO.RRF.
         umls_tui_data: A Pandas DataFrame containing UMLS CUI data from MRSTY.RRF.
 
@@ -35,14 +40,17 @@ class ConceptAnnotator(object):
             If ontology_dictionary is not type dict.
             If umls_mrconso_file is not type str or if umls_mrconso_file is empty.
             If umls_mrsty_file is not type str or if umls_mrsty_file is empty.
+            if primary_key is not type str.
+            if concept_codes, concept_strings, ancestor_codes, and ancestor_strings (if provided) are not type list.
         OSError:
             If the clinical_file does not exist.
             If umls_mrconso_file does not exist.
             If umls_mrsty_file does not exist.
     """
 
-    def __init__(self, clinical_file: str, ontology_dictionary: Dict, umls_mrconso_file: str = None,
-                 umls_mrsty_file: str = None) -> None:
+    def __init__(self, clinical_file: str, ontology_dictionary: Dict, primary_key: str, concept_codes: List,
+                 concept_strings: List = None, ancestor_codes: List = None, ancestor_strings: List = None,
+                 umls_mrconso_file: str = None, umls_mrsty_file: str = None) -> None:
 
         # clinical_file
         if not isinstance(clinical_file, str):
@@ -57,6 +65,37 @@ class ConceptAnnotator(object):
                 self.clinical_data: pd.DataFrame = pd.read_csv(clinical_file, header=0, low_memory=False).astype(str)
             except pd.errors.ParserError:
                 self.clinical_data = pd.read_csv(clinical_file, header=0, sep='\t', low_memory=False).astype(str)
+
+            # TODO - finish this and add the needed tests
+            # check primary key
+            if not isinstance(primary_key, str): raise TypeError('primary_key must be type str.')
+            else: self.primary_key: str = primary_key
+
+            # check for concept-level information
+            if not isinstance(concept_codes, List): raise TypeError('concept_codes must be type list.')
+            else: self.concept_codes: List = concept_codes
+
+            # check concept-level string input (optional)
+            if not concept_strings:
+                self.concept_strings: Optional[List] = concept_strings
+            else:
+                if not isinstance(concept_strings, List): raise TypeError('concept_strings must be type list.')
+                else: self.concept_strings: List = concept_strings
+
+            # check for ancestor-level information
+            # check ancestor-level codes input (optional)
+            if not ancestor_codes:
+                self.ancestor_codes: Optional[List] = ancestor_codes
+            else:
+                if not isinstance(ancestor_codes, List): raise TypeError('ancestor_codes must be type list.')
+                else: self.ancestor_codes: List = ancestor_codes
+
+            # check ancestor-level strings input (optional)
+            if not ancestor_strings:
+                self.ancestor_strings: Optional[List] = ancestor_strings
+            else:
+                if not isinstance(ancestor_strings, List): raise TypeError('ancestor_strings must be type list.')
+                else: self.ancestor_strings: List = ancestor_strings
 
         # check ontology_dictionary
         if not isinstance(ontology_dictionary, Dict): raise TypeError('ontology_dictionary must be type dict.')
@@ -132,14 +171,17 @@ class ConceptAnnotator(object):
 
         # prepare ontology data
         combined_dictionaries = merge_dictionaries(self.ontology_dictionary, 'dbxref')
-        combo_dict_df = pd.DataFrame(combined_dictionaries.items(), columns=['dbxref', 'Ontology_URI'])
-        combo_dict_df['CODE'] = combo_dict_df['dbxref'].apply(lambda x: x.split(':')[-1])
+        combo_dict_df = pd.DataFrame(combined_dictionaries.items(), columns=['DBXREF', 'ONT_URI'])
+        combo_dict_df['CODE'] = combo_dict_df['DBXREF'].apply(lambda x: x.split(':')[-1])
 
         # merge clinical data and combined ontology dict
         merged_dbxrefs = data.merge(combo_dict_df, how='inner', on='CODE').drop_duplicates()
-        merged_dbxrefs['EVIDENCE'] = merged_dbxrefs['dbxref'].apply(lambda x: 'DbXRef_' + x.split(':')[0])
+        merged_dbxrefs['ONT'] = merged_dbxrefs['ONT_URI'].apply(lambda x: x.split('/')[-1].split('_')[0].upper())
+        merged_dbxrefs['EVIDENCE'] = merged_dbxrefs['DBXREF'].apply(lambda x: 'DbXRef_' + x.split(':')[0])
 
         return merged_dbxrefs.drop_duplicates()
+
+    # def concept_string_match(self, data: pd.DataFrame, string_columns: str) -> pd.DataFrame:
 
     # def clinical_concept_mapper(self, primary_key: str, code_level: str):
     #     """
@@ -169,5 +211,14 @@ class ConceptAnnotator(object):
     #     stacked_dbxref = self.dbxref_mapper(data_stacked)
     #
     #     # STEP 3 - EXACT STRING MAPPING
+    #     # start from clinical data
+    #     clinical_strings = self.clinical_data.copy()
+    #     clinical_strings = clinical_strings[['CONCEPT_ID', 'CONCEPT_LABEL', 'CONCEPT_SYNONYM']]
+    #
+    #     # unstack "|" delimited data
+    #     string_columns = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+    #     split_strings = column_splitter(clinical_strings, string_columns, '|')
+    #
+    #     # find exact string matches
     #
     #     return None
