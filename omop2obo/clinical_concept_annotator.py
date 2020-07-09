@@ -80,7 +80,7 @@ class ConceptAnnotator(object):
                 self.concept_strings: Optional[List] = concept_strings
             else:
                 if not isinstance(concept_strings, List): raise TypeError('concept_strings must be type list.')
-                else: self.concept_strings: List = concept_strings
+                else: self.concept_strings = concept_strings
 
             # check for ancestor-level information
             # check ancestor-level codes input (optional)
@@ -88,14 +88,14 @@ class ConceptAnnotator(object):
                 self.ancestor_codes: Optional[List] = ancestor_codes
             else:
                 if not isinstance(ancestor_codes, List): raise TypeError('ancestor_codes must be type list.')
-                else: self.ancestor_codes: List = ancestor_codes
+                else: self.ancestor_codes = ancestor_codes
 
             # check ancestor-level strings input (optional)
             if not ancestor_strings:
-                self.ancestor_strings: Optional[List] = ancestor_strings
+                self.ancestor_strings = ancestor_strings
             else:
                 if not isinstance(ancestor_strings, List): raise TypeError('ancestor_strings must be type list.')
-                else: self.ancestor_strings: List = ancestor_strings
+                else: self.ancestor_strings = ancestor_strings
 
         # check ontology_dictionary
         if not isinstance(ontology_dictionary, Dict): raise TypeError('ontology_dictionary must be type dict.')
