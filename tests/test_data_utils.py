@@ -18,7 +18,7 @@ from omop2obo.utils import *
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class TestDataUtilsDownloading(unittest.TestCase):
+class TestDataUtils(unittest.TestCase):
     """Class to test the downloading methods from the data utility script."""
 
     def setUp(self):
@@ -68,6 +68,24 @@ class TestDataUtilsDownloading(unittest.TestCase):
                                                              ['UMLS_CUI'] * 5 +
                                                              ['UMLS_CODE'] * 5
                                               })
+
+        self.string_data = pd.DataFrame({'CONCEPT_ID': ['4331309', '37018594', '442264', '4029098', '4012199'],
+                                         'CONCEPT_LABEL': ['Myocarditis due to infectious agent',
+                                                           'Complement level below reference range',
+                                                           'Disorder of tendon',
+                                                           'Disorder of tetrahydrobiopterin metabolism',
+                                                           'Vulval pain'],
+                                         'CONCEPT_SYNONYM': ['Myocarditis due to infectious agent | Infective '
+                                                             'myocarditis | Myocarditis due to infectious agent ('
+                                                             'disorder)',
+                                                             'Complement level below reference range | Complement '
+                                                             'level below reference range (finding)',
+                                                             'Disorder of tendon (disorder) | Disorder of tendon | '
+                                                             'Tendon disorder',
+                                                             'Disorder of tetrahydrobiopterin metabolism (disorder) | '
+                                                             'Disorder of tetrahydrobiopterin metabolism',
+                                                             'Vulval pain (finding) | Vulval pain | Pain of vulva']
+                                         })
 
         # create sample dictionaries
         self.sample_dicts = {
@@ -253,6 +271,20 @@ class TestDataUtilsDownloading(unittest.TestCase):
         self.assertIsInstance(subset_data, pd.DataFrame)
         self.assertTrue(len(subset_data) == 3)
         self.assertEqual(list(subset_data.columns), ['CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'UMLS_CODE', 'UMLS_CUI'])
+
+        return None
+
+    def test_column_splitter(self):
+        """Tests the column_splitter method."""
+
+        # set-up input parameters
+        delimited_columns = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+        split_data = column_splitter(self.string_data, delimited_columns, '|')
+
+        # test method and output
+        self.assertIsInstance(split_data, pd.DataFrame)
+        self.assertTrue(len(split_data) == 13)
+        self.assertEqual(list(split_data.columns), ['CONCEPT_ID', 'CONCEPT_LABEL', 'CONCEPT_SYNONYM'])
 
         return None
 
