@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import pickle
 import shutil
 
 from rdflib import Graph
@@ -131,7 +132,11 @@ class TestOntologyInfoExtractor(TestCase):
 
         # run method
         self.ontologies.ontology_processor()
-        pickled_dict = self.ontologies.ontology_loader()
+        self.ontologies.ontology_loader()
+
+        # read back in data
+        with open(self.ontology_directory + '/master_ontology_dictionary.pickle', 'rb') as handle:
+            pickled_dict = pickle.load(handle)
 
         # make sure that output is correct
         self.assertTrue(len(pickled_dict.keys()) == 1)
@@ -152,5 +157,6 @@ class TestOntologyInfoExtractor(TestCase):
 
         # clean up environment
         os.remove(self.ontology_directory + '/so_without_imports_class_information.pickle')
+        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
 
         return None
