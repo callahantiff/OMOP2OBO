@@ -142,7 +142,7 @@ class OntologyInfoExtractor(object):
 
         return None
 
-    def ontology_loader(self) -> Dict:
+    def ontology_loader(self) -> None:
         """Function takes a list of file paths to pickled data, loads the data, and then saves each file as a dictionary
         entry.
 
@@ -174,4 +174,8 @@ class OntologyInfoExtractor(object):
             if len(ont_files) != len(ontology_data):
                 raise ValueError('Unable to load all of files referenced in the file path')
             else:
-                return ontology_data
+                with open(self.ont_directory + '/master_ontology_dictionary.pickle', 'wb') as handle:
+                    pickle.dump(ontology_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                handle.close()
+
+                return None
