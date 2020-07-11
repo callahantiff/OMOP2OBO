@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import subprocess
 
 from unittest import TestCase
 
@@ -66,6 +67,11 @@ class TestOntologyDownloader(TestCase):
         # checks that the file downloads
         self.ontologies.downloads_data_from_url(self.owltools_location)
         self.assertTrue(os.path.exists(derived_path + 'hp_without_imports.owl'))
+
+        # trigger subprocess error
+        self.ontologies.data_path = self.dir_loc + '/ontology_source_list_non_purl.txt'
+        owltools = self.owltools_location
+        self.assertRaises(subprocess.CalledProcessError, self.ontologies.downloads_data_from_url, owltools)
 
         return None
 

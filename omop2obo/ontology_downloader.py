@@ -13,7 +13,7 @@ from datetime import *
 from tqdm import tqdm  # type: ignore
 from typing import Dict, List
 
-from omop2obo.utils import data_downloader, gets_ontology_statistics
+from omop2obo.utils import gets_ontology_statistics
 
 
 class OntologyDownloader(object):
@@ -106,19 +106,15 @@ class OntologyDownloader(object):
             if any(x for x in os.listdir(file_loc) if re.sub('_without.*.owl', '', x) == file_prefix):
                 self.data_files[i] = glob.glob(file_loc + '*' + file_prefix + '*.owl')[0]
             else:
-                if 'purl' in source:
-                    try:
-                        subprocess.check_call([os.path.abspath(owltools_location),
-                                               str(source),
-                                               '-o',
-                                               str(write_loc) + '_without_imports.owl'])
+                try:
+                    subprocess.check_call([os.path.abspath(owltools_location),
+                                           str(source),
+                                           '-o',
+                                           str(write_loc) + '_without_imports.owl'])
 
-                        self.data_files[i] = str(write_loc) + '_without_imports.owl'
-                    except subprocess.CalledProcessError as error:
-                        print(error.output)
-                else:
-                    data_downloader(source, file_loc, str(file_prefix) + '_without_imports.owl')
-                    self.data_files[i] = file_loc + str(file_prefix) + '_without_imports.owl'
+                    self.data_files[i] = str(write_loc) + '_without_imports.owl'
+                except subprocess.CalledProcessError as error:
+                    print(error.output)
 
             # print stats
             gets_ontology_statistics(file_loc + str(file_prefix) + '_without_imports.owl',
