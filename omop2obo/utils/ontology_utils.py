@@ -71,9 +71,6 @@ def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
              'polypeptide_magnesium_ion_contact_site': 'http://purl.obolibrary.org/obo/SO_0001098',
              '5kb_downstream_variant': 'http://purl.obolibrary.org/obo/SO_0001633',
              'enhancer_blocking_element': 'http://purl.obolibrary.org/obo/SO_0002190', ...}
-
-    Raises:
-        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
     """
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Labels')
@@ -92,8 +89,7 @@ def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
     class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
-    if len(class_list.keys()) > 0: return class_list
-    else: raise ValueError('ERROR: No classes returned from query.')
+    return class_list
 
 
 def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
@@ -111,9 +107,6 @@ def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
               'a stop codon redefined to be a new amino acid.': 'http://purl.obolibrary.org/obo/SO_0000883',
               'a gene that is silenced by rna interference.': 'http://purl.obolibrary.org/obo/SO_0001224',
               'te that exists (or existed) in nature.': 'http://purl.obolibrary.org/obo/SO_0000797', ...}
-
-    Raises:
-        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
     """
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Definitions')
@@ -132,8 +125,7 @@ def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
     class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
-    if len(class_list.keys()) > 0: return class_list
-    else: raise ValueError('ERROR: No classes returned from query.')
+    return class_list
 
 
 def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
@@ -149,9 +141,6 @@ def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
             {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
             'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
             'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
-
-    Raises:
-        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
     """
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Synonyms')
@@ -163,6 +152,8 @@ def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
               ?c rdf:type owl:Class .
               ?c ?p ?syn .
               FILTER (CONTAINS(str(?p), "Synonym"))
+              FILTER(?p in (oboInOwl:hasSynonym, oboInOwl:hasExactSynonym, oboInOwl:hasBroadSynonym, 
+                            oboInOwl:hasNarrowSynonym, oboInOwl:hasRelatedSynonym))
             MINUS {?c owl:deprecated true}}
            """, initNs={'rdf': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
 
@@ -170,8 +161,7 @@ def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
     class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
-    if len(class_list.keys()) > 0: return class_list
-    else: raise ValueError('ERROR: No classes returned from query.')
+    return class_list
 
 
 def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
@@ -188,9 +178,6 @@ def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
              'RNAMOD:055': 'http://purl.obolibrary.org/obo/SO_0001347',
              'RNAMOD:076': 'http://purl.obolibrary.org/obo/SO_0001368',
              'loinc:LA6700-2': 'http://purl.obolibrary.org/obo/SO_0001590', ...}
-
-    Raises:
-        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
     """
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and DbXRefs')
@@ -208,8 +195,7 @@ def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
     class_list = {str(res[1]): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
-    if len(class_list.keys()) > 0: return class_list
-    else: raise ValueError('ERROR: No classes returned from query.')
+    return class_list
 
 
 def gets_deprecated_ontology_classes(graph: Graph) -> Set:

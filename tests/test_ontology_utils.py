@@ -58,7 +58,6 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_classes(graph, 'SO')
-
         self.assertIsInstance(classes, Set)
         self.assertEqual(2237, len(classes))
 
@@ -77,13 +76,8 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_labels(graph, 'SO')
-
         self.assertIsInstance(classes, Dict)
         self.assertEqual(2237, len(classes))
-
-        # retrieve classes form graph with no data
-        no_data_graph = Graph()
-        self.assertRaises(ValueError, gets_ontology_class_labels, no_data_graph, 'SO')
 
         return None
 
@@ -96,13 +90,8 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_definitions(graph, 'SO')
-
         self.assertIsInstance(classes, Dict)
         self.assertEqual(2004, len(classes))
-
-        # retrieve classes form graph with no data
-        no_data_graph = Graph()
-        self.assertRaises(ValueError, gets_ontology_class_definitions, no_data_graph, 'SO')
 
         return None
 
@@ -115,13 +104,8 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_synonyms(graph, 'SO')
-
         self.assertIsInstance(classes, Dict)
         self.assertEqual(3819, len(classes))
-
-        # retrieve classes form graph with no data
-        no_data_graph = Graph()
-        self.assertRaises(ValueError, gets_ontology_class_synonyms, no_data_graph, 'SO')
 
         return None
 
@@ -134,13 +118,8 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_dbxrefs(graph, 'SO')
-
         self.assertIsInstance(classes, Dict)
         self.assertEqual(391, len(classes))
-
-        # retrieve classes form graph with no data
-        no_data_graph = Graph()
-        self.assertRaises(ValueError, gets_ontology_class_dbxrefs, no_data_graph, 'SO')
 
         return None
 
