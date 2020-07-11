@@ -26,7 +26,7 @@ oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
 
 
 def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
-    """Queries a knowledge graph and returns a list of all owl:Class objects in the graph.
+    """Queries a knowledge graph and returns a list of all non-deprecated owl:Class objects in the graph.
 
     Args:
         graph: An rdflib Graph object.
@@ -46,7 +46,7 @@ def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
         """SELECT DISTINCT ?c
              WHERE {
               ?c rdf:type owl:Class .
-              minus {?c owl:deprecated true}}
+              MINUS {?c owl:deprecated true}}
         """, initNs={'rdf': RDF, 'owl': OWL}
     )
 
@@ -66,7 +66,11 @@ def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
         ont_id: A string containing an ontology namespace.
 
     Returns:
-        class_list: A dictionary where keys are ontology URIs and values are string labels.
+        class_list: A dictionary where keys are string labels and values are ontology URIs. An example is shown below:
+            {'consensus_aflp_fragment': 'http://purl.obolibrary.org/obo/SO_0001991',
+             'polypeptide_magnesium_ion_contact_site': 'http://purl.obolibrary.org/obo/SO_0001098',
+             '5kb_downstream_variant': 'http://purl.obolibrary.org/obo/SO_0001633',
+             'enhancer_blocking_element': 'http://purl.obolibrary.org/obo/SO_0002190', ...}
 
     Raises:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
@@ -80,12 +84,12 @@ def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
              WHERE {
               ?c rdf:type owl:Class .
               ?c rdfs:label ?c_label . 
-              minus {?c owl:deprecated true}}
+              MINUS {?c owl:deprecated true}}
         """, initNs={'rdf': RDF, 'rdfs': RDFS, 'owl': OWL}
     )
 
     # convert results to list of classes
-    class_list = {str(res[0]): str(res[1]).lower() for res in tqdm(kg_classes)
+    class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
     if len(class_list.keys()) > 0: return class_list
@@ -101,7 +105,12 @@ def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
         ont_id: A string containing an ontology namespace.
 
     Returns:
-        class_list: A dictionary where keys are ontology URIs and values are string labels.
+        class_list: A dictionary where keys are string definitions and values are ontology URIs. An example is shown
+        below:
+             {'a chromosome originating in a micronucleus.': 'http://purl.obolibrary.org/obo/SO_0000825',
+              'a stop codon redefined to be a new amino acid.': 'http://purl.obolibrary.org/obo/SO_0000883',
+              'a gene that is silenced by rna interference.': 'http://purl.obolibrary.org/obo/SO_0001224',
+              'te that exists (or existed) in nature.': 'http://purl.obolibrary.org/obo/SO_0000797', ...}
 
     Raises:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
@@ -115,12 +124,12 @@ def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
              WHERE {
               ?c rdf:type owl:Class .
               ?c obo:IAO_0000115 ?c_defn .
-              minus {?c owl:deprecated true}}
+              MINUS {?c owl:deprecated true}}
         """, initNs={'rdf': RDF, 'obo': obo, 'owl': OWL}
     )
 
     # convert results to list of classes
-    class_list = {str(res[0]): str(res[1]).lower() for res in tqdm(kg_classes)
+    class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
     if len(class_list.keys()) > 0: return class_list
@@ -136,7 +145,10 @@ def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
         ont_id: A string containing an ontology namespace.
 
     Returns:
-        class_list: A dictionary where keys are ontology URIs and values are string labels.
+        class_list: A dictionary where keys are strng synonyms and values are ontology URIs. An example is shown below:
+            {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
+            'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
+            'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
 
     Raises:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
@@ -150,13 +162,12 @@ def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
              WHERE {
               ?c rdf:type owl:Class .
               ?c ?p ?syn .
-              FILTER(?p in (oboInOwl:hasExactSynonym, oboInOwl:hasBroadSynonym, oboInOwl:hasNarrowSynonym,
-                            oboInOwl:hasRelatedSynonym)) .
-            minus {?c owl:deprecated true}}
-           """, initNs={'rdf': RDF, 'rdfs': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
+              FILTER (CONTAINS(str(?p), "Synonym"))
+            MINUS {?c owl:deprecated true}}
+           """, initNs={'rdf': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
 
     # convert results to list of classes
-    class_list = {str(res[0]): str(res[1]).lower() for res in tqdm(kg_classes)
+    class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
     if len(class_list.keys()) > 0: return class_list
@@ -172,7 +183,11 @@ def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
         ont_id: A string containing an ontology namespace.
 
     Returns:
-        class_list: A dictionary where keys are ontology URIs and values are string labels.
+        class_list: A dictionary where keys are dbxref strings and values are ontology URIs. An example is shown below:
+            {'loinc:LA6690-7': 'http://purl.obolibrary.org/obo/SO_1000002',
+             'RNAMOD:055': 'http://purl.obolibrary.org/obo/SO_0001347',
+             'RNAMOD:076': 'http://purl.obolibrary.org/obo/SO_0001368',
+             'loinc:LA6700-2': 'http://purl.obolibrary.org/obo/SO_0001590', ...}
 
     Raises:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
@@ -186,11 +201,11 @@ def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
              WHERE {
               ?c rdf:type owl:Class .
               ?c oboInOwl:hasDbXref ?dbxref .
-            minus {?c owl:deprecated true}}
-           """, initNs={'rdf': RDF, 'rdfs': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
+             MINUS {?c owl:deprecated true}}
+           """, initNs={'rdf': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
 
     # convert results to list of classes
-    class_list = {str(res[0]): str(res[1]) for res in tqdm(kg_classes)
+    class_list = {str(res[1]): str(res[0]) for res in tqdm(kg_classes)
                   if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
 
     if len(class_list.keys()) > 0: return class_list

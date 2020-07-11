@@ -8,14 +8,11 @@ import os
 import pickle
 
 from datetime import datetime
-from rdflib import Graph, Namespace, URIRef, Literal  # type: ignore
-from rdflib.namespace import RDF, RDFS, OWL  # type: ignore
+from rdflib import Graph  # type: ignore
 from tqdm import tqdm  # type: ignore
-from typing import Dict, List
+from typing import Dict
 
-# define global namespace
-obo = Namespace('http://purl.obolibrary.org/obo/')
-oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
+from omop2obo.utils import *
 
 
 class OntologyInfoExtractor(object):
@@ -44,13 +41,12 @@ class OntologyInfoExtractor(object):
         else:
             self.ont_directory = ontology_directory
 
-    def get_ontology_information(self, ont_id: str, codes: List = None) -> Dict:
+    def get_ontology_information(self, ont_id: str) -> Dict:
         """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all
         non-deprecated ontology classes.
 
         Args:
             ont_id: A string containing an ontology namespace.
-            codes: A list of strings that represent terminology names.
 
         Returns: A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
             {'HP': {
@@ -62,51 +58,13 @@ class OntologyInfoExtractor(object):
 
         start = datetime.now()
         print('Identifying ontology information: {}'.format(start))
-        res: Dict = {'label': {}, 'definition': {}, 'dbxref': {}, 'synonyms': {}}
-
-        # get ontology classes
-        class_ids = [x for x in self.graph.subjects(RDF.type, OWL.Class) if isinstance(x, URIRef)]
-        class_dep = list(self.graph.subjects(OWL.deprecated,
-                                             Literal('true',
-                                                     datatype=URIRef('http://www.w3.org/2001/XMLSchema#boolean'))))
-
-        # filter classes to only include those that are in the ont_id namespace and are not deprecated
-        filtered_classes = [x for x in list(set(class_ids) - set(class_dep)) if ont_id.lower() in str(x).lower()]
-
-        for cls in tqdm(filtered_classes):
-            # labels
-            for x in list(self.graph.objects(cls, RDFS.label)):
-                res['label'][str(x).encode('ascii', 'ignore').lower().decode('utf-8')] = str(cls)
-
-            # definitions
-            for x in list(self.graph.objects(cls, URIRef(obo + 'IAO_0000115'))):
-                res['definition'][str(x).encode('ascii', 'ignore').lower().decode('utf-8')] = str(cls)
-
-            # dbxref
-            for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasDbXref'))):
-                if codes:
-                    if any(i for i in codes if i in str(x)):
-                        res['dbxref'][str(x)] = str(cls)
-                else:
-                    res['dbxref'][str(x)] = str(cls)
-
-            # synonyms
-            syns = [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
-                    for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasSynonym')))]
-            syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
-                     for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasExactSynonym')))]
-            syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
-                     for x in list(self.graph.objects(cls, URIRef(oboinowl + '#hasBroadSynonym')))]
-            syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
-                     for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasNarrowSynonym')))]
-            syns += [str(x).encode('ascii', 'ignore').lower().decode('utf-8')
-                     for x in list(self.graph.objects(cls, URIRef(oboinowl + 'hasRelatedSynonym')))]
-
-            for x in syns:
-                res['synonyms'][x] = str(cls)
+        res: Dict = {'label': gets_ontology_class_labels(self.graph, ont_id),
+                     'definition': gets_ontology_class_definitions(self.graph, ont_id),
+                     'dbxref': gets_ontology_class_dbxrefs(self.graph, ont_id),
+                     'synonym': gets_ontology_class_synonyms(self.graph, ont_id)}
 
         finish = datetime.now()
-        print("Finished processing query: {}".format(finish))
+        print('Finished processing query: {}'.format(finish))
 
         return res
 

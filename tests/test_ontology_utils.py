@@ -98,7 +98,7 @@ class TestOntologyUtils(unittest.TestCase):
         classes = gets_ontology_class_definitions(graph, 'SO')
 
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(2022, len(classes))
+        self.assertEqual(2004, len(classes))
 
         # retrieve classes form graph with no data
         no_data_graph = Graph()
@@ -117,7 +117,7 @@ class TestOntologyUtils(unittest.TestCase):
         classes = gets_ontology_class_synonyms(graph, 'SO')
 
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(2109, len(classes))
+        self.assertEqual(3819, len(classes))
 
         # retrieve classes form graph with no data
         no_data_graph = Graph()
@@ -136,7 +136,7 @@ class TestOntologyUtils(unittest.TestCase):
         classes = gets_ontology_class_dbxrefs(graph, 'SO')
 
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(447, len(classes))
+        self.assertEqual(391, len(classes))
 
         # retrieve classes form graph with no data
         no_data_graph = Graph()

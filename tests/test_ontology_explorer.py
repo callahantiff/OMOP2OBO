@@ -28,7 +28,7 @@ class TestOntologyInfoExtractor(TestCase):
         return None
 
     def test_initialization_ontology_directory(self):
-        """Test class initialization for ontologies directory."""
+        """Test class initialization for ontologies_directory."""
 
         # move files out ontologies directory
         shutil.copyfile(self.ontology_directory + '/empty_hp_without_imports.owl',
@@ -103,13 +103,13 @@ class TestOntologyInfoExtractor(TestCase):
         self.assertIn('label', results.keys())
         self.assertIn('definition', results.keys())
         self.assertIn('dbxref', results.keys())
-        self.assertIn('synonyms', results.keys())
+        self.assertIn('synonym', results.keys())
 
         # check lengths of sub-dictionaries
         self.assertTrue(len(results['label']) == 2237)
         self.assertTrue(len(results['definition']) == 2004)
+        self.assertTrue(len(results['synonym']) == 3819)
         self.assertTrue(len(results['dbxref']) == 391)
-        self.assertTrue(len(results['synonyms']) == 3804)
 
         return None
 
@@ -147,16 +147,15 @@ class TestOntologyInfoExtractor(TestCase):
         self.assertIn('label', pickled_dict['so'].keys())
         self.assertIn('definition', pickled_dict['so'].keys())
         self.assertIn('dbxref', pickled_dict['so'].keys())
-        self.assertIn('synonyms', pickled_dict['so'].keys())
+        self.assertIn('synonym', pickled_dict['so'].keys())
 
         # check lengths of sub-dictionaries
         self.assertTrue(len(pickled_dict['so']['label']) == 2237)
         self.assertTrue(len(pickled_dict['so']['definition']) == 2004)
+        self.assertTrue(len(pickled_dict['so']['synonym']) == 3819)
         self.assertTrue(len(pickled_dict['so']['dbxref']) == 391)
-        self.assertTrue(len(pickled_dict['so']['synonyms']) == 3804)
 
         # clean up environment
         os.remove(self.ontology_directory + '/so_without_imports_class_information.pickle')
-        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
 
         return None
