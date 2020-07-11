@@ -63,7 +63,7 @@ class OntologyDownloader(object):
                 self.source_list = {row.strip().split(',')[0]: row.strip().split(',')[1].strip()
                                     for row in file_name.read().splitlines()}
             except IndexError:
-                raise Exception('ERROR: input file: {} has incorrectly formatted data'.format(self.data_path))
+                raise IndexError('ERROR: input file: {} has incorrectly formatted data'.format(self.data_path))
         file_name.close()
 
         return None
