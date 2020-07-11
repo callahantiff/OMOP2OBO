@@ -127,16 +127,26 @@ class TestOntologyInfoExtractor(TestCase):
 
         return None
 
-    def test_ontology_loader(self):
-        """Tests the ontology_loader method"""
+    def test_ontology_loader_no_pickled_data(self):
+        """Tests the ontology_loader method assuming no pickled data exists"""
 
-        # run method
+        # check if no pickled data is found
+        self.ontology_directory = self.dir_loc
+        self.assertRaises(OSError, self.ontologies.ontology_loader)
+
+        return None
+
+    def test_ontology_loader_pickled_data(self):
+        """Tests the ontology_loader method assuming pickled data exists."""
+
+        # test functionality assuming pickled data exists
         self.ontologies.ontology_processor()
         self.ontologies.ontology_loader()
 
         # read back in data
         with open(self.ontology_directory + '/master_ontology_dictionary.pickle', 'rb') as handle:
             pickled_dict = pickle.load(handle)
+        handle.close()
 
         # make sure that output is correct
         self.assertTrue(len(pickled_dict.keys()) == 1)
