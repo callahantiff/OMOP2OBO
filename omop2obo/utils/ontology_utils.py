@@ -13,19 +13,24 @@ Interacts with OWL Tools API
 # import needed libraries
 import os
 import os.path
-from rdflib import Graph, URIRef  # type: ignore
-from rdflib.namespace import RDF, OWL  # type: ignore
+from rdflib import Graph, Namespace, URIRef  # type: ignore
+from rdflib.namespace import RDF, RDFS, OWL  # type: ignore
 import subprocess
 
 from tqdm import tqdm  # type: ignore
-from typing import Set
+from typing import Dict, Set
+
+# set up environment variables
+obo = Namespace('http://purl.obolibrary.org/obo/')
+oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
 
 
-def gets_ontology_classes(graph: Graph) -> Set:
+def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
     """Queries a knowledge graph and returns a list of all owl:Class objects in the graph.
 
     Args:
         graph: An rdflib Graph object.
+        ont_id: A string containing an ontology namespace.
 
     Returns:
         class_list: A list of all of the classes in the graph.
@@ -39,17 +44,157 @@ def gets_ontology_classes(graph: Graph) -> Set:
     # find all classes in graph
     kg_classes = graph.query(
         """SELECT DISTINCT ?c
-             WHERE {?c rdf:type owl:Class . }
+             WHERE {
+              ?c rdf:type owl:Class .
+              minus {?c owl:deprecated true}}
         """, initNs={'rdf': RDF, 'owl': OWL}
     )
 
     # convert results to list of classes
-    class_list = set([res[0] for res in tqdm(kg_classes) if isinstance(res[0], URIRef)])
+    class_list = set([str(res[0]) for res in tqdm(kg_classes)
+                      if isinstance(res[0], URIRef) and ont_id .lower() in str(res[0]).lower()])
 
-    if len(class_list) > 0:
-        return class_list
-    else:
-        raise ValueError('ERROR: No classes returned from query.')
+    if len(class_list) > 0: return class_list
+    else: raise ValueError('ERROR: No classes returned from query.')
+
+
+def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
+    """Queries a knowledge graph and returns a dictionary of all owl:Class objects and their labels in the graph.
+
+    Args:
+        graph: An rdflib Graph object.
+        ont_id: A string containing an ontology namespace.
+
+    Returns:
+        class_list: A dictionary where keys are ontology URIs and values are string labels.
+
+    Raises:
+        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
+    """
+
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Labels')
+
+    # find all classes in graph
+    kg_classes = graph.query(
+        """SELECT DISTINCT ?c ?c_label
+             WHERE {
+              ?c rdf:type owl:Class .
+              ?c rdfs:label ?c_label . 
+              minus {?c owl:deprecated true}}
+        """, initNs={'rdf': RDF, 'rdfs': RDFS, 'owl': OWL}
+    )
+
+    # convert results to list of classes
+    class_list = {str(res[0]): str(res[1]).lower() for res in tqdm(kg_classes)
+                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+
+    if len(class_list.keys()) > 0: return class_list
+    else: raise ValueError('ERROR: No classes returned from query.')
+
+
+def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
+    """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their definitions
+    in the graph.
+
+    Args:
+        graph: An rdflib Graph object.
+        ont_id: A string containing an ontology namespace.
+
+    Returns:
+        class_list: A dictionary where keys are ontology URIs and values are string labels.
+
+    Raises:
+        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
+    """
+
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Definitions')
+
+    # find all classes in graph
+    kg_classes = graph.query(
+        """SELECT DISTINCT ?c ?c_defn
+             WHERE {
+              ?c rdf:type owl:Class .
+              ?c obo:IAO_0000115 ?c_defn .
+              minus {?c owl:deprecated true}}
+        """, initNs={'rdf': RDF, 'obo': obo, 'owl': OWL}
+    )
+
+    # convert results to list of classes
+    class_list = {str(res[0]): str(res[1]).lower() for res in tqdm(kg_classes)
+                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+
+    if len(class_list.keys()) > 0: return class_list
+    else: raise ValueError('ERROR: No classes returned from query.')
+
+
+def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
+    """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their synonyms in the
+    graph.
+
+    Args:
+        graph: An rdflib Graph object.
+        ont_id: A string containing an ontology namespace.
+
+    Returns:
+        class_list: A dictionary where keys are ontology URIs and values are string labels.
+
+    Raises:
+        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
+    """
+
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Synonyms')
+
+    # find all classes in graph
+    kg_classes = graph.query(
+        """SELECT DISTINCT ?c ?syn
+             WHERE {
+              ?c rdf:type owl:Class .
+              ?c ?p ?syn .
+              FILTER(?p in (oboInOwl:hasExactSynonym, oboInOwl:hasBroadSynonym, oboInOwl:hasNarrowSynonym,
+                            oboInOwl:hasRelatedSynonym)) .
+            minus {?c owl:deprecated true}}
+           """, initNs={'rdf': RDF, 'rdfs': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
+
+    # convert results to list of classes
+    class_list = {str(res[0]): str(res[1]).lower() for res in tqdm(kg_classes)
+                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+
+    if len(class_list.keys()) > 0: return class_list
+    else: raise ValueError('ERROR: No classes returned from query.')
+
+
+def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
+    """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their database
+    cross references (dbxrefs) in the graph.
+
+    Args:
+        graph: An rdflib Graph object.
+        ont_id: A string containing an ontology namespace.
+
+    Returns:
+        class_list: A dictionary where keys are ontology URIs and values are string labels.
+
+    Raises:
+        ValueError: If the query returns zero nodes with type owl:ObjectProperty.
+    """
+
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and DbXRefs')
+
+    # find all classes in graph
+    kg_classes = graph.query(
+        """SELECT DISTINCT ?c ?dbxref
+             WHERE {
+              ?c rdf:type owl:Class .
+              ?c oboInOwl:hasDbXref ?dbxref .
+            minus {?c owl:deprecated true}}
+           """, initNs={'rdf': RDF, 'rdfs': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
+
+    # convert results to list of classes
+    class_list = {str(res[0]): str(res[1]) for res in tqdm(kg_classes)
+                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+
+    if len(class_list.keys()) > 0: return class_list
+    else: raise ValueError('ERROR: No classes returned from query.')
 
 
 def gets_deprecated_ontology_classes(graph: Graph) -> Set:

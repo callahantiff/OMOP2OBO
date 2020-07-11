@@ -5,10 +5,10 @@ import os
 import os.path
 import unittest
 
-from typing import Set
+from typing import Dict, Set
 from rdflib import Graph
 
-from omop2obo.utils import gets_ontology_statistics, gets_ontology_classes, gets_deprecated_ontology_classes
+from omop2obo.utils import *
 
 
 class TestOntologyUtils(unittest.TestCase):
@@ -57,14 +57,90 @@ class TestOntologyUtils(unittest.TestCase):
         graph.parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
-        classes = gets_ontology_classes(graph)
+        classes = gets_ontology_classes(graph, 'SO')
 
         self.assertIsInstance(classes, Set)
-        self.assertEqual(2573, len(classes))
+        self.assertEqual(2237, len(classes))
 
         # retrieve classes form graph with no data
         no_data_graph = Graph()
-        self.assertRaises(ValueError, gets_ontology_classes, no_data_graph)
+        self.assertRaises(ValueError, gets_ontology_classes, no_data_graph, 'SO')
+
+        return None
+
+    def test_gets_ontology_class_labels(self):
+        """Tests the gets_ontology_class_labels method."""
+
+        # read in ontology
+        graph = Graph()
+        graph.parse(self.good_ontology_file_location)
+
+        # retrieve classes form graph with data
+        classes = gets_ontology_class_labels(graph, 'SO')
+
+        self.assertIsInstance(classes, Dict)
+        self.assertEqual(2237, len(classes))
+
+        # retrieve classes form graph with no data
+        no_data_graph = Graph()
+        self.assertRaises(ValueError, gets_ontology_class_labels, no_data_graph, 'SO')
+
+        return None
+
+    def test_gets_ontology_class_definitions(self):
+        """Tests the gets_ontology_class_definitions method."""
+
+        # read in ontology
+        graph = Graph()
+        graph.parse(self.good_ontology_file_location)
+
+        # retrieve classes form graph with data
+        classes = gets_ontology_class_definitions(graph, 'SO')
+
+        self.assertIsInstance(classes, Dict)
+        self.assertEqual(2022, len(classes))
+
+        # retrieve classes form graph with no data
+        no_data_graph = Graph()
+        self.assertRaises(ValueError, gets_ontology_class_definitions, no_data_graph, 'SO')
+
+        return None
+
+    def test_gets_ontology_class_synonyms(self):
+        """Tests the gets_ontology_class_synonyms method."""
+
+        # read in ontology
+        graph = Graph()
+        graph.parse(self.good_ontology_file_location)
+
+        # retrieve classes form graph with data
+        classes = gets_ontology_class_synonyms(graph, 'SO')
+
+        self.assertIsInstance(classes, Dict)
+        self.assertEqual(2109, len(classes))
+
+        # retrieve classes form graph with no data
+        no_data_graph = Graph()
+        self.assertRaises(ValueError, gets_ontology_class_synonyms, no_data_graph, 'SO')
+
+        return None
+
+    def test_gets_ontology_class_dbxrefs(self):
+        """Tests the gets_ontology_class_dbxrefs method."""
+
+        # read in ontology
+        graph = Graph()
+        graph.parse(self.good_ontology_file_location)
+
+        # retrieve classes form graph with data
+        classes = gets_ontology_class_dbxrefs(graph, 'SO')
+
+        self.assertIsInstance(classes, Dict)
+        self.assertEqual(447, len(classes))
+
+        # retrieve classes form graph with no data
+        no_data_graph = Graph()
+        self.assertRaises(ValueError, gets_ontology_class_dbxrefs, no_data_graph, 'SO')
 
         return None
 
