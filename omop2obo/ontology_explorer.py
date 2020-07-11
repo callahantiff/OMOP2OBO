@@ -108,32 +108,26 @@ class OntologyInfoExtractor(object):
             A dictionary where each key is a file name and each value is a dictionary.
 
         Raises:
-            ValueError: If the provided ontology name does not match any downloaded ontology files.
-            ValueError: If the number of dictionary entries does not equal the number of files in the files list.
+            OSError: If there are no pickled data files in the directory specified by the ont_directory variable.
         """
 
-        # find files that match user input
-        ont_files = []
-        for key, val in self.ont_dictionary.items():
-            prefix = val.split('/')[-1].replace('_without_imports.owl', '')
-            pickle_file = glob.glob(self.ont_directory + '/' + str(prefix.lower()) + '*.pickle')
-            if len(pickle_file) != 0:
-                ont_files.append((key, pickle_file[0]))
+        # find pickled data
+        pickled_data = glob.glob(self.ont_directory + '/*_class_information.pickle')
 
-        if len(ont_files) == 0:
-            raise ValueError('Unable to find files that include that ontology name')
+        if len(pickled_data) == 0:
+            raise OSError('There are no ontology pickled data files in: {}'.format(self.ont_directory))
         else:
             ontology_data = {}
-            for ont, f in tqdm(ont_files):
-                with open(f, 'rb') as _file:
-                    ontology_data[ont] = pickle.load(_file)
-            _file.close()
 
-            if len(ont_files) != len(ontology_data):
-                raise ValueError('Unable to load all of files referenced in the file path')
-            else:
-                with open(self.ont_directory + '/master_ontology_dictionary.pickle', 'wb') as handle:
-                    pickle.dump(ontology_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                handle.close()
+            for ont_file in tqdm(pickled_data):
+                if 'master' not in ont_file:  # ignore existing pickled master_ontology_dictionary files
+                    with open(ont_file, 'rb') as _file:
+                        ontology_data[ont_file.split('/')[-1].split('_')[0]] = pickle.load(_file)
+                    _file.close()
 
-                return None
+            # write out all ontologies into a single pickled file
+            with open(self.ont_directory + '/master_ontology_dictionary.pickle', 'wb') as handle:
+                pickle.dump(ontology_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            handle.close()
+
+            return None
