@@ -36,6 +36,7 @@ import urllib3  # type: ignore
 from contextlib import closing
 from functools import reduce
 from io import BytesIO
+from more_itertools import unique_everseen
 from typing import Dict, List  # type: ignore
 from urllib.request import urlopen
 from zipfile import ZipFile
@@ -375,7 +376,8 @@ def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: Lis
     """
 
     # create list of aggregated groupby DataFrames
-    combo = [data.groupby([primary_key])[col].apply(lambda x: delimiter.join(list(set(x)))) for col in agg_cols]
+    combo = [data.groupby([primary_key])[col].apply(lambda x: delimiter.join(list(unique_everseen(x))))
+             for col in agg_cols]
 
     # merge data frames by primary key and reset index
     merged_combo = reduce(lambda x, y: pd.merge(x, y, on=primary_key), combo)
