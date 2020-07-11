@@ -56,14 +56,19 @@ class OntologyDownloader(object):
                                 'phenotype': 'http://purl.obolibrary.org/obo/hp.owl'
                                 }
 
+        Raises:
+            ValueError: If the data within the data_path file is not formatted correctly (comma-delimited) and is not of
+                the right type (.owl or .obo)
         """
 
         with open(self.data_path, 'r') as file_name:
-            try:
-                self.source_list = {row.strip().split(',')[0]: row.strip().split(',')[1].strip()
-                                    for row in file_name.read().splitlines()}
-            except IndexError:
-                raise IndexError('ERROR: input file: {} has incorrectly formatted data'.format(self.data_path))
+            for row in file_name.read().splitlines():
+                if ',' in row and ('.owl' in row or '.obo' in row):
+                    self.source_list[row.strip().split(',')[0]] = row.strip().split(',')[1].strip()
+                else:
+                    raise ValueError('ERROR: input file: {} has incorrectly formatted data ('
+                                     'i.e. non-comma-delimited rows) and/or is not of the correct type (i.e. '
+                                     '.owl or .obo)'.format(self.data_path))
         file_name.close()
 
         return None

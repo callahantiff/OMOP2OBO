@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os.path
-import subprocess
 
 from unittest import TestCase
 
@@ -51,9 +50,13 @@ class TestOntologyDownloader(TestCase):
     def test_parses_resource_file(self):
         """Tests the parses_resource_file method."""
 
-        # make sure that bad input data is caught
+        # make sure that bad input data is caught - no comma-delimited rows
         self.ontologies.data_path = self.dir_loc + '/ontology_source_list_bad_format.txt'
-        self.assertRaises(IndexError, self.ontologies.parses_resource_file)
+        self.assertRaises(ValueError, self.ontologies.parses_resource_file)
+
+        # make sure that bad input data is caught - no .owl or .obo files
+        self.ontologies.data_path = self.dir_loc + '/ontology_source_list_non_purl.txt'
+        self.assertRaises(ValueError, self.ontologies.parses_resource_file)
 
         return None
 
@@ -68,10 +71,9 @@ class TestOntologyDownloader(TestCase):
         self.ontologies.downloads_data_from_url(self.owltools_location)
         self.assertTrue(os.path.exists(derived_path + 'hp_without_imports.owl'))
 
-        # trigger subprocess error
-        self.ontologies.data_path = self.dir_loc + '/ontology_source_list_non_purl.txt'
-        owltools = self.owltools_location
-        self.assertRaises(subprocess.CalledProcessError, self.ontologies.downloads_data_from_url, owltools)
+        # clean up environment
+        os.remove(self.dir_loc + '/ontologies/hp_without_imports.owl')
+        os.remove(self.dir_loc + '/ontologies/ontology_source_metadata.txt')
 
         return None
 
