@@ -59,7 +59,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_classes(graph, 'SO')
         self.assertIsInstance(classes, Set)
-        self.assertEqual(2237, len(classes))
+        self.assertEqual(2476, len(classes))
 
         # retrieve classes form graph with no data
         no_data_graph = Graph()
@@ -77,7 +77,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_labels(graph, 'SO')
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(2237, len(classes))
+        self.assertEqual(2494, len(classes))
 
         return None
 
@@ -91,7 +91,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_definitions(graph, 'SO')
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(2004, len(classes))
+        self.assertEqual(2130, len(classes))
 
         return None
 
@@ -105,7 +105,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_synonyms(graph, 'SO')
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(3819, len(classes))
+        self.assertEqual(4056, len(classes))
 
         return None
 
@@ -119,7 +119,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_dbxrefs(graph, 'SO')
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(391, len(classes))
+        self.assertEqual(393, len(classes))
 
         return None
 
@@ -131,9 +131,9 @@ class TestOntologyUtils(unittest.TestCase):
         graph.parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
-        classes = gets_deprecated_ontology_classes(graph)
+        classes = gets_deprecated_ontology_classes(graph, 'SO')
 
         self.assertIsInstance(classes, Set)
-        self.assertEqual(336, len(classes))
+        self.assertEqual(239, len(classes))
 
         return None

@@ -13,8 +13,8 @@ Interacts with OWL Tools API
 # import needed libraries
 import os
 import os.path
-from rdflib import Graph, Namespace, URIRef  # type: ignore
-from rdflib.namespace import RDF, RDFS, OWL  # type: ignore
+from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
+from rdflib.namespace import RDF, OWL  # type: ignore
 import subprocess
 
 from tqdm import tqdm  # type: ignore
@@ -23,6 +23,7 @@ from typing import Dict, Set
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
 oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
+schema = Namespace('http://www.w3.org/2001/XMLSchema#')
 
 
 def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
@@ -42,17 +43,7 @@ def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes')
 
     # find all classes in graph
-    kg_classes = graph.query(
-        """SELECT DISTINCT ?c
-             WHERE {
-              ?c rdf:type owl:Class .
-              MINUS {?c owl:deprecated true}}
-        """, initNs={'rdf': RDF, 'owl': OWL}
-    )
-
-    # convert results to list of classes
-    class_list = set([str(res[0]) for res in tqdm(kg_classes)
-                      if isinstance(res[0], URIRef) and ont_id .lower() in str(res[0]).lower()])
+    class_list = set([x for x in graph.subjects(RDF.type, OWL.Class) if ont_id.lower() in str(x).lower()])
 
     if len(class_list) > 0: return class_list
     else: raise ValueError('ERROR: No classes returned from query.')
@@ -76,18 +67,8 @@ def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Labels')
 
     # find all classes in graph
-    kg_classes = graph.query(
-        """SELECT DISTINCT ?c ?c_label
-             WHERE {
-              ?c rdf:type owl:Class .
-              ?c rdfs:label ?c_label . 
-              MINUS {?c owl:deprecated true}}
-        """, initNs={'rdf': RDF, 'rdfs': RDFS, 'owl': OWL}
-    )
-
-    # convert results to list of classes
-    class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
-                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
+                  if ont_id.lower() in str(x[0]).lower() and 'label' in str(x[1]).lower()}
 
     return class_list
 
@@ -112,18 +93,8 @@ def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Definitions')
 
     # find all classes in graph
-    kg_classes = graph.query(
-        """SELECT DISTINCT ?c ?c_defn
-             WHERE {
-              ?c rdf:type owl:Class .
-              ?c obo:IAO_0000115 ?c_defn .
-              MINUS {?c owl:deprecated true}}
-        """, initNs={'rdf': RDF, 'obo': obo, 'owl': OWL}
-    )
-
-    # convert results to list of classes
-    class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
-                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
+                  if ont_id.lower() in str(x[0]).lower() and 'IAO_0000115' in str(x[1])}
 
     return class_list
 
@@ -146,20 +117,8 @@ def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Synonyms')
 
     # find all classes in graph
-    kg_classes = graph.query(
-        """SELECT DISTINCT ?c ?syn
-             WHERE {
-              ?c rdf:type owl:Class .
-              ?c ?p ?syn .
-              FILTER (CONTAINS(str(?p), "Synonym"))
-              FILTER(?p in (oboInOwl:hasSynonym, oboInOwl:hasExactSynonym, oboInOwl:hasBroadSynonym, 
-                            oboInOwl:hasNarrowSynonym, oboInOwl:hasRelatedSynonym))
-            MINUS {?c owl:deprecated true}}
-           """, initNs={'rdf': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
-
-    # convert results to list of classes
-    class_list = {str(res[1]).lower(): str(res[0]) for res in tqdm(kg_classes)
-                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
+                  if ont_id.lower() in str(x[0]).lower() and 'synonym' in str(x[1]).lower()}
 
     return class_list
 
@@ -183,26 +142,18 @@ def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and DbXRefs')
 
     # find all classes in graph
-    kg_classes = graph.query(
-        """SELECT DISTINCT ?c ?dbxref
-             WHERE {
-              ?c rdf:type owl:Class .
-              ?c oboInOwl:hasDbXref ?dbxref .
-             MINUS {?c owl:deprecated true}}
-           """, initNs={'rdf': RDF, 'owl': OWL, 'oboInOwl': oboinowl})
-
-    # convert results to list of classes
-    class_list = {str(res[1]): str(res[0]) for res in tqdm(kg_classes)
-                  if isinstance(res[0], URIRef) and ont_id.lower() in str(res[0]).lower()}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
+                  if ont_id.lower() in str(x[0]).lower() and 'hasdbxref' in str(x[1]).lower()}
 
     return class_list
 
 
-def gets_deprecated_ontology_classes(graph: Graph) -> Set:
+def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
     """Queries a knowledge graph and returns a list of all deprecated owl:Class objects in the graph.
 
     Args:
         graph: An rdflib Graph object.
+        ont_id: A string containing an ontology namespace.
 
     Returns:
         class_list: A list of all of the deprecated OWL classes in the graph.
@@ -213,15 +164,9 @@ def gets_deprecated_ontology_classes(graph: Graph) -> Set:
 
     print('\nQuerying Knowledge Graph to Obtain all deprecated OWL:Class Nodes')
 
-    # find all classes in graph
-    kg_classes = graph.query(
-        """SELECT DISTINCT ?c
-             WHERE {?c owl:deprecated true . }
-        """, initNs={'owl': OWL}
-    )
-
-    # convert results to list of classes
-    class_list = set([res[0] for res in tqdm(kg_classes) if isinstance(res[0], URIRef)])
+    # find all deprecated classes in graph
+    dep_classes = list(graph.subjects(OWL.deprecated, Literal('true', datatype=URIRef(schema + 'boolean'))))
+    class_list = set([x for x in dep_classes if ont_id.lower() in str(x).lower()])
 
     return class_list
 
