@@ -159,7 +159,7 @@ def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: Lis
             delimiter-aggregated column for each column in the agg_cols list.
     """
 
-    # create list of aggregated groupby DataFrames
+    # create list of aggregated GroupBy DataFrames
     combo = [data.groupby([primary_key])[col].apply(lambda x: delimiter.join(list(unique_everseen(x))))
              for col in agg_cols]
 
@@ -206,7 +206,7 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str, c
         temp_df = grouped_data.get_group(grp)
         temp_df.drop(type_column, axis=1, inplace=True)
         # rename columns
-        updated_names = [grp.upper() + '_' + x for x in list(temp_df.columns) if x != primary_key]
+        updated_names = [x.replace('ONT', grp) for x in list(temp_df.columns) if x != primary_key]
         temp_df.columns = [primary_key] + updated_names
         # aggregate data
         agg_cols = [col for col in temp_df.columns if col.split('_')[-1] in ['LABEL', 'EVIDENCE', 'URI']]

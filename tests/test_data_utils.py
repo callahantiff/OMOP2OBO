@@ -13,7 +13,6 @@ class TestDataUtils(unittest.TestCase):
     """Class to test the downloading methods from the data utility script."""
 
     def setUp(self):
-
         # create some fake Pandas DataFrames
         self.clin_data = pd.DataFrame({'CONCEPT_ID': ['4331309', '4331309', '37018594', '37018594', '442264'],
                                        'CONCEPT_SOURCE_CODE': ['2265305', '2265305', '802510', '802510', '6817202'],
@@ -61,11 +60,11 @@ class TestDataUtils(unittest.TestCase):
                                         'CONCEPT_DBXREF_ONT_LABEL': ['tendinopathy',
                                                                      'tetrahydrobiopterin metabolic process disease',
                                                                      'engraftment syndrome', 'eczema', 'dermatitis'],
-                                        'CONCEPT_DBXREF_EVIDENCE': ['CONCEPT_DBXREF_sctid:68172002',
-                                                                    'CONCEPT_DBXREF_sctid:237913008',
-                                                                    'CONCEPT_DBXREF_sctid:426768001',
-                                                                    'CONCEPT_DBXREF_snomedct_us:43116000',
-                                                                    'CONCEPT_DBXREF_sctid:43116000']
+                                        'CONCEPT_DBXREF_ONT_EVIDENCE': ['CONCEPT_DBXREF_sctid:68172002',
+                                                                        'CONCEPT_DBXREF_sctid:237913008',
+                                                                        'CONCEPT_DBXREF_sctid:426768001',
+                                                                        'CONCEPT_DBXREF_snomedct_us:43116000',
+                                                                        'CONCEPT_DBXREF_sctid:43116000']
                                         })
 
         # create sample dictionaries
@@ -149,10 +148,10 @@ class TestDataUtils(unittest.TestCase):
         # test method and output
         self.assertIsInstance(grouped_data, pd.DataFrame)
         self.assertTrue(len(grouped_data) == 4)
-        self.assertEqual(list(grouped_data.columns), ['CONCEPT_ID', 'HP_CONCEPT_DBXREF_ONT_URI',
-                                                      'HP_CONCEPT_DBXREF_ONT_LABEL', 'HP_CONCEPT_DBXREF_EVIDENCE',
-                                                      'MONDO_CONCEPT_DBXREF_ONT_URI', 'MONDO_CONCEPT_DBXREF_ONT_LABEL',
-                                                      'MONDO_CONCEPT_DBXREF_EVIDENCE'])
+        self.assertEqual(list(grouped_data.columns), ['CONCEPT_ID', 'CONCEPT_DBXREF_HP_URI',
+                                                      'CONCEPT_DBXREF_HP_LABEL', 'CONCEPT_DBXREF_HP_EVIDENCE',
+                                                      'CONCEPT_DBXREF_MONDO_URI', 'CONCEPT_DBXREF_MONDO_LABEL',
+                                                      'CONCEPT_DBXREF_MONDO_EVIDENCE'])
 
         return None
 
