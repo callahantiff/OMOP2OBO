@@ -50,6 +50,24 @@ class TestDataUtils(unittest.TestCase):
                                                              'Vulval pain (finding) | Vulval pain | Pain of vulva']
                                          })
 
+        # create data to verifying grouping function
+        self.group_data = pd.DataFrame({'CONCEPT_ID': ['442264', '4029098', '4141365', '133835', '133835'],
+                                        'CONCEPT_DBXREF_ONT_URI': ['http://purl.obolibrary.org/obo/MONDO_0100010',
+                                                                   'http://purl.obolibrary.org/obo/MONDO_0045014',
+                                                                   'http://purl.obolibrary.org/obo/MONDO_0043358',
+                                                                   'http://purl.obolibrary.org/obo/HP_0000964',
+                                                                   'http://purl.obolibrary.org/obo/MONDO_0002406'],
+                                        'CONCEPT_DBXREF_ONT_TYPE': ['MONDO', 'MONDO', 'MONDO', 'HP', 'MONDO'],
+                                        'CONCEPT_DBXREF_ONT_LABEL': ['tendinopathy',
+                                                                     'tetrahydrobiopterin metabolic process disease',
+                                                                     'engraftment syndrome', 'eczema', 'dermatitis'],
+                                        'CONCEPT_DBXREF_EVIDENCE': ['CONCEPT_DBXREF_sctid:68172002',
+                                                                    'CONCEPT_DBXREF_sctid:237913008',
+                                                                    'CONCEPT_DBXREF_sctid:426768001',
+                                                                    'CONCEPT_DBXREF_snomedct_us:43116000',
+                                                                    'CONCEPT_DBXREF_sctid:43116000']
+                                        })
+
         # create sample dictionaries
         self.sample_dicts = {
             'hp': {
@@ -119,6 +137,21 @@ class TestDataUtils(unittest.TestCase):
         self.assertIsInstance(agg_data, pd.DataFrame)
         self.assertTrue(len(agg_data) == 3)
         self.assertEqual(list(agg_data.columns), ['CONCEPT_ID', 'CODE', 'CODE_COLUMN'])
+
+        return None
+
+    def test_data_frame_grouper(self):
+        """Tests the data_frame_grouper method."""
+
+        grouped_data = data_frame_grouper(self.group_data, 'CONCEPT_ID', 'CONCEPT_DBXREF_ONT_TYPE')
+
+        # test method and output
+        self.assertIsInstance(grouped_data, pd.DataFrame)
+        self.assertTrue(len(grouped_data) == 4)
+        self.assertEqual(list(grouped_data.columns), ['CONCEPT_ID', 'HP_CONCEPT_DBXREF_ONT_URI',
+                                                      'HP_CONCEPT_DBXREF_ONT_LABEL', 'HP_CONCEPT_DBXREF_EVIDENCE',
+                                                      'MONDO_CONCEPT_DBXREF_ONT_URI', 'MONDO_CONCEPT_DBXREF_ONT_LABEL',
+                                                      'MONDO_CONCEPT_DBXREF_EVIDENCE'])
 
         return None
 

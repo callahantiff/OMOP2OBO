@@ -170,6 +170,51 @@ def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: Lis
     return merged_combo
 
 
+def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str) -> pd.DataFrame:
+    """Methods takes a Pandas DataFrame as input, a primary key, and a column to group the data by and
+    creates a new DataFrame that merges the individual grouped DataFrames into a single DataFrame.
+    Examples of the input and output data are shown below.
+
+    INPUT_DATA:
+                   CONCEPT_ID         CONCEPT_DBXREF_ONT_URI  CONCEPT_DBXREF_ONT_TYPE         CONCEPT_DBXREF_EVIDENCE
+            0         442264        http://...MONDO_0100010                     MONDO   CONCEPT_DBXREF_sctid:68172002
+            2        4029098        http://...MONDO_0045014                     MONDO  CONCEPT_DBXREF_sctid:237913008
+            4        4141365           http://...HP_0000964                        HP  CONCEPT_DBXREF_sctid:426768001
+
+    OUTPUT DATA:
+    Columns: ['CONCEPT_ID', 'HP_CONCEPT_DBXREF_ONT_URI', 'HP_CONCEPT_DBXREF_ONT_LABEL', 'HP_CONCEPT_DBXREF_EVIDENCE',
+              'MONDO_CONCEPT_DBXREF_ONT_URI', 'MONDO_CONCEPT_DBXREF_ONT_LABEL', 'MONDO_CONCEPT_DBXREF_EVIDENCE']
+
+    Args:
+        data: A Pandas DataFrame containing data with columns that can be grouped (see INPUT above for ex).
+        primary_key: A string containing the name of the column in the input DataFrame to use as a
+            primary key.
+        type_column: A string containing the name of the column in the input DataFrame to use for
+            grouping the data (see OUTPUT above for an example).
+
+    Returns:
+        grouped_data_full: A Pandas DataFrame containing a merged version of the grouped data.
+    """
+
+    # group data by ontology type
+    grouped_data = data.groupby(type_column)
+    grouped_data_frames = []
+
+    for grp in grouped_data.groups:
+        temp_df = grouped_data.get_group(grp)
+        temp_df.drop(type_column, axis=1, inplace=True)
+        # rename columns
+        updated_names = [grp.upper() + '_' + x for x in list(temp_df.columns) if x != primary_key]
+        temp_df.columns = [primary_key] + updated_names
+
+        grouped_data_frames.append(temp_df.drop_duplicates())
+
+    # merge DataFrames back together
+    grouped_data_full = reduce(lambda x, y: pd.merge(x, y, how='outer', on=primary_key), grouped_data_frames)
+
+    return grouped_data_full.drop_duplicates()
+
+
 def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False) -> Dict:
     """Given any number of dictionaries, shallow copy and merge into a new dict, precedence goes to key value pairs
     in latter dictionaries.
