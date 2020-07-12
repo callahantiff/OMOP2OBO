@@ -7,7 +7,6 @@ import glob
 import os
 import pickle
 
-from datetime import datetime
 from rdflib import Graph  # type: ignore
 from tqdm import tqdm  # type: ignore
 from typing import Dict
@@ -56,15 +55,19 @@ class OntologyInfoExtractor(object):
                 'synonyms': { 'open bite': 'http://purl.obolibrary.org/obo/HP_0010807'}}
         """
 
-        start = datetime.now()
-        print('Identifying ontology information: {}'.format(start))
-        res: Dict = {'label': gets_ontology_class_labels(self.graph, ont_id),
-                     'definition': gets_ontology_class_definitions(self.graph, ont_id),
-                     'dbxref': gets_ontology_class_dbxrefs(self.graph, ont_id),
-                     'synonym': gets_ontology_class_synonyms(self.graph, ont_id)}
+        print('Obtaining Ontology Information')
 
-        finish = datetime.now()
-        print('Finished processing query: {}'.format(finish))
+        # get class information
+        deprecated_classes = gets_deprecated_ontology_classes(self.graph, ont_id)
+        filter_classes = set([x for x in gets_ontology_classes(self.graph, ont_id) if x not in deprecated_classes])
+
+        # filter results and add to dictionary
+        res: Dict = {
+            'label': gets_ontology_class_labels(self.graph, filter_classes),
+            'definition': gets_ontology_class_definitions(self.graph, filter_classes),
+            'dbxref': gets_ontology_class_dbxrefs(self.graph, filter_classes),
+            'synonym': gets_ontology_class_synonyms(self.graph, filter_classes)
+        }
 
         return res
 
@@ -88,7 +91,7 @@ class OntologyInfoExtractor(object):
             if ont[1].replace('.owl', '_class_information.pickle').split('/')[-1] in os.listdir(self.ont_directory):
                 pass
             else:
-                print('Loading RDF Graph')
+                print('Loading RDF Graph ... Please be patient, this step can take several minutes for large files.')
                 self.graph = Graph().parse(ont[1], format='xml')
 
                 # get ontology information

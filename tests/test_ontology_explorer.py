@@ -108,8 +108,8 @@ class TestOntologyInfoExtractor(TestCase):
         # check lengths of sub-dictionaries
         self.assertTrue(len(results['label']) == 2237)
         self.assertTrue(len(results['definition']) == 2004)
-        self.assertTrue(len(results['synonym']) == 3819)
         self.assertTrue(len(results['dbxref']) == 391)
+        self.assertTrue(len(results['synonym']) == 3819)
 
         return None
 
@@ -162,8 +162,8 @@ class TestOntologyInfoExtractor(TestCase):
         # check lengths of sub-dictionaries
         self.assertTrue(len(pickled_dict['so']['label']) == 2237)
         self.assertTrue(len(pickled_dict['so']['definition']) == 2004)
-        self.assertTrue(len(pickled_dict['so']['synonym']) == 3819)
         self.assertTrue(len(pickled_dict['so']['dbxref']) == 391)
+        self.assertTrue(len(pickled_dict['so']['synonym']) == 3819)
 
         # clean up environment
         os.remove(self.ontology_directory + '/so_without_imports_class_information.pickle')
