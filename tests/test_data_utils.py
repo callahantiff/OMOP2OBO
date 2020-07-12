@@ -143,7 +143,8 @@ class TestDataUtils(unittest.TestCase):
     def test_data_frame_grouper(self):
         """Tests the data_frame_grouper method."""
 
-        grouped_data = data_frame_grouper(self.group_data, 'CONCEPT_ID', 'CONCEPT_DBXREF_ONT_TYPE')
+        grouped_data = data_frame_grouper(self.group_data, 'CONCEPT_ID', 'CONCEPT_DBXREF_ONT_TYPE',
+                                          aggregates_column_values)
 
         # test method and output
         self.assertIsInstance(grouped_data, pd.DataFrame)

@@ -20,7 +20,7 @@ import pandas as pd  # type: ignore
 
 from functools import reduce
 from more_itertools import unique_everseen
-from typing import Dict, List  # type: ignore
+from typing import Callable, Dict, List  # type: ignore
 
 # ENVIRONMENT WARNINGS
 # WARNING 1 - Pandas: disable chained assignment warning rationale:
@@ -170,7 +170,8 @@ def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: Lis
     return merged_combo
 
 
-def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str) -> pd.DataFrame:
+def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str, col_agg: Callable) -> \
+        pd.DataFrame:
     """Methods takes a Pandas DataFrame as input, a primary key, and a column to group the data by and
     creates a new DataFrame that merges the individual grouped DataFrames into a single DataFrame.
     Examples of the input and output data are shown below.
@@ -191,6 +192,7 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str) -
             primary key.
         type_column: A string containing the name of the column in the input DataFrame to use for
             grouping the data (see OUTPUT above for an example).
+        col_agg: A func that aggregates data within a Pandas DataFrame column.
 
     Returns:
         grouped_data_full: A Pandas DataFrame containing a merged version of the grouped data.
@@ -206,8 +208,11 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str) -
         # rename columns
         updated_names = [grp.upper() + '_' + x for x in list(temp_df.columns) if x != primary_key]
         temp_df.columns = [primary_key] + updated_names
+        # aggregate data
+        agg_cols = [col for col in temp_df.columns if col.split('_')[-1] in ['LABEL', 'EVIDENCE', 'URI']]
+        temp_df_agg = col_agg(temp_df.copy(), primary_key, agg_cols, ' | ')
 
-        grouped_data_frames.append(temp_df.drop_duplicates())
+        grouped_data_frames.append(temp_df_agg.drop_duplicates())
 
     # merge DataFrames back together
     grouped_data_full = reduce(lambda x, y: pd.merge(x, y, how='outer', on=primary_key), grouped_data_frames)
