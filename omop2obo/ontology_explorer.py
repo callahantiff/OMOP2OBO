@@ -55,8 +55,6 @@ class OntologyInfoExtractor(object):
                 'synonyms': { 'open bite': 'http://purl.obolibrary.org/obo/HP_0010807'}}
         """
 
-        print('Obtaining Ontology Information')
-
         # get class information
         deprecated_classes = gets_deprecated_ontology_classes(self.graph, ont_id)
         filter_classes = set([x for x in gets_ontology_classes(self.graph, ont_id) if x not in deprecated_classes])

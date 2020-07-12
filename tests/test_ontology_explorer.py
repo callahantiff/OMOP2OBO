@@ -167,5 +167,6 @@ class TestOntologyInfoExtractor(TestCase):
 
         # clean up environment
         os.remove(self.ontology_directory + '/so_without_imports_class_information.pickle')
+        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
 
         return None
