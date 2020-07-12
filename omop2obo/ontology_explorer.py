@@ -83,7 +83,7 @@ class OntologyInfoExtractor(object):
         """
 
         for ont in self.ont_dictionary.items():
-            print('\n****** Processing Ontology: {0}'.format(ont[0]))
+            print('\nPROCESSING ONTOLOGY: {0}'.format(ont[0]))
 
             # check and make sure that we are not re-running a file we have already processed
             if ont[1].replace('.owl', '_class_information.pickle').split('/')[-1] in os.listdir(self.ont_directory):
