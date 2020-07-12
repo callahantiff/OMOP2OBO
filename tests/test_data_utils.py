@@ -127,9 +127,14 @@ class TestDataUtils(unittest.TestCase):
 
         # run method and test output
         combined_dicts = merge_dictionaries(self.sample_dicts, 'dbxref')
-
         self.assertIsInstance(combined_dicts, Dict)
         self.assertTrue(len(combined_dicts.keys()) == 6)
         self.assertTrue(len(combined_dicts.values()) == 6)
+
+        # test the method when reverse=True
+        combined_dicts_rev = merge_dictionaries(self.sample_dicts, 'dbxref', reverse=True)
+        self.assertIsInstance(combined_dicts_rev, Dict)
+        self.assertTrue(len(combined_dicts_rev.keys()) == 4)
+        self.assertTrue(len(combined_dicts_rev.values()) == 4)
 
         return None

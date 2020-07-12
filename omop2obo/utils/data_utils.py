@@ -170,7 +170,7 @@ def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: Lis
     return merged_combo
 
 
-def merge_dictionaries(dictionaries: Dict, key_type: str) -> Dict:
+def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False) -> Dict:
     """Given any number of dictionaries, shallow copy and merge into a new dict, precedence goes to key value pairs
     in latter dictionaries.
 
@@ -180,6 +180,7 @@ def merge_dictionaries(dictionaries: Dict, key_type: str) -> Dict:
     Args:
         dictionaries: A nested dictionary.
         key_type: A string containing the key of one of the inner dictionaries.
+        reverse: A bool indicating whether or not the dictionaries should be reversed before merging (default=False).
 
     Returns:
         combined_dictionary: A dictionary object containing.
@@ -188,6 +189,9 @@ def merge_dictionaries(dictionaries: Dict, key_type: str) -> Dict:
     combined_dictionary: Dict = {}
 
     for dictionary in dictionaries.keys():
-        combined_dictionary.update(dictionaries[dictionary][key_type])
+        if reverse:
+            combined_dictionary.update({v: k for k, v in dictionaries[dictionary][key_type].items()})
+        else:
+            combined_dictionary.update(dictionaries[dictionary][key_type])
 
     return combined_dictionary
