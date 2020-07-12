@@ -34,7 +34,7 @@ def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
         ont_id: A string containing an ontology namespace.
 
     Returns:
-        class_list: A list of all of the classes in the graph.
+        class_list: A set of all of the classes in the graph.
 
     Raises:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
@@ -180,7 +180,7 @@ def gets_ontology_statistics(file_location: str, owltools_location: str = './omo
         owltools_location: A string pointing to the location of the owl tools library.
 
     Returns:
-        None.
+        A set of all the deprecated ontology classes.
 
     Raises:
         TypeError: If the file_location is not type str.
