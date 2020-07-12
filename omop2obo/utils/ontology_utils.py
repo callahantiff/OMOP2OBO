@@ -40,7 +40,7 @@ def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
     """
 
-    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes')
+    print('Querying Knowledge Graph to Obtain all OWL:Class Nodes')
 
     # find all classes in graph
     class_list = set([x for x in graph.subjects(RDF.type, OWL.Class) if ont_id.lower() in str(x).lower()])
@@ -49,12 +49,13 @@ def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
     else: raise ValueError('ERROR: No classes returned from query.')
 
 
-def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
+def gets_ontology_class_labels(graph: Graph, cls: Set) -> Dict:
     """Queries a knowledge graph and returns a dictionary of all owl:Class objects and their labels in the graph.
 
     Args:
         graph: An rdflib Graph object.
-        ont_id: A string containing an ontology namespace.
+        cls: A set of current (non-deprecated) ontology class identifiers. For example:
+            {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
         class_list: A dictionary where keys are string labels and values are ontology URIs. An example is shown below:
@@ -67,19 +68,19 @@ def gets_ontology_class_labels(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Labels')
 
     # find all classes in graph
-    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
-                  if ont_id.lower() in str(x[0]).lower() and 'label' in str(x[1]).lower()}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'label' in str(x[1]).lower()}
 
     return class_list
 
 
-def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
+def gets_ontology_class_definitions(graph: Graph, cls: Set) -> Dict:
     """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their definitions
     in the graph.
 
     Args:
         graph: An rdflib Graph object.
-        ont_id: A string containing an ontology namespace.
+        cls: A set of current (non-deprecated) ontology class identifiers. For example:
+            {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
         class_list: A dictionary where keys are string definitions and values are ontology URIs. An example is shown
@@ -93,19 +94,19 @@ def gets_ontology_class_definitions(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Definitions')
 
     # find all classes in graph
-    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
-                  if ont_id.lower() in str(x[0]).lower() and 'IAO_0000115' in str(x[1])}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'IAO_0000115' in str(x[1])}
 
     return class_list
 
 
-def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
+def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
     """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their synonyms in the
     graph.
 
     Args:
         graph: An rdflib Graph object.
-        ont_id: A string containing an ontology namespace.
+        cls: A set of current (non-deprecated) ontology class identifiers. For example:
+            {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
         class_list: A dictionary where keys are strng synonyms and values are ontology URIs. An example is shown below:
@@ -117,19 +118,19 @@ def gets_ontology_class_synonyms(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Synonyms')
 
     # find all classes in graph
-    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
-                  if ont_id.lower() in str(x[0]).lower() and 'synonym' in str(x[1]).lower()}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'synonym' in str(x[1]).lower()}
 
     return class_list
 
 
-def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
+def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:
     """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their database
     cross references (dbxrefs) in the graph.
 
     Args:
         graph: An rdflib Graph object.
-        ont_id: A string containing an ontology namespace.
+        cls: A set of current (non-deprecated) ontology class identifiers. For example:
+            {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
         class_list: A dictionary where keys are dbxref strings and values are ontology URIs. An example is shown below:
@@ -142,8 +143,7 @@ def gets_ontology_class_dbxrefs(graph: Graph, ont_id: str) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and DbXRefs')
 
     # find all classes in graph
-    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph)
-                  if ont_id.lower() in str(x[0]).lower() and 'hasdbxref' in str(x[1]).lower()}
+    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'hasdbxref' in str(x[1]).lower()}
 
     return class_list
 
@@ -162,7 +162,7 @@ def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
         ValueError: If the query returns zero nodes with type owl:Class.
     """
 
-    print('\nQuerying Knowledge Graph to Obtain all deprecated OWL:Class Nodes')
+    print('Querying Knowledge Graph to Obtain all Deprecated OWL:Class Nodes')
 
     # find all deprecated classes in graph
     dep_classes = list(graph.subjects(OWL.deprecated, Literal('true', datatype=URIRef(schema + 'boolean'))))

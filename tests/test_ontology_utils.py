@@ -30,6 +30,11 @@ class TestOntologyUtils(unittest.TestCase):
         dir_loc2 = os.path.join(current_directory, 'utils/owltools')
         self.owltools_location = os.path.abspath(dir_loc2)
 
+        # get ontology class information
+        graph = Graph().parse(self.dir_loc + '/so_without_imports.owl', format='xml')
+        deprecated_classes = gets_deprecated_ontology_classes(graph, 'so')
+        self.filter_classes = set([x for x in gets_ontology_classes(graph, 'so') if x not in deprecated_classes])
+
         return None
 
     def test_gets_ontology_statistics(self):
@@ -75,9 +80,9 @@ class TestOntologyUtils(unittest.TestCase):
         graph.parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
-        classes = gets_ontology_class_labels(graph, 'SO')
+        classes = gets_ontology_class_labels(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(2494, len(classes))
+        self.assertEqual(2237, len(classes))
 
         return None
 
@@ -89,9 +94,9 @@ class TestOntologyUtils(unittest.TestCase):
         graph.parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
-        classes = gets_ontology_class_definitions(graph, 'SO')
+        classes = gets_ontology_class_definitions(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(2130, len(classes))
+        self.assertEqual(2004, len(classes))
 
         return None
 
@@ -103,9 +108,9 @@ class TestOntologyUtils(unittest.TestCase):
         graph.parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
-        classes = gets_ontology_class_synonyms(graph, 'SO')
+        classes = gets_ontology_class_synonyms(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(4056, len(classes))
+        self.assertEqual(3819, len(classes))
 
         return None
 
@@ -117,9 +122,9 @@ class TestOntologyUtils(unittest.TestCase):
         graph.parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
-        classes = gets_ontology_class_dbxrefs(graph, 'SO')
+        classes = gets_ontology_class_dbxrefs(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(393, len(classes))
+        self.assertEqual(391, len(classes))
 
         return None
 
