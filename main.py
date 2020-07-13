@@ -3,59 +3,59 @@
 
 
 # import needed libraries
-# from more_itertools import unique_everseen
-# import pandas as pd
+import click
+import glob
+import pickle
 
-from omop2obo.ontology_downloader import OntologyDownloader
-# from omop2obo.concept_annotator import *
-from omop2obo.ontology_explorer import OntologyInfoExtractor
-
-
-# def preprocess_sentences(sentence):
-#     """Preprocess an input sentence by: lowering the case, removing non-alphanumeric characters, tokenizing, and
-#     removing English stop words.
-#
-#     Args:
-#         sentence: A string representing a sentence of text
-#
-#     Returns:
-#         A string of text which has been preprocessed
-#     """
-#
-#     # replace all non-alphanumeric characters with spaces
-#     lower_nopunct = re.sub(' +', ' ', re.sub(r'[^a-zA-Z0-9\s\-]', ' ', sentence.lower()))
-#
-#     # tokenize & remove punctuation
-#     token = list(unique_everseen(RegexpTokenizer(r'\w+').tokenize(lower_nopunct)))
-#
-#     # remove stop words & perform lemmatization
-#     token_stop = [str(x) for x in token if x not in stopwords.words('english')]
-#     # token_lemma = [str(WordNetLemmatizer().lemmatize(x)) for x in token if x not in stopwords.words('english')]
-#
-#     return token
+from omop2obo import ConceptAnnotator, OntologyDownloader, OntologyInfoExtractor
 
 
-def main():
-
+@click.command()
+@click.option('--ontology_file', type=click.Path(exists=True), required=True,
+              prompt='The file path and name containing the list of ontologies to process')
+@click.option('--clinical_domain', required=True, prompt='The clinical domain of the input file')
+@click.option('--clinical_data', type=click.Path(exists=True), required=True,
+              prompt='The filepath to the clinical data needing mapping')
+@click.option('--primary_key', required=True, prompt='The name of the file to use as the primary key (e.g. CONCEPT_ID)')
+@click.option('--concept_codes', required=True, prompt='A comma-separated list (without spaces) of concept-level codes '
+                                                       'to map to DbXRefs (e.g. CONCEPT_SOURCE_CODE)')
+@click.option('--concept_strings', prompt='A comma-separated list (without spaces) of concept-level strings to map to '
+                                          'use for exact string mapping (e.g. CONCEPT_LABEL, CONCEPT_SYNONYM)')
+@click.option('--ancestor_codes', prompt='A comma-separated list (without spaces) of ancestor-level codes to map to '
+                                         'DbXRefs (e.g. ANCESTOR_SOURCE_CODE)')
+@click.option('--ancestor_strings', prompt='A comma-separated list (without spaces) of ancestor-level strings to map '
+                                           'to use for exact string mapping (e.g. ANCESTOR_LABEL, ANCESTOR_SYNONYM)')
+def main(ontology_file: str, clinical_domain: str, clinical_data: str, primary_key: str, concept_codes: str,
+         concept_strings: str, ancestor_codes: str, ancestor_strings: str):
     ######################
     # PROCESS ONTOLOGIES #
     ######################
 
     # download ontologies
-    ont = OntologyDownloader('resources/ontology_source_list.txt')
+    # ontology_resource_file = 'resources/ontology_source_list.txt'
+    ont = OntologyDownloader(ontology_file)
     ont.downloads_data_from_url()
+
+    # data_files = {'cl': 'resources/ontologies/cl_without_imports.owl',
+    #  'chebi': 'resources/ontologies/chebi_without_imports.owl',
+    #  'hp': 'resources/ontologies/hp_without_imports.owl',
+    #  'mondo': 'resources/ontologies/mondo_without_imports.owl',
+    #  'ncbitaxon': 'resources/ontologies/ncbitaxon_without_imports.owl',
+    #  'pr': 'resources/ontologies/pr_without_imports.owl',
+    #  'uberon': 'resources/ontologies/ext_without_imports.owl',
+    #  'vo': 'resources/ontologies/vo_without_imports.owl'}
 
     # process ontologies
     ont_explorer = OntologyInfoExtractor('resources/ontologies', ont.data_files)
     ont_explorer.ontology_processor()
 
-    # load ontologies
-    ontology_data = ont_explorer.ontology_loader()
+    # create master dictionary of processed ontologies
+    ont_explorer.ontology_loader()
 
-    for key in ontology_data.keys():
-        print(key)
-        for key2 in ontology_data[key].keys():
-            print(key2, len(ontology_data[key][key2]))
+    # read in ontology data
+    with open('resources/ontologies/master_ontology_dictionary.pickle', 'rb') as handle:
+        ontology_data = pickle.load(handle)
+    handle.close()
 
     #########################
     # PROCESS CLINICAL DATA #
@@ -64,34 +64,52 @@ def main():
     # STEP 1 - download clinical data from GCS (or put data files in the resources/clinical_data repo)
     # see README in 'resources/clinical_data'; assumes all clinical data will be located in "resources/clinical_data"
 
-    # STEP 2 - download MRCONSO.RRF from NLM UMLS and put data in "resources/mappings"
-    # see README for more details - make sure "MRCONSO" is included in the filename
+    # STEP 2 - download MRCONSO.RRF and MRSTY.RRF files from the NLM UMLS and put data in "resources/mappings"
+    # see README for more details - make sure "MRCONSO" and "MRSTY" are included in the filename
 
     # STEP 3 - perform clinical concept mapping
-    # This step consists of four steps and will be performed for each clinical domain:
-    #    a - UMLS Semantic Typing
-    #    b - DbXRef mapping
-    #    c - Exact String Mapping to concept labels and/or synonyms
-    #    d - Similarity distance mapping
+    if clinical_domain.lower() == 'condition':
+        # Condition Occurrence Data
+        cond_ont = {k: v for k, v in ontology_data.items() if k in ['hp', 'mondo']}
+        # clinical_data = 'resources/clinical_data/omop2obo_conditions_june2020.csv'
+        # primary_ket = 'CONCEPT_ID'
+        # concept_codes = ['CONCEPT_SOURCE_CODE']
+        # concept_strings = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+        # anscestor_codes = ['ANCESTOR_SOURCE_CODE']
+        # ancestor_strings = ['ANCESTOR_LABEL']
+        condition_map = ConceptAnnotator(clinical_data, cond_ont, primary_key, concept_codes.split(','),
+                                         concept_strings.split(','), ancestor_codes.split(','),
+                                         ancestor_strings.split(','),
+                                         glob.glob('resources/mappings/*MRCONSO*')[0]
+                                         if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
+                                         glob.glob('resources/mappings/*MRCONSO*')[0]
+                                         if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
 
-    # CONDITION_OCCURRENCE CONCEPTS
-    # reduce ontology dictionary to relevant ontologies
-    cond_onts = {k: v for k, v in ontology_data.items() if k in ['hp', 'mondo']}
-    omop_conditions = 'resources/clinical_data/omop2obo_conditions_june2020.csv'
+        conds = condition_map.clinical_concept_mapper()
+        conds.to_csv('mappings/condition_codes/OMOP2OBO_MAPPED_CONDS.csv', sep=',', index=False, header=True)
+    elif clinical_domain == 'labs':
+        # Measurement Data
+        lab_ont = {k: v for k, v in ontology_data.items() if k in ['hp', 'ext', 'cl', 'chebi', 'pr', 'ncbitaxon']}
+        measurement_map = ConceptAnnotator(clinical_data, lab_ont, primary_key, concept_codes.split(','),
+                                           concept_strings.split(','), ancestor_codes.split(','),
+                                           ancestor_strings.split(','),
+                                           glob.glob('resources/mappings/*MRCONSO*')[0]
+                                           if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
+                                           glob.glob('resources/mappings/*MRCONSO*')[0]
+                                           if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
 
+        labs = measurement_map.clinical_concept_mapper()
+        labs.to_csv('mappings/condition_codes/OMOP2OBO_MAPPED_LABS.csv', sep=',', index=False, header=True)
+    else:
+        # Drug Exposure Data
+        drug_ont = {k: v for k, v in ontology_data.items() if k in ['chebi', 'pr', 'ncbitaxon', 'vo']}
+        drug_exposure_map = ConceptAnnotator(clinical_data, drug_ont, primary_key, concept_codes.split(','),
+                                             concept_strings.split(','), ancestor_codes.split(','),
+                                             ancestor_strings.split(','),
+                                             glob.glob('resources/mappings/*MRCONSO*')[0]
+                                             if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
+                                             glob.glob('resources/mappings/*MRCONSO*')[0]
+                                             if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
 
-    # step a - semantic typing
-
-    # step b - dbXRef mapping
-
-    # step c - exact string mapping
-
-    # step d - similarity distance mapping
-
-    # MEASUREMENT CONCEPTS
-    # reduce ontology dictionary to relevant ontologies
-    lab_onts = {k: v for k, v in ontology_data.items() if k in ['hp', 'uberon', 'cl', 'chebi', 'pr', 'ncbitaxon']}
-
-    # DRUG_EXPOSURE CONCEPTS
-    # reduce ontology dictionary to relevant ontologies
-    med_onts = {k: v for k, v in ontology_data.items() if k in ['chebi', 'pr', 'ncbitaxon', 'vo']}
+        drugs = drug_exposure_map.clinical_concept_mapper()
+        drugs.to_csv('mappings/condition_codes/OMOP2OBO_MAPPED_DRUGS.csv', sep=',', index=False, header=True)
