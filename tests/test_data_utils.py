@@ -117,7 +117,7 @@ class TestDataUtils(unittest.TestCase):
 
         # set-up input parameters
         delimited_columns = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
-        split_data = column_splitter(self.string_data, delimited_columns, '|')
+        split_data = column_splitter(self.string_data, 'CONCEPT_ID', delimited_columns, '|')
 
         # test method and output
         self.assertIsInstance(split_data, pd.DataFrame)

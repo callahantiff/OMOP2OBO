@@ -104,13 +104,14 @@ def data_frame_supersetter(data: pd.DataFrame, index: str, columns: str, values:
     return superset_data_frame.drop_duplicates()
 
 
-def column_splitter(data: pd.DataFrame, delimited_columns: List, delimiter: str) -> pd.DataFrame:
+def column_splitter(data: pd.DataFrame, key: str, delimited_columns: List, delimiter: str) -> pd.DataFrame:
     """Takes a Pandas DataFrame and a list of strings specifying columns in the DataFrame that may contain a delimiter
     and expands the delimited strings within each column into separate rows. The expanded data are then merged with the
     original data.
 
     Args:
         data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method.
+        key: A string containing the column of a Pandas DataFrame to use as the primary key.
         delimited_columns: A list of the column names which contain delimited data.
         delimiter: A string specifying the delimiter type.
 
@@ -119,7 +120,6 @@ def column_splitter(data: pd.DataFrame, delimited_columns: List, delimiter: str)
     """
 
     delimited_data = []
-    key = [x for x in list(data.columns) if x not in delimited_columns][0]
 
     for col in delimited_columns:
         subset_data = data[[key, col]]
