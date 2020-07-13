@@ -1,0 +1,1 @@
+chebi, https://reactome.org/download/current/ReactomePathways.gmt.zip

@@ -1,21 +1,34 @@
-## Compiled source ##
-#######################
-*.pyc
+## compiled source/environment ##
+#################################
+.DS_Store
+*.egg-info
 *.exe
+.idea
 .idea/*
+*.pyc
+__pycache__
 
-## Directories ##
-########################
+## testing resources ##
+#################################
+*.mypy*
+.coverage*
+coverage.xml
+.notipy.json
+.single_run
+.vscode/
+
+## directories ##
+#################################
+resources/clinical_data
+!resources/clinical_data/README.md
 resources/mappings/
 !resources/mappings/medication_codes/.gitkeep
 !resources/mappings/laboratory_tests/.gitkeep
 !resources/mappings/condition_codes/.gitkeep
 resources/ontologies/
+!resources/ontologies/ontology_source_metadata.txt
 resources/programming/
 
 ## scripts ##
-########################
-scripts/bash
-scripts/pythton/drafts.zip
-scripts/python/scratch.py
-scripts/tests/
+#################################
+scripts/*
