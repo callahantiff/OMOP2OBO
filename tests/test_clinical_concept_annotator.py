@@ -14,7 +14,6 @@ class TestConceptAnnotator(TestCase):
     """Class to test functions used when downloading ontology data sources."""
 
     def setUp(self):
-
         # initialize OntologyInfoExtractor instance
         current_directory = os.path.dirname(__file__)
         dir_loc = os.path.join(current_directory, 'data')
@@ -167,7 +166,7 @@ class TestConceptAnnotator(TestCase):
         # test if file is empty
         mrconso_empty = self.mapping_directory + '/MRCONSO_EMPTY.RRF'
         self.assertRaises(TypeError, ConceptAnnotator, self.clinical_file, self.ont_dict, self.primary_key,
-                          self.concept_codes,  self.concept_strings, self.ancestor_codes, self.ancestor_strings,
+                          self.concept_codes, self.concept_strings, self.ancestor_codes, self.ancestor_strings,
                           mrconso_empty, self.umls_tui)
 
         return None
@@ -199,7 +198,8 @@ class TestConceptAnnotator(TestCase):
         """Test the umls_cui_annotation method."""
 
         # run the method and verify the output
-        umls_annotated_data = self.annotator.umls_cui_annotator('CONCEPT_ID', 'CONCEPT_SOURCE_CODE')
+        umls_annotated_data = self.annotator.umls_cui_annotator(self.annotator.clinical_data,
+                                                                'CONCEPT_ID', 'CONCEPT_SOURCE_CODE')
         self.assertTrue(len(umls_annotated_data) == 1)
         self.assertTrue(len(umls_annotated_data.columns) == 6)
         self.assertEqual(umls_annotated_data.at[0, 'UMLS_SEM_TYPE'], 'Pharmacologic Substance')
@@ -214,15 +214,16 @@ class TestConceptAnnotator(TestCase):
         subset_cols = [code_level, 'UMLS_CODE', 'UMLS_CUI']
 
         # run umls annotation
-        umls_annotated_data = self.annotator.umls_cui_annotator(primary_key, code_level)
+        umls_annotated_data = self.annotator.umls_cui_annotator(self.annotator.clinical_data, primary_key, code_level)
         umls_stack = data_frame_subsetter(umls_annotated_data[[primary_key] + subset_cols], primary_key, subset_cols)
 
         # get dbxrefs
-        stacked_dbxref = self.annotator.dbxref_mapper(umls_stack)
-        self.assertTrue(len(stacked_dbxref) == 4)
-        self.assertTrue(len(stacked_dbxref.columns) == 7)
-        self.assertEqual(list(stacked_dbxref.columns),
-                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'DBXREF', 'ONT_URI', 'ONT', 'DBXREF_EVIDENCE'])
+        stacked_dbxref = self.annotator.dbxref_mapper(umls_stack, 'CONCEPT_ID', 'concept')
+        self.assertTrue(len(stacked_dbxref) == 2)
+        self.assertTrue(len(stacked_dbxref.columns) == 5)
+        self.assertEqual(list(stacked_dbxref.columns), ['CONCEPT_ID', 'CONCEPT_DBXREF_ONT_URI',
+                                                        'CONCEPT_DBXREF_ONT_TYPE', 'CONCEPT_DBXREF_ONT_LABEL',
+                                                        'CONCEPT_DBXREF_ONT_EVIDENCE'])
 
         return None
 
@@ -231,18 +232,71 @@ class TestConceptAnnotator(TestCase):
 
         # prepare input data
         primary_key, code_strings = 'CONCEPT_ID', ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
-        clinical_strings = self.annotator.clinical_data.copy()
-        clinical_strings = clinical_strings[[primary_key] + code_strings]
-
-        # unlist "|" delimited data and stack string columns
-        split_strings = column_splitter(clinical_strings, code_strings, '|')[[primary_key] + code_strings]
+        clinical_strings = self.annotator.clinical_data.copy()[[primary_key] + code_strings]
+        split_strings = column_splitter(clinical_strings, primary_key, code_strings, '|')
+        split_strings = split_strings[[primary_key] + code_strings]
         split_strings_stacked = data_frame_subsetter(split_strings, primary_key, code_strings)
 
         # test method
-        stacked_strings = self.annotator.exact_string_mapper(split_strings_stacked)
-        self.assertTrue(len(stacked_strings) == 4)
-        self.assertTrue(len(stacked_strings.columns) == 6)
-        self.assertEqual(list(stacked_strings.columns),
-                         ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'ONT_URI', 'ONT', 'STR_EVIDENCE'])
+        stacked_strings = self.annotator.exact_string_mapper(split_strings_stacked, 'CONCEPT_ID', 'concept')
+        self.assertTrue(len(stacked_strings) == 6)
+        self.assertTrue(len(stacked_strings.columns) == 5)
+        self.assertEqual(list(stacked_strings.columns), ['CONCEPT_ID', 'CONCEPT_STR_ONT_URI', 'CONCEPT_STR_ONT_TYPE',
+                                                         'CONCEPT_STR_ONT_LABEL', 'CONCEPT_STR_ONT_EVIDENCE'])
+
+        return None
+
+    def test_clinical_concept_mapper(self):
+        """Tests the clinical_concept_mapper method."""
+
+        # test method
+        results = self.annotator.clinical_concept_mapper()
+        self.assertTrue(len(results) == 5)
+        self.assertTrue(len(results.columns) == 39)
+
+        return None
+
+    def test_clinical_concept_mapper_no_umls(self):
+        """Tests the clinical_concept_mapper method when no MRCONSO or MRSTY data are provided."""
+
+        # change input parameters
+        self.annotator.umls_cui_data = None
+        self.annotator.umls_tui_data = None
+
+        # test method
+        results = self.annotator.clinical_concept_mapper()
+        print(results, results.columns)
+        self.assertTrue(len(results) == 5)
+        self.assertTrue(len(results.columns) == 35)
+
+        return None
+
+    def test_clinical_concept_mapper_no_ancestors(self):
+        """Tests the clinical_concept_mapper method when no ancestor data is provided."""
+
+        # change input parameters
+        self.annotator.ancestor_codes = None
+        self.annotator.ancestor_strings = None
+
+        # test method
+        results = self.annotator.clinical_concept_mapper()
+        self.assertTrue(len(results) == 5)
+        self.assertTrue(len(results.columns) == 25)
+
+        return None
+
+    def test_clinical_concept_mapper_no_umls_no_ancestors(self):
+        """Tests the clinical_concept_mapper method when no umls data is input and ancestor data is provided."""
+
+        # change input parameters
+        self.annotator.ancestor_codes = None
+        self.annotator.ancestor_strings = None
+        self.annotator.umls_cui_data = None
+        self.annotator.umls_tui_data = None
+
+        # test method
+        results = self.annotator.clinical_concept_mapper()
+        self.assertTrue(len(results) == 5)
+        self.assertTrue(len(results.columns) == 23)
 
         return None
