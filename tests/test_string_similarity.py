@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import nltk
+nltk.download('wordnet')
 import numpy as np
 import pickle
 import warnings
