@@ -5,13 +5,14 @@
 # import needed libraries
 import hashlib
 import os
+import nltk
+nltk.download('wordnet')
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 import re
 
 from functools import reduce
 from nltk.corpus import stopwords  # type: ignore
-# nltk.download("wordnet")
 from nltk.stem import WordNetLemmatizer  # type: ignore
 from nltk.tokenize import RegexpTokenizer  # type: ignore
 from pandas import errors
