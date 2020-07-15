@@ -9,9 +9,14 @@ omop2obo
 .. |pip| |downloads|
 
 
-``omop2obo`` is the first health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBO`_) foundry ontologies. These mappings were validated by domain experts and their coverage was examined in several health systems.
+``omop2obo`` is a health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBO`_) foundry ontologies.
 
-Please see the Project `Wiki`_ for more information!
+This repository stores releases of validated versions of the mappings as well as provides code to enable automatic mapping between OMOP clinical concepts and OBO concepts using the following steps:  
+  - Aligns UMLS CUI and Semantic Types       
+  - Creates DbXRef and Exact String Mapping    
+  - Performs TF-IDF Cosine Similarity Mapping    
+
+Please see the Project `Wiki`_ for more details!
 
 |
 
@@ -52,6 +57,26 @@ You can also clone the repository directly from GitHub by running:
 
   git clone https://github.com/callahantiff/OMOP2OBO.git
 
+|
+
+Set-Up Environment     
+^^^^^^^^^^^^
+
+The ``omop2obo`` library requires a specific project directory structure. Please make sure that your project directory includes the following sub-directories:  
+
+.. code:: shell
+
+    OMOP2OBO/  
+        |
+        |---- resources/
+        |         |
+        |     clinical_data/
+        |         |
+        |     mappings/
+        |         |
+        |     ontologies/
+
+|
 |
 
 Dependencies
