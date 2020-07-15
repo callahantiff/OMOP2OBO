@@ -76,6 +76,8 @@ The ``omop2obo`` library requires a specific project directory structure. Please
         |         |
         |     ontologies/
 
+Results will be output to the ``mappings`` directory.  
+
 |
 |
 
