@@ -5,20 +5,20 @@
 # import needed libraries
 import hashlib
 import os
-import numpy as np
+import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 import re
 
 from functools import reduce
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords  # type: ignore
 # nltk.download("wordnet")
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import RegexpTokenizer
+from nltk.stem import WordNetLemmatizer  # type: ignore
+from nltk.tokenize import RegexpTokenizer  # type: ignore
 from pandas import errors
-from scipy import sparse
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import linear_kernel
-from tqdm import tqdm
+from scipy import sparse  # type: ignore
+from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore
+from sklearn.metrics.pairwise import linear_kernel  # type: ignore
+from tqdm import tqdm  # type: ignore
 from typing import Dict, List, Optional, Tuple
 
 from omop2obo.utils import column_splitter, data_frame_subsetter, merge_dictionaries
@@ -136,14 +136,14 @@ class SimilarStringFinder(object):
         """
 
         # convert corpus to dictionary for faster look-up of clinical keys
-        corpus_idx = {}
+        corpus_idx: Dict = {}
         for x in corpus:
             key = x[0].split('_')[0] if x[0].split('_')[0] not in ont_type else '_'.join(x[0].split('_')[0:2])
             if key in corpus_idx.keys(): corpus_idx[key].append(x[0])
             else: corpus_idx[key] = [x[0]]
 
         # create dict with id as key and index as value
-        corpus_enum = {}
+        corpus_enum: Dict = {}
         for x, y in enumerate(corpus):
             if y[0] in corpus_enum.keys(): corpus_enum[y[0]].append(x)
             else: corpus_enum[y[0]] = [x]
@@ -165,7 +165,7 @@ class SimilarStringFinder(object):
         """
 
         # filter matches to reduce duplicate results
-        filtered_matches = []
+        filtered_matches: List = []
         for x, y in sorted(matches, reverse=True):
             if not any(i for i in filtered_matches if y in i):
                 filtered_matches.append([x, y])
@@ -223,7 +223,7 @@ class SimilarStringFinder(object):
         onts, ont_uri = [x.upper() for x in ontology_type], 'http://purl.obolibrary.org/obo/'
         ont_labels = merge_dictionaries(self.ont_dict, 'label', reverse=True)
         corpus_id, corpus_idx = self.corpus_modifier(corpus, onts)  # convert corpus to dictionary for faster look-up
-        results = {x: [] for x in onts}
+        results: Dict = {x: [] for x in onts}
 
         # create ont-only version of TF-IDF matrix and corpus for faster cosine similarity look-up
         sub_idx = [i for j in [v for k, v in corpus_idx.items() if any(k.startswith(x) for x in onts)] for i in j]
