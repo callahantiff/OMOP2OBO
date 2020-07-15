@@ -75,8 +75,8 @@ setup(
         'pandas==1.0.3',
         'rdflib==5.0.0',
         'responses==0.10.12',
-        'scipy',
-        'sklearn',
+        'spacy==2.2.3',
+        'scikit-learn==0.22.1',
         'tqdm==4.42.0'],
     extras_require=extras,
 )
