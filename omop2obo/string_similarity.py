@@ -42,7 +42,13 @@ stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you',
 
 
 class SimilarStringFinder(object):
-    """ #TODO: Add description here!
+    """This class is designed to facilitate the mapping of clinical concepts from the Observational Medical Outcomes
+    Partnership to Open Biomedical Ontology concepts. To suggest labels, we leverage clinical labels and synonyms as
+    well as ontological labels, synonyms, and definitions. These items are preprocessed and then converted into a
+    TF-IDF matrix, which is used to help us calculate Cosine similarity between all clinical concepts and ontology
+    classes. When aligning, the user is able to pass a percentile threshold to reduce the potential list of potential
+    matches and thus we return the n most similar annotations for each clinical concept. To ensure that these
+    annotations are useful, we also return the similarity score for each match.
 
     Attributes:
         clinical_data: A Pandas DataFrame containing clinical data.
@@ -259,9 +265,10 @@ class SimilarStringFinder(object):
                     ont_matches = [x for x in match_info if ont in x[1]]
                     if len(ont_matches) > 0:
                         hits = self.filters_matches(ont_matches, threshold)
-                        ont_res = [x[1] for x in hits], [ont_labels[ont_uri + x[1]] for x in hits], [x[0] for x in hits]
-                        results[ont].append([row[self.primary_key], ' | '.join(ont_res[0]),
-                                             ' | '.join(ont_res[1]), ' | '.join(ont_res[2])])
+                        results[ont].append([row[self.primary_key],
+                                             ' | '.join([x[1] for x in hits]),
+                                             ' | '.join([ont_labels[ont_uri + x[1]] for x in hits]),
+                                             ' | '.join([x[1] + '_' + x[0] for x in hits])])
                     else: continue
             else:
                 continue
@@ -270,8 +277,9 @@ class SimilarStringFinder(object):
         ont_sim = [pd.DataFrame({self.primary_key: [x[0] for x in results[ont]],
                                  ont + '_SIM_ONT_URI': [x[1] for x in results[ont]],
                                  ont + '_SIM_ONT_LABEL': [x[2] for x in results[ont]],
-                                 ont + '_SIM_ONT_EVIDENCE': [x[1] + '_' + x[3] for x in results[ont]]})
+                                 ont + '_SIM_ONT_EVIDENCE': [x[3] for x in results[ont]]})
                    for ont in results.keys()]
+
         scored = reduce(lambda x, y: pd.merge(x, y, how='outer', on=self.primary_key), ont_sim)
 
         return scored.drop_duplicates()
