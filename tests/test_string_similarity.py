@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from typing import Dict, List, Tuple
 from unittest import TestCase
 
-from omop2obo import SimilarStringFinder
+from omop2obo.string_similarity import SimilarStringFinder
 
 
 class TestSimilarStringFinder(TestCase):
