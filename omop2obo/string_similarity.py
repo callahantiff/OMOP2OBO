@@ -10,7 +10,7 @@ import pandas as pd  # type: ignore
 import re
 
 from functools import reduce
-from nltk.corpus import stopwords  # type: ignore
+# from nltk.corpus import stopwords  # type: ignore
 from nltk.stem import WordNetLemmatizer  # type: ignore
 from nltk.tokenize import RegexpTokenizer  # type: ignore
 from pandas import errors
