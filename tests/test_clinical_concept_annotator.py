@@ -11,10 +11,10 @@ from omop2obo.utils import column_splitter, data_frame_subsetter
 
 
 class TestConceptAnnotator(TestCase):
-    """Class to test functions used when downloading ontology data sources."""
+    """Class to test functions used when annotating clinical concepts."""
 
     def setUp(self):
-        # initialize OntologyInfoExtractor instance
+
         current_directory = os.path.dirname(__file__)
         dir_loc = os.path.join(current_directory, 'data')
         self.dir_loc = os.path.abspath(dir_loc)

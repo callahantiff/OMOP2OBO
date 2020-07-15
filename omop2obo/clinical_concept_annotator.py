@@ -70,49 +70,37 @@ class ConceptAnnotator(object):
                 self.clinical_data = pd.read_csv(clinical_file, header=0, sep='\t', low_memory=False).astype(str)
 
         # check primary key
-        if not isinstance(primary_key, str):
-            raise TypeError('primary_key must be type str.')
-        else:
-            self.primary_key: str = primary_key
+        if not isinstance(primary_key, str): raise TypeError('primary_key must be type str.')
+        else: self.primary_key: str = primary_key
 
         # check for concept-level information
-        if not isinstance(concept_codes, List):
-            raise TypeError('concept_codes must be type list.')
-        else:
-            self.concept_codes: List = concept_codes
+        if not isinstance(concept_codes, List): raise TypeError('concept_codes must be type list.')
+        else: self.concept_codes: List = concept_codes
 
         # check concept-level string input (optional)
         if not concept_strings:
             self.concept_strings: Optional[List] = concept_strings
         else:
-            if not isinstance(concept_strings, List):
-                raise TypeError('concept_strings must be type list.')
-            else:
-                self.concept_strings = concept_strings
+            if not isinstance(concept_strings, List): raise TypeError('concept_strings must be type list.')
+            else: self.concept_strings = concept_strings
 
         # check ancestor-level codes input (optional)
         if not ancestor_codes:
             self.ancestor_codes: Optional[List] = ancestor_codes
         else:
-            if not isinstance(ancestor_codes, List):
-                raise TypeError('ancestor_codes must be type list.')
-            else:
-                self.ancestor_codes = ancestor_codes
+            if not isinstance(ancestor_codes, List): raise TypeError('ancestor_codes must be type list.')
+            else: self.ancestor_codes = ancestor_codes
 
         # check ancestor-level strings input (optional)
         if not ancestor_strings:
             self.ancestor_strings = ancestor_strings
         else:
-            if not isinstance(ancestor_strings, List):
-                raise TypeError('ancestor_strings must be type list.')
-            else:
-                self.ancestor_strings = ancestor_strings
+            if not isinstance(ancestor_strings, List): raise TypeError('ancestor_strings must be type list.')
+            else: self.ancestor_strings = ancestor_strings
 
         # check ontology_dictionary
-        if not isinstance(ontology_dictionary, Dict):
-            raise TypeError('ontology_dictionary must be type dict.')
-        else:
-            self.ont_dict: Dict = ontology_dictionary
+        if not isinstance(ontology_dictionary, Dict): raise TypeError('ontology_dictionary must be type dict.')
+        else: self.ont_dict: Dict = ontology_dictionary
 
         # check for UMLS MRCONSO file
         if not umls_mrconso_file:
@@ -288,7 +276,8 @@ class ConceptAnnotator(object):
             5 - Combine results from each level into single Pandas DataFrame
 
         Returns:
-
+            complete_map: A Pandas DataFrame containing the results of performing dbXRef and exact string mapping to
+                the input ontologies and clinical data.
         """
 
         print('\n\n#### MAPPING CONCEPTS ####')
@@ -301,7 +290,7 @@ class ConceptAnnotator(object):
         else: levels = {'concept': {'codes': self.concept_codes, 'strings': self.concept_strings}}
 
         for level in levels.keys():
-            print('\n*** Annotating Level: {} ***'.format(level))
+            print('\n*** Annotating Level: {}'.format(level))
             primary_key, data = self.primary_key, self.clinical_data.copy()
             code_level, code_strings = levels[level]['codes'][0], levels[level]['strings']  # type: ignore
             if 'an' in level: data = column_splitter(data, primary_key, [code_level], '|')[[primary_key] + [code_level]]
