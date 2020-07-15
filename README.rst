@@ -8,13 +8,13 @@ omop2obo
 
 .. |pip| |downloads|
 
-
 ``omop2obo`` is a health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBO`_) foundry ontologies.
 
-This repository stores releases of validated versions of the mappings as well as provides code to enable automatic mapping between OMOP clinical concepts and OBO concepts using the following steps:  
-  - Aligns UMLS CUI and Semantic Types       
-  - Creates DbXRef and Exact String Mapping    
-  - Performs TF-IDF Cosine Similarity Mapping    
+This repository stores releases of validated versions of the mappings as well as provides code to enable automatic mapping between OMOP clinical concepts and OBO concepts using the following steps:
+
+- Aligns UMLS CUI and Semantic Types       
+- Creates DbXRef and Exact String Mapping    
+- Performs TF-IDF Cosine Similarity Mapping   
 
 Please see the Project `Wiki`_ for more details!
 
