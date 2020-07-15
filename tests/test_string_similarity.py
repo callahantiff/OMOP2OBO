@@ -3,7 +3,6 @@
 
 import os.path
 import nltk
-nltk.download('wordnet')
 import numpy as np
 import pickle
 import warnings
@@ -13,6 +12,9 @@ from typing import Dict, List, Tuple
 from unittest import TestCase
 
 from omop2obo.string_similarity import SimilarStringFinder
+
+# download stopwords data from NLTK
+nltk.download('wordnet')
 
 
 class TestSimilarStringFinder(TestCase):
