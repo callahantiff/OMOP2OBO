@@ -14,7 +14,6 @@ before_install:
 - pip install --upgrade pytest
 - pip install --upgrade mypy
 - pip install --upgrade pylint
-- pip install nltk
 install:
 - pip install .[test]
 #- python3 -c "import nltk; nltk.download('wordnet')"
