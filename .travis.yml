@@ -16,6 +16,7 @@ before_install:
 - pip install --upgrade pylint
 install:
 - pip install .[test]
+- python -c "import nltk; nltk.download('wordnet')"
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
