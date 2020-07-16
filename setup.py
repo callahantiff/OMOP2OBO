@@ -70,10 +70,13 @@ setup(
         'google-cloud-core==1.3.0',
         'google-cloud-storage==1.28.0',
         'lxml',
+        'nltk==3.5',
         'oauth2client==4.1.3',
         'pandas==1.0.3',
         'rdflib==5.0.0',
         'responses==0.10.12',
+        'scipy==1.4.1',
+        'scikit-learn==0.22.1',
         'tqdm==4.42.0'],
     extras_require=extras,
 )
