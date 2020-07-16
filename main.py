@@ -5,9 +5,12 @@
 # import needed libraries
 import click
 import glob
+import pandas as pd
 import pickle
 
-from omop2obo import ConceptAnnotator, OntologyDownloader, OntologyInfoExtractor
+from datetime import date, datetime
+
+from omop2obo import ConceptAnnotator, OntologyDownloader, OntologyInfoExtractor, SimilarStringFinder
 
 
 @click.command()
@@ -68,48 +71,63 @@ def main(ontology_file: str, clinical_domain: str, clinical_data: str, primary_k
     # see README for more details - make sure "MRCONSO" and "MRSTY" are included in the filename
 
     # STEP 3 - perform clinical concept mapping
-    if clinical_domain.lower() == 'condition':
-        # Condition Occurrence Data
-        cond_ont = {k: v for k, v in ontology_data.items() if k in ['hp', 'mondo']}
-        # clinical_data = 'resources/clinical_data/omop2obo_conditions_june2020.csv'
-        # primary_ket = 'CONCEPT_ID'
-        # concept_codes = ['CONCEPT_SOURCE_CODE']
-        # concept_strings = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
-        # anscestor_codes = ['ANCESTOR_SOURCE_CODE']
-        # ancestor_strings = ['ANCESTOR_LABEL']
-        condition_map = ConceptAnnotator(clinical_data, cond_ont, primary_key, concept_codes.split(','),
-                                         concept_strings.split(','), ancestor_codes.split(','),
-                                         ancestor_strings.split(','),
-                                         glob.glob('resources/mappings/*MRCONSO*')[0]
-                                         if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
-                                         glob.glob('resources/mappings/*MRCONSO*')[0]
-                                         if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
+    date_today = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
-        conds = condition_map.clinical_concept_mapper()
-        conds.to_csv('mappings/condition_codes/OMOP2OBO_MAPPED_CONDS.csv', sep=',', index=False, header=True)
-    elif clinical_domain == 'labs':
-        # Measurement Data
-        lab_ont = {k: v for k, v in ontology_data.items() if k in ['hp', 'ext', 'cl', 'chebi', 'pr', 'ncbitaxon']}
-        measurement_map = ConceptAnnotator(clinical_data, lab_ont, primary_key, concept_codes.split(','),
-                                           concept_strings.split(','), ancestor_codes.split(','),
-                                           ancestor_strings.split(','),
-                                           glob.glob('resources/mappings/*MRCONSO*')[0]
-                                           if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
-                                           glob.glob('resources/mappings/*MRCONSO*')[0]
-                                           if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
+    # clinical_domain = 'CONDITIONS'
+    # ont_prefix = ['hp', 'mondo']
+    # clinical_data, primary_key = 'resources/clinical_data/omop2obo_conditions_june2020.csv', 'CONCEPT_ID'
+    # concept_codes, concept_strings = ['CONCEPT_SOURCE_CODE'], ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+    # ancestor_codes, ancestor_strings = ['ANCESTOR_SOURCE_CODE'], ['ANCESTOR_LABEL']
+    # outfile = 'resources/mappings/condition_codes/July2020/OMOP2OBO_MAPPED_'
 
-        labs = measurement_map.clinical_concept_mapper()
-        labs.to_csv('mappings/condition_codes/OMOP2OBO_MAPPED_LABS.csv', sep=',', index=False, header=True)
-    else:
-        # Drug Exposure Data
-        drug_ont = {k: v for k, v in ontology_data.items() if k in ['chebi', 'pr', 'ncbitaxon', 'vo']}
-        drug_exposure_map = ConceptAnnotator(clinical_data, drug_ont, primary_key, concept_codes.split(','),
-                                             concept_strings.split(','), ancestor_codes.split(','),
-                                             ancestor_strings.split(','),
-                                             glob.glob('resources/mappings/*MRCONSO*')[0]
-                                             if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
-                                             glob.glob('resources/mappings/*MRCONSO*')[0]
-                                             if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
+    # clinical_domain = 'DRUGS'
+    # ont_prefix = ['chebi', 'pr', 'ncbitaxon', 'vo']
+    # clinical_data ='resources/clinical_data/omop2obo_drug_exposure_june2020.csv'
+    # primary_key = 'INGREDIENT_CONCEPT_ID'
+    # concept_codes, concept_strings = ['INGREDIENT_SOURCE_CODE'], ['INGREDIENT_LABEL', 'INGREDIENT_SYNONYM']
+    # ancestor_codes, ancestor_strings = ['INGRED_ANCESTOR_SOURCE_CODE'], ['INGRED_ANCESTOR_LABEL']
+    # outfile = 'resources/mappings/medication_codes/July2020/OMOP2OBO_MAPPED_'
 
-        drugs = drug_exposure_map.clinical_concept_mapper()
-        drugs.to_csv('mappings/condition_codes/OMOP2OBO_MAPPED_DRUGS.csv', sep=',', index=False, header=True)
+    # clinical_domain = 'LABS'
+    # ont_prefix = ['hp', 'ext', 'cl', 'chebi', 'pr', 'ncbitaxon']
+    # clinical_data, primary_key = 'resources/clinical_data/omop2obo_measurements_june2020.csv', 'CONCEPT_ID'
+    # concept_codes, concept_strings = ['CONCEPT_SOURCE_CODE'], ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+    # ancestor_codes, ancestor_strings = ['ANCESTOR_SOURCE_CODE'], ['ANCESTOR_LABEL']
+    # outfile = 'resources/mappings/laboratory_tests/July2020/OMOP2OBO_MAPPED_'
+
+    mapper = ConceptAnnotator(clinical_file=clinical_data,
+                              ontology_dictionary={k: v for k, v in ont_data.items() if k in ont_prefix},
+                              primary_key=primary_key,
+                              concept_codes=concept_codes,
+                              concept_strings=concept_strings,
+                              ancestor_codes=ancestor_codes,
+                              ancestor_strings=ancestor_strings,
+                              umls_mrconso_file=glob.glob('resources/mappings/*MRCONSO*')[0]
+                              if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
+                              umls_mrsty_file=glob.glob('resources/mappings/*MRCONSO*')[0]
+                              if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
+
+    exact_mappings = mapper.clinical_concept_mapper()
+    exact_mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
+    # get column names -- used later to organize output
+    start_cols = [i for i in exact_mappings.columns if not any(j for j in ['STR', 'DBXREF', 'EVIDENCE'] if j in i)]
+    exact_cols = [i for i in exact_mappings.columns if i not in start_cols]
+
+    # STEP 4: TF-IDF SIMILARITY MAPPING
+    if tfidf_mapping is not None:
+        sim = SimilarStringFinder(clinical_file=outfile + clinical_domain.upper() + date_today + '.csv',
+                                  ontology_dictionary={k: v for k, v in ont_data.items()
+                                                       if k in ont_prefix},
+                                  primary_key=primary_key,
+                                  concept_strings=concept_strings)
+
+        sim_mappings = sim.performs_similarity_search()
+        sim_mappings = sim_mappings[[primary_key] + [x for x in sim_mappings.columns if 'SIM' in x]].drop_duplicates()
+        # get column names -- used later to organize output
+        sim_cols = [i for i in sim_mappings.columns if not any(j for j in start_cols if j in i)]
+
+        # merge dbXref, exact string, and TF-IDF similarity results
+        merged_scores = pd.merge(exact_mappings, sim_mappings, how='left', on=primary_key)
+        # re-order columns and write out data
+        merged_scores = merged_scores[start_cols + exact_cols + sim_cols]
+        merged_scores.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
