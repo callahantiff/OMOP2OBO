@@ -307,7 +307,7 @@ class SimilarStringFinder(object):
 
         # convert ont dictionary into dictionary of Pandas DataFrames keyed by ontology type
         ont_data_dict = {}
-        for ont in ['hp', 'mondo']:
+        for ont in self.ont_dict.keys():
             print('Ontology Data: {}'.format(ont))
             ont_df = pd.concat([pd.DataFrame(self.ont_dict[ont][str_col].items(), columns=['CODE', 'ONT_URI'])
                                 for str_col in ['label', 'definition', 'synonym']])
