@@ -18,9 +18,12 @@ __all__ = [
 
     'OntologyDownloader',
 
-    'OntologyInfoExtractor'
+    'OntologyInfoExtractor',
+
+    'SimilarStringFinder'
 ]
 
 from omop2obo.clinical_concept_annotator import ConceptAnnotator
 from omop2obo.ontology_downloader import OntologyDownloader
 from omop2obo.ontology_explorer import OntologyInfoExtractor
+from omop2obo.string_similarity import SimilarStringFinder
