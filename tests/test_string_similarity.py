@@ -41,7 +41,7 @@ class TestSimilarStringFinder(TestCase):
 
         # add clinical_data file input parameters
         self.primary_key = 'CONCEPT_ID'
-        self.concept_strings = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
+        self.concept_strings = tuple(['CONCEPT_LABEL', 'CONCEPT_SYNONYM'])
 
         # read in corpus
         with open(self.dir_loc + '/clinical_data_corpus.pickle', 'rb') as f:

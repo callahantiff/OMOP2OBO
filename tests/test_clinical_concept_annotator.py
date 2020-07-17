@@ -35,10 +35,10 @@ class TestConceptAnnotator(TestCase):
 
         # add clinical_data file input parameters
         self.primary_key = 'CONCEPT_ID'
-        self.concept_codes = ['CONCEPT_SOURCE_CODE']
-        self.concept_strings = ['CONCEPT_LABEL', 'CONCEPT_SYNONYM']
-        self.ancestor_codes = ['ANCESTOR_SOURCE_CODE']
-        self.ancestor_strings = ['ANCESTOR_LABEL']
+        self.concept_codes = tuple(['CONCEPT_SOURCE_CODE'])
+        self.concept_strings = tuple(['CONCEPT_LABEL', 'CONCEPT_SYNONYM'])
+        self.ancestor_codes = tuple(['ANCESTOR_SOURCE_CODE'])
+        self.ancestor_strings = tuple(['ANCESTOR_LABEL'])
 
         # initialize the class
         self.annotator = ConceptAnnotator(self.clinical_file, self.ont_dict, self.primary_key, self.concept_codes,

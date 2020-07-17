@@ -71,7 +71,7 @@ class SimilarStringFinder(object):
             If the clinical_file does not exist.
     """
 
-    def __init__(self, clinical_file: str, ontology_dictionary: Dict, primary_key: str, concept_strings: List) -> None:
+    def __init__(self, clinical_file: str, ontology_dictionary: Dict, primary_key: str, concept_strings: Tuple) -> None:
 
         self.matrix: sparse.csr_matrix = sparse.csr_matrix(0, dtype=np.int8)
 
@@ -90,19 +90,17 @@ class SimilarStringFinder(object):
                 self.clinical_data = pd.read_csv(clinical_file, header=0, sep='\t', low_memory=False).astype(str)
 
         # check primary key
-        if not isinstance(primary_key, str):
-            raise TypeError('primary_key must be type str.')
-        else:
-            self.primary_key: str = primary_key
+        if not isinstance(primary_key, str): raise TypeError('primary_key must be type str.')
+        else: self.primary_key: str = primary_key
 
         # check concept-level string input (optional)
-        if not concept_strings:
+        if concept_strings is None:
             self.concept_strings: Optional[List] = concept_strings
         else:
-            if not isinstance(concept_strings, List):
-                raise TypeError('concept_strings must be type list.')
+            if not isinstance(concept_strings, Tuple):
+                raise TypeError('concept_strings must be type tuple.')
             else:
-                self.concept_strings = concept_strings
+                self.concept_strings = list(concept_strings)
 
         # check ontology_dictionary
         if not isinstance(ontology_dictionary, Dict):
