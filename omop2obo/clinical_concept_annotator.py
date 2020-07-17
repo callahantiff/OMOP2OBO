@@ -74,28 +74,32 @@ class ConceptAnnotator(object):
         else: self.primary_key: str = primary_key
 
         # check for concept-level information
-        if not isinstance(concept_codes, Tuple): raise TypeError('concept_codes must be type tuple.')
+        if not isinstance(concept_codes, Tuple):  # type: ignore
+            raise TypeError('concept_codes must be type tuple.')
         else: self.concept_codes: List = list(concept_codes)
 
         # check concept-level string input (optional)
         if concept_strings is None:
             self.concept_strings: Optional[List] = concept_strings
         else:
-            if not isinstance(concept_strings, Tuple): raise TypeError('concept_strings must be type tuple.')
+            if not isinstance(concept_strings, Tuple):  # type: ignore
+                raise TypeError('concept_strings must be type tuple.')
             else: self.concept_strings = list(concept_strings)
 
         # check ancestor-level codes input (optional)
         if ancestor_codes is None:
             self.ancestor_codes: Optional[List] = ancestor_codes
         else:
-            if not isinstance(ancestor_codes, Tuple): raise TypeError('ancestor_codes must be type tuple.')
+            if not isinstance(ancestor_codes, Tuple):  # type: ignore
+                raise TypeError('ancestor_codes must be type tuple.')
             else: self.ancestor_codes = list(ancestor_codes)
 
         # check ancestor-level strings input (optional)
         if ancestor_strings is None:
             self.ancestor_strings: Optional[List] = ancestor_strings
         else:
-            if not isinstance(ancestor_strings, Tuple): raise TypeError('ancestor_strings must be type tuple.')
+            if not isinstance(ancestor_strings, Tuple):  # type: ignore
+                raise TypeError('ancestor_strings must be type tuple.')
             else: self.ancestor_strings = list(ancestor_strings)
 
         # check ontology_dictionary

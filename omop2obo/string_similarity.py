@@ -97,7 +97,7 @@ class SimilarStringFinder(object):
         if concept_strings is None:
             self.concept_strings: Optional[List] = concept_strings
         else:
-            if not isinstance(concept_strings, Tuple):
+            if not isinstance(concept_strings, Tuple):  # type: ignore
                 raise TypeError('concept_strings must be type tuple.')
             else:
                 self.concept_strings = list(concept_strings)
