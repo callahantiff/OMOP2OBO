@@ -79,7 +79,6 @@ The ``omop2obo`` library requires a specific project directory structure. Please
 Results will be output to the ``mappings`` directory.  
 
 |
-|
 
 Dependencies
 ^^^^^^^^^^^^
@@ -95,6 +94,126 @@ Dependencies
 - **Clinical Data:** This repository assumes that the clinical data that needs mapping has been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to extracted from the OMOP CDM. An example of what is expected for input clinical data can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
 
 - **Ontology Data:** Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
+
+|
+
+Running the omop2obo Library
+^^^^^^^^^^^^
+
+There are a few ways to run ``omop2obo``. An example workflow is provided below.
+
+.. code:: python
+
+ import glob
+ import pandas as pd
+ import pickle
+ 
+ from datetime import date, datetime
+ 
+ from omop2obo import ConceptAnnotator, OntologyDownloader, OntologyInfoExtractor, SimilarStringFinder
+ 
+ 
+ # set some global variables
+ outfile = 'resources/mappings/OMOP2OBO_MAPPED_'
+ date_today = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
+ 
+ # download ontologies
+ ont = OntologyDownloader('resources/ontology_source_list.txt')
+ ont.downloads_data_from_url()
+
+ # process ontologies
+ ont_explorer = OntologyInfoExtractor('resources/ontologies', ont.data_files)
+ ont_explorer.ontology_processor()
+
+ # create master dictionary of processed ontologies
+ ont_explorer.ontology_loader()
+
+ # read in ontology data
+ with open('resources/ontologies/master_ontology_dictionary.pickle', 'rb') as handle:
+     ont_data = pickle.load(handle)
+ handle.close()
+
+ # process clinical data 
+ mapper = ConceptAnnotator(clinical_file='resources/clinical_data/omop2obo_conditions_june2020.csv',
+                           ontology_dictionary={k: v for k, v in ont_data.items() if k in ['hp', 'mondo']},
+                           primary_key='CONCEPT_ID',
+                           concept_codes=tuple(['CONCEPT_SOURCE_CODE']),
+                           concept_strings=tuple(['CONCEPT_LABEL', 'CONCEPT_SYNONYM']),
+                           ancestor_codes=tuple(['ANCESTOR_SOURCE_CODE']),
+                           ancestor_strings=tuple(['ANCESTOR_LABEL']),
+                           umls_mrconso_file=glob.glob('resources/mappings/*MRCONSO*')[0] if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
+                           umls_mrsty_file=glob.glob('resources/mappings/*MRCONSO*')[0] if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
+
+    exact_mappings = mapper.clinical_concept_mapper()
+    exact_mappings.to_csv(outfile + 'CONDITIONS' + date_today + '.csv', sep=',', index=False, header=True)
+    # get column names -- used later to organize output
+    start_cols = [i for i in exact_mappings.columns if not any(j for j in ['STR', 'DBXREF', 'EVIDENCE'] if j in i)]
+    exact_cols = [i for i in exact_mappings.columns if i not in start_cols]
+
+    # perform similarity mapping
+    if tfidf_mapping is not None:
+        sim = SimilarStringFinder(clinical_file=outfile + 'CONDITIONS' + date_today + '.csv',
+                                  ontology_dictionary={k: v for k, v in ont_data.items() if k in ['hp', 'mondo']},
+                                  primary_key='CONCEPT_ID',
+                                  concept_strings=tuple(['CONCEPT_LABEL', 'CONCEPT_SYNONYM']))
+
+        sim_mappings = sim.performs_similarity_search()
+        sim_mappings = sim_mappings[['CONCEPT_ID'] + [x for x in sim_mappings.columns if 'SIM' in x]].drop_duplicates()
+        # get column names -- used later to organize output
+        sim_cols = [i for i in sim_mappings.columns if not any(j for j in start_cols if j in i)]
+
+        # merge dbXref, exact string, and TF-IDF similarity results
+        merged_scores = pd.merge(exact_mappings, sim_mappings, how='left', on='CONCEPT_ID')
+        # re-order columns and write out data
+        merged_scores = merged_scores[start_cols + exact_cols + sim_cols]
+        merged_scores.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True) 
+
+|
+
+*COMMAND LINE* ➞ `main.py <https://github.com/callahantiff/OMOP2OBO/blob/master/main.py>`_ 
+
+.. code:: bash
+
+  python main.py --help
+  Usage: main.py [OPTIONS]
+
+  The OMOP2OBO package provides functionality to assist with mapping OMOP 
+  standard clinical terminology concepts to OBO terms.
+
+  PARAMETERS:
+      ont_file: 'resources/oontology_source_list.txt'
+      tfidf_mapping: "yes" if want to perform cosine similarity mapping using a TF-IDF matrix.
+      clinical_domain: clinical domain of input data (i.e. "conditions", "drugs", or "measurements").
+      onts: A comma-separated list of ontology prefixes that matches 'resources/oontology_source_list.txt'.
+      clinical_data: The filepath to the clinical data needing mapping.
+      primary_key: The name of the file to use as the primary key.
+      concept_codes: A comma-separated list of concept-level codes to use for DbXRef mapping.
+      concept_strings: A comma-separated list of concept-level strings to map to use for exact string mapping.
+      ancestor_codes: A comma-separated list of ancestor-level codes to use for DbXRef mapping.
+      ancestor_strings: A comma-separated list of ancestor-level strings to map to use for exact string mapping.
+      outfile: The filepath for where to write output data to.
+
+  Several dependencies must be addressed before running this file. Please see the README for instructions.
+
+  Options:
+    --ont_file PATH          [required]
+    --tfidf_mapping TEXT     [required]
+    --clinical_domain TEXT   [required]
+    --ont TEXT               [required]
+    --clinical_data PATH     [required]
+    --primary_key TEXT       [required]
+    --concept_codes TEXT     [required]
+    --concept_strings TEXT
+    --ancestor_codes TEXT
+    --ancestor_strings TEXT
+    --outfile TEXT           [required]
+    --help                   Show this message and exit.   
+
+If you follow the instructions for how to format clinical data (`here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__) and/or if taking the data that results from running our queries `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__), ``omop2obo`` can be run with the following call on the command line (with minor updates to the csv filename):
+
+.. code:: bash
+ 
+ python main.py --clinical_domain condition --onts hp --onts mondo --clinical_data resources/clinical_data/omop2obo_conditions_june2020.csv
 
 |
 
