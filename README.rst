@@ -209,7 +209,7 @@ There are a few ways to run ``omop2obo``. An example workflow is provided below.
     --outfile TEXT           [required]
     --help                   Show this message and exit.   
 
-If you follow the instructions for how to format clinical data (`here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__) and/or if taking the data that results from running our queries (see `Wiki <https://github.com/callahantiff/OMOP2OBO/wiki/Home>`__), ``omop2obo`` can be run with the following call on the command line (with minor updates to the csv filename):
+If you follow the instructions for how to format clinical data (`here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__) and/or if taking the data that results from running our queries `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__), ``omop2obo`` can be run with the following call on the command line (with minor updates to the csv filename):
 
 .. code:: bash
  
