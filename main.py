@@ -93,8 +93,8 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
                               ancestor_strings=ancestor_strings,
                               umls_mrconso_file=glob.glob('resources/mappings/*MRCONSO*')[0]
                               if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
-                              umls_mrsty_file=glob.glob('resources/mappings/*MRCONSO*')[0]
-                              if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None)
+                              umls_mrsty_file=glob.glob('resources/mappings/*MRSTY*')[0]
+                              if len(glob.glob('resources/mappings/*MRSTY*')) > 0 else None)
 
     exact_mappings = mapper.clinical_concept_mapper()
     exact_mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
