@@ -1,5 +1,6 @@
 cl, http://purl.obolibrary.org/obo/cl.owl
 chebi, http://purl.obolibrary.org/obo/chebi.owl
+doid, http://purl.obolibrary.org/obo/doid.owl
 hp, http://purl.obolibrary.org/obo/hp.owl
 mondo, http://purl.obolibrary.org/obo/mondo.owl
 ncbitaxon, http://purl.obolibrary.org/obo/ncbitaxon.owl
