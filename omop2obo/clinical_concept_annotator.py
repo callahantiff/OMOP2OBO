@@ -297,7 +297,8 @@ class ConceptAnnotator(object):
             print('\n*** Annotating Level: {}'.format(level))
             primary_key, data = self.primary_key, self.clinical_data.copy()
             code_level, code_strings = levels[level]['codes'][0], levels[level]['strings']  # type: ignore
-            if 'an' in level: data = column_splitter(data, primary_key, [code_level], '|')[[primary_key] + [code_level]]
+            if level == 'ancestor':
+                data = column_splitter(data, primary_key, [code_level], '|')[[primary_key] + [code_level]]
 
             # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
             print('Performing UMLS CUI + Semantic Type Annotation')
