@@ -203,7 +203,8 @@ class ConceptAnnotator(object):
 
         # convert ontology dictionary to Pandas DataFrame
         combo_dict_df = pd.concat([pd.DataFrame(self.ont_dict[ont]['dbxref'].items(),
-                                   columns=['DBXREF', col_label + 'URI']) for ont in self.ont_dict.keys()])
+                                   columns=['DBXREF', col_label + 'URI']) for ont in self.ont_dict.keys()
+                                   if len(self.ont_dict[ont]['dbxref']) > 0])
         combo_dict_df['CODE'] = combo_dict_df['DBXREF'].apply(lambda x: x.split(':')[-1])
 
         # merge ontology data and clinical data
