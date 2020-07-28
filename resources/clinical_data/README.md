@@ -49,9 +49,9 @@ CONCEPT_ID | CONCEPT_SOURCE_CODE | CONCEPT_LABEL | CONCEPT_VOCAB | CONCEPT_VOCAB
 
 ### Downloading Clinical Data from Google Cloud Storage  
 The repo comes with functionality to help users download data from a Google Cloud Storage bucket. In order to utilize this functionality, you need to obtain the following:  
-- [ ] The name of the Google Cloud Storage Bucket  
-- [ ] The path to the location of the data within the Google Cloud Storage bucket (e.g. `OMOP2OBO_ClinicalData`). Note that this path should point to a directory where this data is stored rather 
-- [ ] Service account information for the bucket where the data is stored, specifically, a service account connected to the account needs to be downloaded as a `json` file and should contain the following information (information below is fake; be sure to keep your information private, but place it somewhere in the project that is reachable by the code). For help obtaining this document see [this](https://stackoverflow.com/questions/46287267/how-can-i-get-the-file-service-account-json-for-google-translate-api) post:  
+- [x] The name of the Google Cloud Storage Bucket  
+- [x] The path to the location of the data within the Google Cloud Storage bucket (e.g. `OMOP2OBO_ClinicalData`). Note that this path should point to a directory where this data is stored rather 
+- [x] Service account information for the bucket where the data is stored, specifically, a service account connected to the account needs to be downloaded as a `json` file and should contain the following information (information below is fake; be sure to keep your information private, but place it somewhere in the project that is reachable by the code). For help obtaining this document see [this](https://stackoverflow.com/questions/46287267/how-can-i-get-the-file-service-account-json-for-google-translate-api) post:  
 
   ```python
   {
