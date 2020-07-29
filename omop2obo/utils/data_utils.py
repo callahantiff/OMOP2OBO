@@ -9,6 +9,8 @@ Pandas DataFrame manipulations
 * data_frame_supersetter
 * column_splitter
 * aggregates_column_values
+* data_frame_grouper
+* normalizes_source_codes
 
 Dictionary manipulations
 * merge_dictionaries
@@ -17,6 +19,7 @@ Dictionary manipulations
 
 # import needed libraries
 import pandas as pd  # type: ignore
+import re
 
 from functools import reduce
 from more_itertools import unique_everseen
@@ -218,6 +221,32 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str, c
     grouped_data_full = reduce(lambda x, y: pd.merge(x, y, how='outer', on=primary_key), grouped_data_frames)
 
     return grouped_data_full.drop_duplicates()
+
+
+def normalizes_source_codes(data: pd.DataFrame, source_code_dict: Dict) -> pd.Series:
+    """Takes a Pandas DataFrame column containing source code values that need normalization and normalizes them
+    using values from a pre-built dictionary (resources/mappings/source_code_vocab_map.csv).
+
+    Args:
+        data: A column from a Pandas DataFrame containing unstacked identifiers that need normalization (e.g.
+            umls:c123456, http://www.snomedbrowser.com/codes/details/12132356564, rxnorm:12345).
+        source_code_dict:
+
+    Returns:
+        A Pandas DataFrame column that has been normalized.
+    """
+
+    # split prefix from number in each identifier
+    prefix = data.apply(lambda j: j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1])
+    id_num = data.apply(lambda j: [x for x in re.split('[:|/]', j) if x != ''][-1])
+
+    # normalize prefix
+    norm_prefix = prefix.apply(lambda j: source_code_dict[j] if j in source_code_dict.keys() else j)
+
+    # concat normalized identifier and number back together
+    updated_source_codes = norm_prefix + ':' + id_num
+
+    return updated_source_codes
 
 
 def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False) -> Dict:
