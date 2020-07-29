@@ -155,6 +155,26 @@ class TestDataUtils(unittest.TestCase):
 
         return None
 
+    def test_normalizes_source_codes(self):
+        """Tests the normalizes_source_codes method."""
+
+        # set-up input data
+        data = pd.DataFrame(['reactome:r-hsa-937045', 'http://linkedlifedata.com/resource/umls/id/c0010323',
+                            'snomedct_us:111395007', 'pesticides:derivatives/benazolin-ethyl'], columns=['CODE'])
+
+        # set-up input dictionary
+        source_code_dict = {'snomedct_us': 'snomed', 'http://linkedlifedata.com/resource/umls/id': 'umls'}
+
+        # test method
+        result = normalizes_source_codes(data['CODE'], source_code_dict)
+        self.assertIsInstance(result, pd.Series)
+        self.assertIn('reactome:r-hsa-937045', list(result))
+        self.assertIn('umls:c0010323', list(result))
+        self.assertIn('snomed:111395007', list(result))
+        self.assertIn('pesticides:derivatives:benazolin-ethyl', list(result))
+
+        return None
+
     def test_merge_dictionaries(self):
         """Tests the merge_dictionaries method."""
 
