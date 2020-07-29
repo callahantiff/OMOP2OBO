@@ -159,7 +159,7 @@ class TestDataUtils(unittest.TestCase):
         """Tests the normalizes_source_codes method."""
 
         # set-up input data
-        data = pd.DataFrame(['reactome:r-hsa-937045', 'http://linkedlifedata.com/resource/umls/id/c0010323',
+        data = pd.DataFrame(['reactome:r-hsa-937045', 'http://linkedlifedata.com/resource/umls/id/C0010323',
                             'snomedct_us:111395007', 'pesticides:derivatives/benazolin-ethyl'], columns=['CODE'])
 
         # set-up input dictionary

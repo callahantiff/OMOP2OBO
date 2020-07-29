@@ -238,7 +238,7 @@ def normalizes_source_codes(data: pd.DataFrame, source_code_dict: Dict) -> pd.Se
 
     # split prefix from number in each identifier
     prefix = data.apply(lambda j: j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1])
-    id_num = data.apply(lambda j: [x for x in re.split('[:|/]', j) if x != ''][-1])
+    id_num = data.apply(lambda j: [x.lower() for x in re.split('[:|/]', j) if x != ''][-1])
 
     # normalize prefix
     norm_prefix = prefix.apply(lambda j: source_code_dict[j] if j in source_code_dict.keys() else j)
