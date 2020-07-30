@@ -34,10 +34,12 @@ class ConceptAnnotator(object):
         ancestor_strings: A list of column names containing ancestor concept-level labels and synonyms (optional).
         umls_cui_data: A Pandas DataFrame containing UMLS CUI data from MRCONSO.RRF.
         umls_tui_data: A Pandas DataFrame containing UMLS CUI data from MRSTY.RRF.
+        source_code_map: A dictionary containing clinical vocabulary source code abbreviations.
 
     Raises:
         TypeError:
             If clinical_file is not type str or if clinical_file is empty.
+            If source_codes is not type str or if source_codes is empty.
             If ontology_dictionary is not type dict.
             If umls_mrconso_file is not type str or if umls_mrconso_file is empty.
             If umls_mrsty_file is not type str or if umls_mrsty_file is empty.
@@ -45,15 +47,34 @@ class ConceptAnnotator(object):
             if concept_codes, concept_strings, ancestor_codes, and ancestor_strings (if provided) are not type list.
         OSError:
             If the clinical_file does not exist.
+            If the source_codes does not  exist.
             If umls_mrconso_file does not exist.
             If umls_mrsty_file does not exist.
     """
 
     def __init__(self, clinical_file: str, ontology_dictionary: Dict, primary_key: str, concept_codes: Tuple,
                  concept_strings: Tuple = None, ancestor_codes: Tuple = None, ancestor_strings: Tuple = None,
-                 umls_mrconso_file: str = None, umls_mrsty_file: str = None) -> None:
+                 umls_mrconso_file: str = None, umls_mrsty_file: str = None, source_codes: str = None) -> None:
 
         print('#### SETTING UP ENVIRONMENT ####')
+
+        # vocabulary source code mapping -- not tested in testing file
+        source_code = 'resources/mappings/source_code_vocab_map.csv' if source_codes is None else source_codes
+        if not isinstance(source_code, str):
+            raise TypeError('source_codes must be type str.')
+        elif not os.path.exists(source_code):
+            raise OSError('The {} file does not exist!'.format(source_code))
+        elif os.stat(source_code).st_size == 0:
+            raise TypeError('Input file: {} is empty'.format(source_code))
+        else:
+            print('Loading Clinical Vocabulary Abbreviations Map')
+            self.source_code_map: Dict = {}
+            with open(source_code, 'r') as f:
+                for x in f.read().splitlines()[1:]:
+                    row = x.split(',')
+                    for i in row[1].split(' | '):
+                        self.source_code_map[i] = row[0]
+            f.close()
 
         # clinical_file
         if not isinstance(clinical_file, str):
@@ -70,13 +91,16 @@ class ConceptAnnotator(object):
                 self.clinical_data = pd.read_csv(clinical_file, header=0, sep='\t', low_memory=False).astype(str)
 
         # check primary key
-        if not isinstance(primary_key, str): raise TypeError('primary_key must be type str.')
-        else: self.primary_key: str = primary_key
+        if not isinstance(primary_key, str):
+            raise TypeError('primary_key must be type str.')
+        else:
+            self.primary_key: str = primary_key
 
         # check for concept-level information
         if not isinstance(concept_codes, Tuple):  # type: ignore
             raise TypeError('concept_codes must be type tuple.')
-        else: self.concept_codes: List = list(concept_codes)
+        else:
+            self.concept_codes: List = list(concept_codes)
 
         # check concept-level string input (optional)
         if concept_strings is None:
@@ -84,7 +108,8 @@ class ConceptAnnotator(object):
         else:
             if not isinstance(concept_strings, Tuple):  # type: ignore
                 raise TypeError('concept_strings must be type tuple.')
-            else: self.concept_strings = list(concept_strings)
+            else:
+                self.concept_strings = list(concept_strings)
 
         # check ancestor-level codes input (optional)
         if ancestor_codes is None:
@@ -92,7 +117,8 @@ class ConceptAnnotator(object):
         else:
             if not isinstance(ancestor_codes, Tuple):  # type: ignore
                 raise TypeError('ancestor_codes must be type tuple.')
-            else: self.ancestor_codes = list(ancestor_codes)
+            else:
+                self.ancestor_codes = list(ancestor_codes)
 
         # check ancestor-level strings input (optional)
         if ancestor_strings is None:
@@ -100,11 +126,14 @@ class ConceptAnnotator(object):
         else:
             if not isinstance(ancestor_strings, Tuple):  # type: ignore
                 raise TypeError('ancestor_strings must be type tuple.')
-            else: self.ancestor_strings = list(ancestor_strings)
+            else:
+                self.ancestor_strings = list(ancestor_strings)
 
         # check ontology_dictionary
-        if not isinstance(ontology_dictionary, Dict): raise TypeError('ontology_dictionary must be type dict.')
-        else: self.ont_dict: Dict = ontology_dictionary
+        if not isinstance(ontology_dictionary, Dict):
+            raise TypeError('ontology_dictionary must be type dict.')
+        else:
+            self.ont_dict: Dict = ontology_dictionary
 
         # check for UMLS MRCONSO file
         if not umls_mrconso_file:
@@ -118,10 +147,11 @@ class ConceptAnnotator(object):
                 raise TypeError('Input file: {} is empty'.format(umls_mrconso_file))
             else:
                 print('Loading UMLS MRCONSO Data')
-                headers = ['CUI', 'SAB', 'CODE']
-                self.umls_cui_data = pd.read_csv(umls_mrconso_file, header=None, sep='|', names=headers,
-                                                 low_memory=False, usecols=[0, 11, 13]).drop_duplicates().astype(str)
-                self.umls_cui_data = self.umls_cui_data[self.umls_cui_data.CODE != 'NOCODE'].drop_duplicates()
+                headers = ['CUI', 'LANG', 'SAB', 'CODE']
+                self.umls_cui_data = pd.read_csv(umls_mrconso_file, sep='|', names=headers, low_memory=False,
+                                                 header=None, usecols=[0, 1, 11, 13]).drop_duplicates().astype(str)
+                df = self.umls_cui_data[(self.umls_cui_data.CODE != 'NOCODE') & (self.umls_cui_data.LANG == 'ENG')]
+                self.umls_cui_data = df[['CUI', 'SAB', 'CODE']].drop_duplicates()
 
         # check for UMLS MRSTY file
         if not umls_mrsty_file:
@@ -163,8 +193,10 @@ class ConceptAnnotator(object):
         clinical_ids = data[[primary_key, code_level]].drop_duplicates()
 
         # merge reduced clinical concepts with umls concepts
-        umls_cui = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
-        umls_cui_semtype = umls_cui.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
+        umls_cui_1 = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
+        umls_cui_2 = umls_cui_1[[primary_key, code_level, 'CUI']].merge(self.umls_cui_data, how='left', on='CUI')
+        umls_cui_concat = pd.concat([umls_cui_1, umls_cui_2])
+        umls_cui_semtype = umls_cui_concat.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
 
         # update column names
         updated_cols = [primary_key, code_level, 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
@@ -203,16 +235,17 @@ class ConceptAnnotator(object):
 
         # convert ontology dictionary to Pandas DataFrame
         combo_dict_df = pd.concat([pd.DataFrame(self.ont_dict[ont]['dbxref'].items(),
-                                   columns=['DBXREF', col_label + 'URI']) for ont in self.ont_dict.keys()
+                                                columns=['CODE', col_label + 'URI']) for ont in self.ont_dict.keys()
                                    if len(self.ont_dict[ont]['dbxref']) > 0])
-        combo_dict_df['CODE'] = combo_dict_df['DBXREF'].apply(lambda x: x.split(':')[-1])
+        # normalize source_code values
+        combo_dict_df['CODE'] = normalizes_source_codes(combo_dict_df['CODE'], self.source_code_map)
 
         # merge ontology data and clinical data
         dbxrefs = data.merge(combo_dict_df, how='inner', on='CODE').drop_duplicates()
         dbxrefs[col_label + 'TYPE'] = dbxrefs[col_label + 'URI'].apply(lambda x: x.split('/')[-1].split('_')[0])
         dbxrefs[col_label + 'LABEL'] = dbxrefs[col_label + 'URI'].apply(lambda x: ont_labels[x])
         # update evidence formatting --> EX: CONCEPTS_DBXREF_UMLS:C0008533
-        dbxrefs[col_label + 'EVIDENCE'] = dbxrefs['DBXREF'].apply(lambda x: col_label[0:-4] + x)
+        dbxrefs[col_label + 'EVIDENCE'] = dbxrefs['CODE'].apply(lambda x: col_label[0:-4] + x)
         # drop unneeded columns
         dbxrefs = dbxrefs[[primary_key] + [x for x in list(dbxrefs.columns) if x.startswith(col_label[0:-4])]]
 
@@ -252,11 +285,11 @@ class ConceptAnnotator(object):
         ont_dfs = []
         for str_col in ['label', 'synonym']:
             combo_dict_df_label = pd.concat([pd.DataFrame(self.ont_dict[ont][str_col].items(),
-                                             columns=['CODE', col_label + 'URI']) for ont in self.ont_dict.keys()])
+                                                          columns=['CODE', col_label + 'URI']) for ont in
+                                             self.ont_dict.keys()])
 
             # merge ontology data and clinical data
             str_data = data.merge(combo_dict_df_label, how='inner', on='CODE').drop_duplicates()
-
             # update ontology data formatting
             str_data[col_label + 'TYPE'] = str_data[col_label + 'URI'].apply(lambda x: x.split('/')[-1].split('_')[0])
             str_data[col_label + 'LABEL'] = str_data[col_label + 'URI'].apply(lambda x: ont_labels[x])
@@ -292,18 +325,23 @@ class ConceptAnnotator(object):
             levels = {'concept': {'codes': self.concept_codes, 'strings': self.concept_strings},
                       'ancestor': {'codes': self.ancestor_codes,
                                    'strings': self.ancestor_strings}}
-        else: levels = {'concept': {'codes': self.concept_codes, 'strings': self.concept_strings}}
+        else:
+            levels = {'concept': {'codes': self.concept_codes, 'strings': self.concept_strings}}
 
         for level in levels.keys():
             print('\n*** Annotating Level: {}'.format(level))
             primary_key, data = self.primary_key, self.clinical_data.copy()
             code_level, code_strings = levels[level]['codes'][0], levels[level]['strings']  # type: ignore
+            data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
             if level == 'ancestor':
                 data = column_splitter(data, primary_key, [code_level], '|')[[primary_key] + [code_level]]
+                data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
 
             # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
             print('Performing UMLS CUI + Semantic Type Annotation')
             if self.umls_cui_data is not None and self.umls_tui_data is not None:
+                self.umls_cui_data['CODE'] = self.umls_cui_data['SAB'] + ':' + self.umls_cui_data['CODE'].str.lower()
+                self.umls_cui_data['CODE'] = normalizes_source_codes(self.umls_cui_data['CODE'], self.source_code_map)
                 umls_map = self.umls_cui_annotator(data.copy(), primary_key, code_level)
                 sub = [code_level, 'UMLS_CODE', 'UMLS_CUI']
                 data_stacked = data_frame_subsetter(umls_map[[primary_key] + sub], primary_key, sub)
@@ -331,26 +369,31 @@ class ConceptAnnotator(object):
                 ont_type_column = [col for col in stacked_dbxref.columns if 'TYPE' in col][0]
                 dbxrefs = data_frame_grouper(stacked_dbxref.copy(), primary_key, ont_type_column,
                                              aggregates_column_values)
-            else: dbxrefs = None
+            else:
+                dbxrefs = None
 
             # exact string annotations
             if len(stacked_strings) != 0:
                 ont_type_column = [col for col in stacked_strings.columns if 'TYPE' in col][0]
                 strings = data_frame_grouper(stacked_strings.copy(), primary_key, ont_type_column,
                                              aggregates_column_values)
-            else: strings = None
+            else:
+                strings = None
 
             # umls annotations
             if umls_map is not None:
                 umls, agg_cols = umls_map[[primary_key, 'UMLS_CUI', 'UMLS_SEM_TYPE']], ['UMLS_CUI', 'UMLS_SEM_TYPE']
                 umls = aggregates_column_values(umls.copy(), primary_key, agg_cols, ' | ')
                 umls.columns = [primary_key] + [level.upper() + '_' + x for x in umls.columns if x != primary_key]
-            else: umls = None
+            else:
+                umls = None
 
             # combine annotations
             dfs = [x for x in [dbxrefs, strings, umls] if x is not None]
-            if len(dfs) > 1: level_maps.append(reduce(lambda x, y: pd.merge(x, y, how='outer', on=primary_key), dfs))
-            else: level_maps.append(dfs[0])
+            if len(dfs) > 1:
+                level_maps.append(reduce(lambda x, y: pd.merge(x, y, how='outer', on=primary_key), dfs))
+            else:
+                level_maps.append(dfs[0])
 
         # STEP 5 - COMBINE CONCEPT AND ANCESTOR DATA
         print('Combining Concept and Ancestor Maps')
