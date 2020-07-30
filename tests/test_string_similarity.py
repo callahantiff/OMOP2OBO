@@ -37,7 +37,7 @@ class TestSimilarStringFinder(TestCase):
         handle.close()
 
         # link to fake clinical data
-        self.clinical_file = self.clinical_directory + '/sample_omop_condition_occurrence_data.csv'
+        self.clinical_file = self.clinical_directory + '/sample_omop_condition_occurrence_data2.csv'
 
         # add clinical_data file input parameters
         self.primary_key = 'CONCEPT_ID'
