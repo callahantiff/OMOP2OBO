@@ -235,12 +235,6 @@ class TestConceptAnnotator(TestCase):
         data, source_codes = self.annotator.clinical_data.copy(), self.annotator.source_code_map
         data[code_level] = normalizes_source_codes(data[code_level], source_codes)
 
-        # umls data
-        umls = self.annotator.umls_cui_data.copy()
-        umls['SAB'] = umls['SAB'] + ':' + umls['CODE'].str.lower()
-        umls['CODE'] = normalizes_source_codes(umls['SAB'], source_codes)
-        self.annotator.umls_cui_data = umls
-
         # run the method and verify the output
         umls_annotated_data = self.annotator.umls_cui_annotator(data, 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE')
         self.assertTrue(len(umls_annotated_data) == 66)
@@ -260,12 +254,6 @@ class TestConceptAnnotator(TestCase):
         data, source_codes = self.annotator.clinical_data.copy(), self.annotator.source_code_map
         data[code_level] = normalizes_source_codes(data[code_level], source_codes)
         self.annotator.clinical_data = data
-
-        # umls data
-        umls = self.annotator.umls_cui_data.copy()
-        umls['SAB'] = umls['SAB'] + ':' + umls['CODE'].str.lower()
-        umls['CODE'] = normalizes_source_codes(umls['SAB'], source_codes)
-        self.annotator.umls_cui_data = umls
 
         # run umls annotation
         umls_annotated_data = self.annotator.umls_cui_annotator(data, primary_key, code_level)
@@ -305,7 +293,7 @@ class TestConceptAnnotator(TestCase):
         # test method
         results = self.annotator.clinical_concept_mapper()
         self.assertTrue(len(results) == 4)
-        self.assertTrue(len(results.columns) == 30)
+        self.assertTrue(len(results.columns) == 36)
 
         return None
 

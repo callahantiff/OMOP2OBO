@@ -152,6 +152,8 @@ class ConceptAnnotator(object):
                                                  header=None, usecols=[0, 1, 11, 13]).drop_duplicates().astype(str)
                 df = self.umls_cui_data[(self.umls_cui_data.CODE != 'NOCODE') & (self.umls_cui_data.LANG == 'ENG')]
                 self.umls_cui_data = df[['CUI', 'SAB', 'CODE']].drop_duplicates()
+                self.umls_cui_data['CODE'] = self.umls_cui_data['SAB'] + ':' + self.umls_cui_data['CODE'].str.lower()
+                self.umls_cui_data['CODE'] = normalizes_source_codes(self.umls_cui_data['CODE'], self.source_code_map)
 
         # check for UMLS MRSTY file
         if not umls_mrsty_file:
@@ -169,13 +171,13 @@ class ConceptAnnotator(object):
                 self.umls_tui_data = pd.read_csv(umls_mrsty_file, header=None, sep='|', names=headers,
                                                  low_memory=False, usecols=[0, 3]).drop_duplicates().astype(str)
 
-    def umls_cui_annotator(self, data: pd.DataFrame, primary_key: str, code_level: str) -> pd.DataFrame:
+    def umls_cui_annotator(self, data: pd.DataFrame, key: str, code_level: str) -> pd.DataFrame:
         """Method maps concepts in a clinical data file to UMLS concepts and semantic types from the umls_cui_data
         and umls_tui_data Pandas DataFrames.
 
         Args:
             data: A Pandas DatFrame containing clinical data.
-            primary_key: A string containing the name of the primary key (i.e. CONCEPT_ID).
+            key: A string containing the name of the primary key (i.e. CONCEPT_ID).
             code_level: A string containing the name of the source code column (i.e. CONCEPT_SOURCE_CODE).
 
         Returns:
@@ -190,16 +192,16 @@ class ConceptAnnotator(object):
         """
 
         # reduce data to only those columns needed for merging
-        clinical_ids = data[[primary_key, code_level]].drop_duplicates()
+        clinical_ids = data[[key, code_level]].drop_duplicates()
 
         # merge reduced clinical concepts with umls concepts
         umls_cui_1 = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
-        umls_cui_2 = umls_cui_1[[primary_key, code_level, 'CUI']].merge(self.umls_cui_data, how='left', on='CUI')
+        umls_cui_2 = umls_cui_1[[key, code_level, 'CUI']].merge(self.umls_cui_data, how='left', on='CUI')
         umls_cui_concat = pd.concat([umls_cui_1, umls_cui_2])
         umls_cui_semtype = umls_cui_concat.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
 
         # update column names
-        updated_cols = [primary_key, code_level, 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
+        updated_cols = [key, code_level, 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
         umls_cui_semtype.columns = updated_cols
 
         return umls_cui_semtype
@@ -341,8 +343,6 @@ class ConceptAnnotator(object):
             # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
             print('Performing UMLS CUI + Semantic Type Annotation')
             if self.umls_cui_data is not None and self.umls_tui_data is not None:
-                self.umls_cui_data['CODE'] = self.umls_cui_data['SAB'] + ':' + self.umls_cui_data['CODE'].str.lower()
-                self.umls_cui_data['CODE'] = normalizes_source_codes(self.umls_cui_data['CODE'], self.source_code_map)
                 umls_map = self.umls_cui_annotator(data.copy(), primary_key, code_level)
                 sub = [code_level, 'UMLS_CODE', 'UMLS_CUI']
                 data_stacked = data_frame_subsetter(umls_map[[primary_key] + sub], primary_key, sub)
