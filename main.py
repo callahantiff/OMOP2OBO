@@ -96,11 +96,11 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
                               umls_mrsty_file=glob.glob('resources/mappings/*MRSTY*')[0]
                               if len(glob.glob('resources/mappings/*MRSTY*')) > 0 else None)
 
-    exact_mappings = mapper.clinical_concept_mapper()
-    exact_mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
+    mappings = mapper.clinical_concept_mapper()
+    mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
     # get column names -- used later to organize output
-    start_cols = [i for i in exact_mappings.columns if not any(j for j in ['STR', 'DBXREF', 'EVIDENCE'] if j in i)]
-    exact_cols = [i for i in exact_mappings.columns if i not in start_cols]
+    start_cols = [i for i in mappings.columns if not any(j for j in ['STR', 'DBXREF', 'EVIDENCE'] if j in i)]
+    exact_cols = [i for i in mappings.columns if i not in start_cols]
 
     # STEP 4: TF-IDF SIMILARITY MAPPING
     if tfidf_mapping is not None:
@@ -115,10 +115,31 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
         sim_cols = [i for i in sim_mappings.columns if not any(j for j in start_cols if j in i)]
 
         # merge dbXref, exact string, and TF-IDF similarity results
-        merged_scores = pd.merge(exact_mappings, sim_mappings, how='left', on=primary_key)
+        merged_scores = pd.merge(mappings, sim_mappings, how='left', on=primary_key)
         # re-order columns and write out data
-        merged_scores = merged_scores[start_cols + exact_cols + sim_cols]
-        merged_scores.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
+        mappings = merged_scores[start_cols + exact_cols + sim_cols]
+        mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
+
+    # polish output
+    if clinical_domain == 'LABS':
+        result_type_idx, updated_data = list(mappings.columns).index('RESULT_TYPE'), []
+        for idx, row in mappings.iterrows():
+            if row['RESULT_TYPE'] == 'Normal/Low/High' or row['RESULT_TYPE'] == 'Negative/Positive':
+                for x in row['RESULT_TYPE'].split('/'):
+                    updated = list(row)
+                    updated[result_type_idx] = x
+                    updated_data.append(updated)
+            else:
+                updated_data.append(list(row))
+
+        # replace values
+        data_expanded = pd.DataFrame(updated_data, columns=list(mappings.columns))
+    else:
+        data_expanded = mappings.copy()
+
+    # remove nan
+    data_expanded.fillna('', inplace=True)
+    data_expanded.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
 
 if __name__ == '__main__':
