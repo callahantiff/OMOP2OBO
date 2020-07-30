@@ -332,9 +332,10 @@ class ConceptAnnotator(object):
             print('\n*** Annotating Level: {}'.format(level))
             primary_key, data = self.primary_key, self.clinical_data.copy()
             code_level, code_strings = levels[level]['codes'][0], levels[level]['strings']  # type: ignore
-            data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
             if level == 'ancestor':
                 data = column_splitter(data, primary_key, [code_level], '|')[[primary_key] + [code_level]]
+                data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
+            else:
                 data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
 
             # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
