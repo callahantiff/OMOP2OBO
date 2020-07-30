@@ -1,0 +1,255 @@
+﻿Primary_Abbreviation,Abbreviations
+aao,aao
+aba,aba
+aeo,aeo | aeo_retired
+agr,agr
+air,AIR
+alt,ALT
+alzforum_mut,alzforum_mut
+aniseed,aniseed
+aod,AOD
+aot,AOT
+atc,ATC | atc
+bams,bams
+beilstein,beilstein
+bi,BI
+bila,bila
+bilado,bilado
+bils,bils
+birnlex,birnlex
+bm,bm
+bpdb,bpdb
+bsa,bsa
+bto,bto
+caloha,caloha
+caro,caro
+cas,cas
+cba,cba
+ccc,CCC
+ccpss,CCPSS
+ccs,CCS_10 | ccs | CCS
+ccsr,CCSR_10
+cdt,CDT
+chemidplus,chemidplus
+chemspider,chemspider
+chv,CHV
+cl,cl
+cohd,cohd
+cohort,cohort
+come,come
+costar,COSTAR
+cp,cp
+cpm,CPM
+cpt,CPT
+cptsp,CPTSP
+csp,csp | CSP
+cst,CST
+ctx,ctx
+cvx,CVX | cvx
+dc,dc
+ddb,DDB
+dermo,dermo
+dhba,dhba
+dmba,dmba
+dmdicd10,DMDICD10
+dmdumd,DMDUMD
+doid,doid
+drerdo,drerdo
+drug_central,drug_central
+drugbank,DRUGBANK | drugbank
+dsm-5,DSM-5
+dto,dto
+dxp,DXP
+ecmdb,ecmdb
+ecocyc,ecocyc
+efo,efo
+ehda,ehda
+ehdaa,ehdaa | ehdaa2 | ehdaa2_retired | retired_ehdaa2
+emapa,emapa | emapa_retired
+emaps,emaps
+envo,envo
+epcc,epcc
+ev,ev
+evm,evm
+fao,fao | fao/who_standards
+fbbt,fbbt | fbbt_root
+fbdv,fbdv
+fma,fma | fma_retired | FMA
+foodb,foodb
+fyler,fyler
+gaid,gaid
+galen,galen
+gard,gard
+gardl,gardl
+garfd,garfd
+gc_id,gc_id
+genpept,genpept
+glytoucan,glytoucan
+gmelin,gmelin
+go,go | GO
+goc,goc
+gs,GS
+gtr,gtr
+hao,hao
+hba,hba
+hcdt,HCDT
+hcpcs,HCPCS
+hcpt,HCPT
+hgnc,hgnc | HGNC
+hl7,HL7V3.0 | HL7V2.5
+hmdb,hmdb
+hp,hp | HPO
+hsapdv,hsapdv
+icd10,icd-10 | icd10 | icd10cm | ICD10 | ICD10AE | ICD10AM | ICD10AMAE | ICD10CM | ICD10DUT | ICD10PCS
+icd11,icd11
+icd9,icd-9 | icd9 | icd9cm | ICD9CM
+icdo,icd-o | icdo
+icf,ICF | ICF-CY
+icnp,ICNP
+icpc,ICPC | ICPC2EDUT | ICPC2EENG | ICPC2ICD10DUT | ICPC2ICD10ENG | ICPC2P | ICPCBAQ | ICPCDAN | ICPCDUT | ICPCFIN | ICPCFRE | ICPCGER | ICPCHEB | ICPCHUN | ICPCITA | ICPCNOR | ICPCPOR | ICPCSPA | ICPCSWE
+ido,ido
+iedb,iedb
+isbn,isbn
+iuphar,iuphar
+iupharfam,iupharfam
+iupharobj,iupharobj
+jabl,JABL
+kcd5,KCD5
+kegg,kegg
+knapsack,knapsack
+kupo,kupo
+lch,LCH | LCH_NW
+lincs,lincs
+lipid_maps_class,lipid_maps_class
+lipid_maps_instance,lipid_maps_instance
+loinc,LNC | LNC_SPECIAL_USE | LNC-DE-AT | LNC-DE-CH | LNC-DE-DE | LNC-EL-GR | LNC-ES-AR | LNC-ES-CH | LNC-ES-ES | LNC-ET-EE | LNC-FR-BE | LNC-FR-CA | LNC-FR-CH | LNC-FR-FR | LNC-IT-CH | LNC-IT-IT | LNC-KO-KR | LNC-NL-NL | LNC-PT-BR | LNC-RU-RU | LNC-TR-TR | LNC-ZH-CN | loinc | LOINC
+ma,ma
+map,map
+mat,mat
+mba,mba
+mcm,MCM
+med-rt,MED-RT
+medcin,MEDCIN
+meddra,meddra | MDR | MDRCZE | MDRDUT | MDRFRE | MDRGER | MDRHUN | MDRITA | MDRJPN | MDRKOR | MDRPOR | MDRRUS | MDRSPA
+medgen,medgen
+medlineplus,MEDLINEPLUS
+metacyc,metacyc
+mfmo,mfmo | mfmo_0000064 | mfomd
+miaa,miaa
+mmsl,MMSL
+mmusdv,mmusdv
+mmx,MMX
+molbase,molbase
+mondo,mondo
+mp,mp
+mpath,mpath
+mro,mro
+msh,mesh | MESH | MSH | msh | MSHCZE | MSHFRE | MSHPOL | MSHPOR | MSHRUS | MSHSPA | MSHSWE | MSHDUT | MSHFIN | MSHGER | MSHITA | MSHJPN | MSHLAV | MSHNOR | MSHSCR
+mth,mth | MTHCMSFRF | MTHSPL | MTH | MTHICD9 | MTHICPC2EAE | MTHICPC2ICD10AE | MTHMST | MTHMSTFRE | MTHMSTITA
+murdoch,murdoch
+mvx,MVX
+nanda-i,NANDA-I
+ncbi,NCBI
+nci,NCI | nci | NCI_BioC | NCI_BRIDG | NCI_BRIDG_3_0_3 | NCI_CareLex | NCI_CBDD | NCI_CDC | NCI_CDISC | NCI_CDISC-GLOSS | NCI_CRCH | NCI_CTCAE | NCI_CTCAE_3 | NCI_CTCAE_5 | NCI_CTEP-SDC | NCI_CTRP | NCI_DCP | NCI_DICOM | NCI_DTP | NCI_EDQM-HC | NCI_FDA | NCI_GAIA | NCI_GENC | NCI_ICH | NCI_INC | NCI_JAX | NCI_KEGG | NCI_NCI-GLOSS | NCI_NCI-HGNC | NCI_NCI-HL7 | NCI_NCPDP | NCI_NICHD | NCI_PI-RADS | NCI_PID | NCI_RENI | NCI_UCUM | NCI_ZFin | NCI_CPTAC
+ncit,ncit | ncithesaurus
+nddf,NDDF
+ndfrt,ndfrt
+neu,NEU
+neuronamescnid,neuronamescnid
+nic,NIC
+nif,nif_organism | nif_subcellular
+nifstd,nifstd | nifstd_retired
+nlx,nlx
+nlxanat,nlxanat
+noc,NOC
+noid,noid
+nuccpt,NUCCPT
+obi,obi
+ogem,ogem
+oges,oges
+ogms,ogms
+olatdv,olatdv
+oldneuronames,oldneuronames
+omim,OMIM | omim | omimps
+oms,OMS
+oncotree,oncotree
+opencyc,opencyc
+ordo,ordo | orod
+orpha,orpha | orphanet
+panther,panther
+patent,patent
+pato,pato
+pba,pba
+pcds,PCDS
+pdb,pdb
+pdbechem,pdbechem
+pdq,PDQ
+pdumdv,pdumdv
+pedsnet,pedsnet
+pesticides,pesticides
+phenoscape,phenoscape
+pirsf,pirsf
+pmcid,pmcid
+pmid,pmid
+pnds,PNDS
+ppac,PPAC
+ppdb,ppdb
+ppr,ppr
+psy,PSY
+pubchem,pubchem
+qmr,QMR
+radlex,radlex
+ram,RAM
+rcd,RCDAE | RCDSA | RCDSY | RCD
+reactome,reactome
+reaxys,reaxys
+resid,resid
+rxnorm,RXNORM | rxnorm
+sao,sao
+sctid,sctid | sctid_2010_1_31
+sctspa,SCTSPA
+smid,smid
+snm,SNM | SNMI
+snomed,snomed | snomed_ct | snomed_ct_us_2018_03_01 | snomedct_2020_03_01 | SNOMEDCT_US | snomedct_us | snomedct_us_2018_03_01 | snomedct_us_2019_09_01 | snomedct_us_2020_03_01 | snomedct_us_2020_09_01 | http://www.snomedbrowser.com/codes/details
+snomed_vet,SNOMEDCT_VET
+sop,SOP
+spd,spd
+spl,spl
+spn,SPN
+src,SRC
+stedman,stedman
+stid,stid
+tads,tads
+talairach,talairach
+tao,tao | tao_retired
+tdr,tdr
+te,te
+tgma,tgma
+tkmt,TKMT
+uberontemp,uberontemp
+ult,ULT
+um-bbd_compid,um-bbd_compid
+umd,UMD
+umls,umls | umls_cui | http://linkedlifedata.com/resource/umls/id
+uniprotkb,uniprotkb | uniprotkb_var
+url,url
+usp,USP
+uspmg,USPMG
+uwda,UWDA
+va class,va class
+vandf,VANDF
+vhog,vhog | vhog_retired
+vsao,vsao | vsao_retired
+vsdb,vsdb
+wbbt,wbbt
+wbls,wbls
+webelements,webelements
+who,WHO | WHOFRE | WHOGER | WHOPOR | WHOSPA
+wikidata,wikidata
+wikipedia,wikipedia
+wikipediacategory,wikipediacategory
+xao,xao
+xtrodo,xtrodo
+ymdb,ymdb
+zfa,zfa | zfa_retired
+zfs,zfs
