@@ -206,11 +206,10 @@ reaxys,reaxys
 resid,resid
 rxnorm,RXNORM | rxnorm
 sao,sao
-sctid,sctid | sctid_2010_1_31
 sctspa,SCTSPA
 smid,smid
 snm,SNM | SNMI
-snomed,snomed | snomed_ct | snomed_ct_us_2018_03_01 | snomedct_2020_03_01 | SNOMEDCT_US | snomedct_us | snomedct_us_2018_03_01 | snomedct_us_2019_09_01 | snomedct_us_2020_03_01 | snomedct_us_2020_09_01 | http://www.snomedbrowser.com/codes/details
+snomed,snomed | snomed_ct | snomed_ct_us_2018_03_01 | snomedct_2020_03_01 | SNOMEDCT_US | snomedct_us | snomedct_us_2018_03_01 | snomedct_us_2019_09_01 | snomedct_us_2020_03_01 | snomedct_us_2020_09_01 | http://www.snomedbrowser.com/codes/details | sctid | sctid_2010_1_31
 snomed_vet,SNOMEDCT_VET
 sop,SOP
 spd,spd
