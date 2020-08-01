@@ -125,7 +125,10 @@ def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
 
 def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:
     """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their database
-    cross references (dbxrefs) in the graph.
+    cross references (dbxrefs) in the graph. This function will also include concepts that have been identified as
+    exact matches.
+
+    Assumption: That none of the hasdbxref ids overlap with the exactmatch ids.
 
     Args:
         graph: An rdflib Graph object.
@@ -143,7 +146,11 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and DbXRefs')
 
     # find all classes in graph
-    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'hasdbxref' in str(x[1]).lower()}
+    cls_lst1 = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'hasdbxref' in str(x[1]).lower()}
+    cls_lst2 = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'exactmatch' in str(x[1]).lower()}
+
+    # combine dictionaries
+    class_list = {**cls_lst1, **cls_lst2}
 
     return class_list
 
