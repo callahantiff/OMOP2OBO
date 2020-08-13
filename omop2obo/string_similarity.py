@@ -265,7 +265,8 @@ class SimilarStringFinder(object):
                         hits = self.filters_matches(ont_matches, threshold)
                         results[ont].append([row[self.primary_key],
                                              ' | '.join([x[1] for x in hits]),
-                                             ' | '.join([ont_labels[ont_uri + x[1]] for x in hits]),
+                                             ' | '.join([ont_labels[ont_uri + x[1]] if ont_uri + x[1] in ont_labels
+                                                         else x[1] for x in hits]),
                                              ' | '.join([x[1] + '_' + x[0] for x in hits])])
                     else: continue
             else:
