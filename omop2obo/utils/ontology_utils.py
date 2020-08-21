@@ -109,7 +109,7 @@ def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
             {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
-        class_list: A dictionary where keys are strng synonyms and values are ontology URIs. An example is shown below:
+        class_list: A dictionary where keys are string synonyms and values are ontology URIs. An example is shown below:
             {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
             'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
             'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
@@ -121,6 +121,30 @@ def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
     class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'synonym' in str(x[1]).lower()}
 
     return class_list
+
+
+def gets_ontology_class_synonym_type(graph: Graph, cls: Set) -> Dict:
+    """Queries a knowledge graph and returns a dictionary that contains all owl:Class synonyms and their OWL synonym,
+    type.
+
+    Args:
+        graph: An rdflib Graph object.
+        cls: A set of current (non-deprecated) ontology class identifiers. For example:
+            {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
+
+    Returns:
+        syn_types: A dictionary where keys are string synonyms and values are OWL synonym types. An example is shown
+            below:
+                {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
+                'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
+                'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
+    """
+
+    # find all classes in graph
+    syn_types = {str(x[2]).lower(): str(x[1]).split('#')[-1] for x in tqdm(graph)
+                 if x[0] in cls and 'synonym' in str(x[1]).lower()}
+
+    return syn_types
 
 
 def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:

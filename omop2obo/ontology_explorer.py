@@ -64,7 +64,8 @@ class OntologyInfoExtractor(object):
             'label': gets_ontology_class_labels(self.graph, filter_classes),
             'definition': gets_ontology_class_definitions(self.graph, filter_classes),
             'dbxref': gets_ontology_class_dbxrefs(self.graph, filter_classes),
-            'synonym': gets_ontology_class_synonyms(self.graph, filter_classes)
+            'synonym': gets_ontology_class_synonyms(self.graph, filter_classes),
+            'synonym_type': gets_ontology_class_synonym_type(self.graph, filter_classes)
         }
 
         return res

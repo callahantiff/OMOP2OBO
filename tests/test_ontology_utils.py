@@ -114,6 +114,20 @@ class TestOntologyUtils(unittest.TestCase):
 
         return None
 
+    def test_gets_ontology_class_synonym_type(self):
+        """Tests the gets_ontology_class_synonym_type method."""
+
+        # read in ontology
+        graph = Graph()
+        graph.parse(self.good_ontology_file_location)
+
+        # retrieve classes form graph with data
+        classes = gets_ontology_class_synonym_type(graph, self.filter_classes)
+        self.assertIsInstance(classes, Dict)
+        self.assertEqual(3819, len(classes))
+
+        return None
+
     def test_gets_ontology_class_dbxrefs(self):
         """Tests the gets_ontology_class_dbxrefs method."""
 
