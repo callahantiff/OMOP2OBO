@@ -60,12 +60,13 @@ class OntologyInfoExtractor(object):
         filter_classes = set([x for x in gets_ontology_classes(self.graph, ont_id) if x not in deprecated_classes])
 
         # filter results and add to dictionary
+        syns = gets_ontology_class_synonyms(self.graph, filter_classes)
+        dbxrefs = gets_ontology_class_dbxrefs(self.graph, filter_classes)
         res: Dict = {
             'label': gets_ontology_class_labels(self.graph, filter_classes),
             'definition': gets_ontology_class_definitions(self.graph, filter_classes),
-            'dbxref': gets_ontology_class_dbxrefs(self.graph, filter_classes),
-            'synonym': gets_ontology_class_synonyms(self.graph, filter_classes),
-            'synonym_type': gets_ontology_class_synonym_type(self.graph, filter_classes)
+            'dbxref': dbxrefs[0], 'dbxref_type': dbxrefs[1],
+            'synonym': syns[0], 'synonym_type': syns[1],
         }
 
         return res

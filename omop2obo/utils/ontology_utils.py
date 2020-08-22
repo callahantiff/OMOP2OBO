@@ -18,7 +18,7 @@ from rdflib.namespace import RDF, OWL  # type: ignore
 import subprocess
 
 from tqdm import tqdm  # type: ignore
-from typing import Dict, Set
+from typing import Dict, Set, Tuple
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -99,9 +99,9 @@ def gets_ontology_class_definitions(graph: Graph, cls: Set) -> Dict:
     return class_list
 
 
-def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
-    """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their synonyms in the
-    graph.
+def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Tuple:
+    """Queries a knowledge graph and returns a tuple of dictionaries. The first dictionary contains all owl:Class
+    objects and their synonyms in the graph. The second dictionary contains the synonyms and their OWL types.
 
     Args:
         graph: An rdflib Graph object.
@@ -109,50 +109,35 @@ def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
             {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
-        class_list: A dictionary where keys are string synonyms and values are ontology URIs. An example is shown below:
-            {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
-            'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
-            'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
+        A tuple of dictionaries:
+            synonyms: A dictionary where keys are string synonyms and values are ontology URIs. An example is shown
+                below:
+                    {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
+                    'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
+                    'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
+            synonym_type: A dictionary where keys are string synonyms and values are OWL synonym types. An example is
+                shown below:
+                    {'susceptibility to herpesvirus': 'hasExactSynonym', 'full upper lip': 'hasExactSynonym'}
     """
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Synonyms')
 
     # find all classes in graph
-    class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'synonym' in str(x[1]).lower()}
+    class_list = [x for x in tqdm(graph) if x[0] in cls and 'synonym' in str(x[1]).lower()]
+    synonyms = {str(x[2]).lower(): str(x[0]) for x in class_list}
+    synonym_type = {str(x[2]).lower(): str(x[1]).split('#')[-1] for x in class_list}
 
-    return class_list
-
-
-def gets_ontology_class_synonym_type(graph: Graph, cls: Set) -> Dict:
-    """Queries a knowledge graph and returns a dictionary that contains all owl:Class synonyms and their OWL synonym,
-    type.
-
-    Args:
-        graph: An rdflib Graph object.
-        cls: A set of current (non-deprecated) ontology class identifiers. For example:
-            {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
-
-    Returns:
-        syn_types: A dictionary where keys are string synonyms and values are OWL synonym types. An example is shown
-            below:
-                {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
-                'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
-                'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
-    """
-
-    # find all classes in graph
-    syn_types = {str(x[2]).lower(): str(x[1]).split('#')[-1] for x in tqdm(graph)
-                 if x[0] in cls and 'synonym' in str(x[1]).lower()}
-
-    return syn_types
+    return synonyms, synonym_type
 
 
-def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:
+def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Tuple:
     """Queries a knowledge graph and returns a dictionary that contains all owl:Class objects and their database
     cross references (dbxrefs) in the graph. This function will also include concepts that have been identified as
-    exact matches.
+    exact matches. The query returns a tuple of dictionaries where the first dictionary contains the dbxrefs and
+    exact matches (URIs and labels) and the second dictionary contains the dbxref/exactmatch uris and a string
+    indicating the type (i.e. dbxref or exact match).
 
-    Assumption: That none of the hasdbxref ids overlap with the exactmatch ids.
+    Assumption: That none of the hasdbxref ids overlap with any of the exactmatch ids.
 
     Args:
         graph: An rdflib Graph object.
@@ -160,23 +145,33 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:
             {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
-        class_list: A dictionary where keys are dbxref strings and values are ontology URIs. An example is shown below:
+        dbxref: A dictionary where keys are dbxref strings and values are ontology URIs. An example is shown below:
             {'loinc:LA6690-7': 'http://purl.obolibrary.org/obo/SO_1000002',
              'RNAMOD:055': 'http://purl.obolibrary.org/obo/SO_0001347',
              'RNAMOD:076': 'http://purl.obolibrary.org/obo/SO_0001368',
              'loinc:LA6700-2': 'http://purl.obolibrary.org/obo/SO_0001590', ...}
+        dbxref_type: A dictionary where keys are dbxref/exact match uris and values are string indicating if the uri
+            is for a dbxref or an exact match. An example is shown below:
+                {
     """
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and DbXRefs')
 
-    # find all classes in graph
-    cls_lst1 = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'hasdbxref' in str(x[1]).lower()}
-    cls_lst2 = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'exactmatch' in str(x[1]).lower()}
+    # dbxrefs
+    dbxref_res = [x for x in tqdm(graph) if x[0] in cls and 'hasdbxref' in str(x[1]).lower()]
+    dbxref_uris = {str(x[2]).lower(): str(x[0]) for x in dbxref_res}
+    dbxref_type = {str(x[2]).lower(): 'DbXref' for x in dbxref_res}
+
+    # exact match
+    exact_res = [x for x in tqdm(graph) if x[0] in cls and 'exactmatch' in str(x[1]).lower()]
+    exact_uris = {str(x[2]).lower(): str(x[0]) for x in exact_res}
+    exact_type = {str(x[2]).lower(): 'ExactMatch' for x in exact_res}
 
     # combine dictionaries
-    class_list = {**cls_lst1, **cls_lst2}
+    uris = {**dbxref_uris, **exact_uris}
+    types = {**dbxref_type, **exact_type}
 
-    return class_list
+    return uris, types
 
 
 def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:

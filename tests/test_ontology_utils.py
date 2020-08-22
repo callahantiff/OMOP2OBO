@@ -109,22 +109,10 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_synonyms(graph, self.filter_classes)
-        self.assertIsInstance(classes, Dict)
-        self.assertEqual(3819, len(classes))
-
-        return None
-
-    def test_gets_ontology_class_synonym_type(self):
-        """Tests the gets_ontology_class_synonym_type method."""
-
-        # read in ontology
-        graph = Graph()
-        graph.parse(self.good_ontology_file_location)
-
-        # retrieve classes form graph with data
-        classes = gets_ontology_class_synonym_type(graph, self.filter_classes)
-        self.assertIsInstance(classes, Dict)
-        self.assertEqual(3819, len(classes))
+        self.assertIsInstance(classes[0], Dict)
+        self.assertIsInstance(classes[1], Dict)
+        self.assertEqual(3819, len(classes[0]))
+        self.assertEqual(3819, len(classes[1]))
 
         return None
 
@@ -137,8 +125,10 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_dbxrefs(graph, self.filter_classes)
-        self.assertIsInstance(classes, Dict)
-        self.assertEqual(391, len(classes))
+        self.assertIsInstance(classes[0], Dict)
+        self.assertIsInstance(classes[1], Dict)
+        self.assertEqual(391, len(classes[0]))
+        self.assertEqual(391, len(classes[1]))
 
         return None
 
