@@ -225,8 +225,8 @@ class TestConceptAnnotator(TestCase):
 
         return None
 
-    def test_umls_cui_annotator(self):
-        """Test the umls_cui_annotation method."""
+    def test_umls_cui_annotator_default(self):
+        """Test the umls_cui_annotation method when using the default merge strategy."""
 
         # set-up parameters
         code_level = 'CONCEPT_SOURCE_CODE'
@@ -237,6 +237,24 @@ class TestConceptAnnotator(TestCase):
 
         # run the method and verify the output
         umls_annotated_data = self.annotator.umls_cui_annotator(data, 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE')
+        self.assertTrue(len(umls_annotated_data) == 3)
+        self.assertTrue(len(umls_annotated_data.columns) == 6)
+        self.assertEqual(umls_annotated_data.at[0, 'UMLS_SEM_TYPE'], 'Amino Acid, Peptide, or Protein')
+
+        return None
+
+    def test_umls_cui_annotator_not_default(self):
+        """Test the umls_cui_annotation method when not using the default merge strategy."""
+
+        # set-up parameters
+        code_level = 'CONCEPT_SOURCE_CODE'
+
+        # prep data before running code
+        data, source_codes = self.annotator.clinical_data.copy(), self.annotator.source_code_map
+        data[code_level] = normalizes_source_codes(data[code_level], source_codes)
+
+        # run the method and verify the output
+        umls_annotated_data = self.annotator.umls_cui_annotator(data, 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'yes')
         self.assertTrue(len(umls_annotated_data) == 66)
         self.assertTrue(len(umls_annotated_data.columns) == 6)
         self.assertEqual(umls_annotated_data.at[0, 'UMLS_SEM_TYPE'], 'Amino Acid, Peptide, or Protein')

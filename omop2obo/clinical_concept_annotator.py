@@ -171,7 +171,7 @@ class ConceptAnnotator(object):
                 self.umls_tui_data = pd.read_csv(umls_mrsty_file, header=None, sep='|', names=headers,
                                                  low_memory=False, usecols=[0, 3]).drop_duplicates().astype(str)
 
-    def umls_cui_annotator(self, data: pd.DataFrame, key: str, code_level: str) -> pd.DataFrame:
+    def umls_cui_annotator(self, data: pd.DataFrame, key: str, code_level: str, cui_expand: str = None) -> pd.DataFrame:
         """Method maps concepts in a clinical data file to UMLS concepts and semantic types from the umls_cui_data
         and umls_tui_data Pandas DataFrames.
 
@@ -179,6 +179,9 @@ class ConceptAnnotator(object):
             data: A Pandas DatFrame containing clinical data.
             key: A string containing the name of the primary key (i.e. CONCEPT_ID).
             code_level: A string containing the name of the source code column (i.e. CONCEPT_SOURCE_CODE).
+            cui_expand: A string indicating whether or not to merge source codes with the UMLS a single time or
+                twice. If merging twice this will take advantage of the UMLS mappings and obtain all source
+                vocabulary codes mapped to any cui that mapped to an OMOP source code during the first merge.
 
         Returns:
            umls_cui_semtype: A Pandas DataFrame containing clinical concept ids and source codes as well as UMLS
@@ -195,10 +198,14 @@ class ConceptAnnotator(object):
         clinical_ids = data[[key, code_level]].drop_duplicates()
 
         # merge reduced clinical concepts with umls concepts
-        umls_cui_1 = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
-        umls_cui_2 = umls_cui_1[[key, code_level, 'CUI']].merge(self.umls_cui_data, how='left', on='CUI')
-        umls_cui_concat = pd.concat([umls_cui_1, umls_cui_2])
-        umls_cui_semtype = umls_cui_concat.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
+        if cui_expand is not None:
+            umls_cui_1 = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
+            umls_cui_2 = umls_cui_1[[key, code_level, 'CUI']].merge(self.umls_cui_data, how='left', on='CUI')
+            umls_cui = pd.concat([umls_cui_1, umls_cui_2])
+        else:
+            umls_cui = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
+
+        umls_cui_semtype = umls_cui.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
 
         # update column names
         updated_cols = [key, code_level, 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
