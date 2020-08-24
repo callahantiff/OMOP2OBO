@@ -279,7 +279,7 @@ class TestConceptAnnotator(TestCase):
 
         # get dbxrefs
         stacked_dbxref = self.annotator.dbxref_mapper(umls_stack, 'CONCEPT_ID', 'concept')
-        self.assertTrue(len(stacked_dbxref) == 8)
+        self.assertTrue(len(stacked_dbxref) == 0)
         self.assertTrue(len(stacked_dbxref.columns) == 5)
         self.assertEqual(list(stacked_dbxref.columns), ['CONCEPT_ID', 'CONCEPT_DBXREF_ONT_URI',
                                                         'CONCEPT_DBXREF_ONT_TYPE', 'CONCEPT_DBXREF_ONT_LABEL',
@@ -311,7 +311,7 @@ class TestConceptAnnotator(TestCase):
         # test method
         results = self.annotator.clinical_concept_mapper()
         self.assertTrue(len(results) == 4)
-        self.assertTrue(len(results.columns) == 36)
+        self.assertTrue(len(results.columns) == 24)
 
         return None
 
@@ -339,7 +339,7 @@ class TestConceptAnnotator(TestCase):
         # test method
         results = self.annotator.clinical_concept_mapper()
         self.assertTrue(len(results) == 4)
-        self.assertTrue(len(results.columns) == 22)
+        self.assertTrue(len(results.columns) == 16)
 
         return None
 
