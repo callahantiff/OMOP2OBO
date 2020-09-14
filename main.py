@@ -34,25 +34,15 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
     PARAMETERS:
 
         ont_file: 'resources/oontology_source_list.txt'
-
         tfidf_mapping: "yes" if want to perform cosine similarity mapping using a TF-IDF matrix.
-
         clinical_domain: clinical domain of input data (i.e. "conditions", "drugs", or "measurements").
-
         onts: A comma-separated list of ontology prefixes that matches 'resources/oontology_source_list.txt'.
-
         clinical_data: The filepath to the clinical data needing mapping.
-
         primary_key: The name of the file to use as the primary key.
-
         concept_codes: A comma-separated list of concept-level codes to use for DbXRef mapping.
-
         concept_strings: A comma-separated list of concept-level strings to map to use for exact string mapping.
-
         ancestor_codes: A comma-separated list of ancestor-level codes to use for DbXRef mapping.
-
         ancestor_strings: A comma-separated list of ancestor-level strings to map to use for exact string mapping.
-
         outfile: The filepath for where to write output data to.
 
     Several dependencies must be addressed before running this file. Please see the README for instructions.
