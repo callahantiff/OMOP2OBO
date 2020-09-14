@@ -341,7 +341,7 @@ class ConceptAnnotator(object):
             print('\n*** Annotating Level: {}'.format(level))
             primary_key, data = self.primary_key, self.clinical_data.copy()
             code_level, code_strings = levels[level]['codes'][0], levels[level]['strings']  # type: ignore
-            if level == 'ancestor':
+            if level == 'ancestor' or any(x for x in data[code_level] if '|' in x):
                 data = column_splitter(data, primary_key, [code_level], '|')[[primary_key] + [code_level]]
                 data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
             else:
