@@ -137,6 +137,8 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Tuple:
     exact matches (URIs and labels) and the second dictionary contains the dbxref/exactmatch uris and a string
     indicating the type (i.e. dbxref or exact match).
 
+    #TODO: This is not entirely correct. Type dicts need to be updated to include ontology ID in key.
+
     Assumption: That none of the hasdbxref ids overlap with any of the exactmatch ids.
 
     Args:
