@@ -53,7 +53,7 @@ dhba,dhba
 dmba,dmba
 dmdicd10,DMDICD10
 dmdumd,DMDUMD
-doid,doid
+doid,doid | http://purl.obolibrary.org/obo/doid | http://purl.obolibrary.org/obo/DOID
 drerdo,drerdo
 drug_central,drug_central
 drugbank,DRUGBANK | drugbank
@@ -86,7 +86,7 @@ gc_id,gc_id
 genpept,genpept
 glytoucan,glytoucan
 gmelin,gmelin
-go,go | GO
+go,go | GO | http://purl.obolibrary.org/obo/go | http://purl.obolibrary.org/obo/GO
 goc,goc
 gs,GS
 gtr,gtr
@@ -98,7 +98,7 @@ hcpt,HCPT
 hgnc,hgnc | HGNC
 hl7,HL7V3.0 | HL7V2.5
 hmdb,hmdb
-hp,hp | HPO
+hp,hp | HPO | http://purl.obolibrary.org/obo/hp | http://purl.obolibrary.org/obo/HP
 hsapdv,hsapdv
 icd10,icd-10 | icd10 | icd10cm | ICD10 | ICD10AE | ICD10AM | ICD10AMAE | ICD10CM | ICD10DUT | ICD10PCS
 icd11,icd11
