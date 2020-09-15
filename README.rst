@@ -256,8 +256,8 @@ Contact
 We’d love to hear from you! To get in touch with us, please `create an issue`_ or `send us an email`_ 💌
 
 
-.. |travis| image:: https://travis-ci.org/callahantiff/OMOP2OBO.png
-   :target: https://travis-ci.org/callahantiff/OMOP2OBO
+.. |travis| image:: https://travis-ci.com/callahantiff/OMOP2OBO.png
+   :target: https://travis-ci.com/callahantiff/OMOP2OBO
    :alt: Travis CI build
 
 .. |sonar_quality| image:: https://sonarcloud.io/api/project_badges/measure?project=callahantiff_OMOP2OBO&metric=alert_status

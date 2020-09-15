@@ -1,8 +1,8 @@
 import os
 import re
+
 # To use a consistent encoding
 from codecs import open as copen
-
 from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -50,6 +50,7 @@ setup(
     url="https://github.com/callahantiff/OMOP2OBO",
     author="callahantiff@gmail.com",
     author_email="callahantiff",
+
     # Choose your license
     license='MIT',
     include_package_data=True,
@@ -60,6 +61,7 @@ setup(
     ],
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     tests_require=test_deps,
+
     # Add here the package dependencies
     install_requires=[
         'click',
