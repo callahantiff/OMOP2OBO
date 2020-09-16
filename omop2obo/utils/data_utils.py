@@ -293,6 +293,8 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
     """Function applies logic from the OHDSIAnanake method to extend data1, which contains dbxref mappings to OMOP
     concept ids with mappings from UMLS cuis to relevant umls ontology mappings. The merged data set is returned.
 
+    Method adapted from: https://github.com/thepanacealab/OHDSIananke
+
     Args:
         ont_keys: A list of ontology type identifiers (i.e. ['hp', 'mondo']).
         ont_data: A Pandas DataFrame containing ontology dbxref information.
@@ -328,3 +330,4 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
     merged_data_ont.columns = ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', dbxref_col]
 
     return merged_data_ont
+
