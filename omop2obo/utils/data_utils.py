@@ -225,22 +225,35 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str, c
 
 def normalizes_source_codes(data: pd.DataFrame, source_code_dict: Dict) -> pd.Series:
     """Takes a Pandas DataFrame column containing source code values that need normalization and normalizes them
-    using values from a pre-built dictionary (resources/mappings/source_code_vocab_map.csv).
+    using values from a pre-built dictionary (resources/mappings/source_code_vocab_map.csv). The function is designed
+    to normalize identifier prefixes according to the specifications in the source_code_dict. It provides some light
+    regex support for the following scenarios:
+        - ICD10CM:C85.92 --> icd10:c85.92
+        - http://www.snomedbrowser.com/codes/details/12132356564 --> snomed_12132356564
+        - http://www.orpha.net/ordo/orphanet_1920 --> orphanet_1920
+
+    Assumption: assumes that the column to normalize is always the 0th index.
 
     Args:
         data: A column from a Pandas DataFrame containing unstacked identifiers that need normalization (e.g.
             umls:c123456, http://www.snomedbrowser.com/codes/details/12132356564, rxnorm:12345).
-        source_code_dict:
+        source_code_dict: A dictionary keyed by input prefix with values reflecting the preferred prefixes in the
+            source_code_dict file. For example:
+                {'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
 
     Returns:
-        A Pandas DataFrame column that has been normalized.
+        A Pandas Series that has been normalized.
     """
 
     # split prefix from number in each identifier
-    prefix = data.apply(lambda j: j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1])
-    id_num = data.apply(lambda j: [x for x in re.split('[:|/]', j) if x != ''][-1]).str.lower()
+    prefix = data[data.columns[0]].apply(lambda j: j.rstrip([x for x in re.split('[_:|/]', j) if x != ''][-1])[:-1]
+                                         if 'http' in j and '_' in j else
+                                         j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1])
+    id_num = data[data.columns[0]].apply(lambda j: [x for x in re.split('[_:|/]', j) if x != ''][-1]
+                                         if 'http' in j and '_' in j else
+                                         [x for x in re.split('[:|/]', j) if x != ''][-1]).str.lower()
 
-    # normalize prefix
+    # normalize prefix to dictionary and clean up urls
     norm_prefix = prefix.apply(lambda j: source_code_dict[j] if j in source_code_dict.keys() else j)
 
     # concat normalized identifier and number back together
@@ -274,3 +287,43 @@ def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False)
             combined_dictionary.update(dictionaries[dictionary][key_type])
 
     return combined_dictionary
+
+
+def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, data2: pd.DataFrame) -> pd.DataFrame:
+    """Function applies logic from the OHDSIAnanake method to extend data1, which contains dbxref mappings to OMOP
+    concept ids with mappings from UMLS cuis to relevant umls ontology mappings. The merged data set is returned.
+
+    Args:
+        ont_keys: A list of ontology type identifiers (i.e. ['hp', 'mondo']).
+        ont_data: A Pandas DataFrame containing ontology dbxref information.
+        data1: A stacked Pandas DataFrame containing source codes and umls cuis.
+        data2: A Pandas DataFrame containing UMLS cuis and mappings to ontologies.
+
+    Returns:
+        dbxrefs: A Pandas DataFrame containing the data from data1 merged with new entries from the umls cui data (
+            data2).
+    """
+
+    # convert ont_data into a format that can be merged
+    col = [x for x in ont_data.columns if 'URI' in x][0]
+    ont_data['CODE'] = ont_data[col].apply(lambda x: x.split('/')[-1].lower().replace('_', ':'))
+
+    # filter umls cui data to only
+    data2_filtered = data2[(data2['CODE'].apply(lambda x: x if x.split(':')[0] in ont_keys else 999) != 999)]
+
+    # merge with filtered data with ontology data
+    merged_data = data1.merge(data2_filtered, how='inner', left_on='CODE', right_on='CUI').drop_duplicates()
+
+    # merge with ont labels
+    merged_data_ont = merged_data.merge(ont_data, how='inner', left_on='CODE_y', right_on='CODE').drop_duplicates()
+
+    # drop unneeded columns
+    merged_data_ont = merged_data_ont[['CONCEPT_ID', 'CUI', 'CODE_COLUMN', 'CONCEPT_DBXREF_ONT_URI']]
+
+    # update cuis column
+    merged_data_ont['CUI'] = merged_data_ont['CUI'].apply(lambda x: 'umls:' + x)
+
+    # rename columns
+    merged_data_ont.columns = ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'CONCEPT_DBXREF_ONT_URI']
+
+    return merged_data_ont
