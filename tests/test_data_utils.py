@@ -166,7 +166,7 @@ class TestDataUtils(unittest.TestCase):
         source_code_dict = {'snomedct_us': 'snomed', 'http://linkedlifedata.com/resource/umls/id': 'umls'}
 
         # test method
-        result = normalizes_source_codes(data['CODE'], source_code_dict)
+        result = normalizes_source_codes(data['CODE'].to_frame(), source_code_dict)
         self.assertIsInstance(result, pd.Series)
         self.assertIn('reactome:r-hsa-937045', list(result))
         self.assertIn('umls:c0010323', list(result))
@@ -189,5 +189,34 @@ class TestDataUtils(unittest.TestCase):
         self.assertIsInstance(combined_dicts_rev, Dict)
         self.assertTrue(len(combined_dicts_rev.keys()) == 4)
         self.assertTrue(len(combined_dicts_rev.values()) == 4)
+
+        return None
+
+    def test_ohdsi_ananke(self):
+        """Tests the ohdsi_ananke method."""
+
+        # create input data
+        combo_dict_df = pd.DataFrame({'CODE': ['hp:0001901', 'hp:0011737', 'hp:0002883', 'hp:0002883'],
+                                      'CONCEPT_DBXREF_ONT_URI': ['http://purl.obolibrary.org/obo/HP_0001901',
+                                                                 'http://purl.obolibrary.org/obo/HP_0011737',
+                                                                 'http://purl.obolibrary.org/obo/HP_0002883',
+                                                                 'http://purl.obolibrary.org/obo/HP_0002883']
+                                      })
+
+        clinical_data = pd.DataFrame({'CONCEPT_ID': ['315763', '440965', '138117', '999999'],
+                                      'CODE': ['C0000005', 'C0000039', 'C5234707', 'C9999999'],
+                                      'CODE_COLUMN': ['UMLS_CUI', 'UMLS_CUI', 'UMLS_CUI', 'UMLS_CUI']
+                                      })
+
+        umls_cui_data = pd.DataFrame({'CUI': ['C0000005', 'C0000039', 'C5234707'],
+                                      'SAB': ['HPO', 'HPO', 'HPO'],
+                                      'CODE': ['hp:0001901', 'hp:0011737', 'hp:0002883']
+                                      })
+
+        # run method and test output
+        merged_data = ohdsi_ananke(['hp'], combo_dict_df, clinical_data, umls_cui_data)
+        self.assertIsInstance(merged_data, pd.DataFrame)
+        self.assertTrue(len(merged_data) == 3)
+        self.assertTrue(list(merged_data.columns) == ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'CONCEPT_DBXREF_ONT_URI'])
 
         return None
