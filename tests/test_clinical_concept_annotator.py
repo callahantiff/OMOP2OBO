@@ -233,7 +233,7 @@ class TestConceptAnnotator(TestCase):
 
         # prep data before running code
         data, source_codes = self.annotator.clinical_data.copy(), self.annotator.source_code_map
-        data[code_level] = normalizes_source_codes(data[code_level], source_codes)
+        data[code_level] = normalizes_source_codes(data[code_level].to_frame(), source_codes)
 
         # run the method and verify the output
         umls_annotated_data = self.annotator.umls_cui_annotator(data, 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE')
@@ -251,7 +251,7 @@ class TestConceptAnnotator(TestCase):
 
         # prep data before running code
         data, source_codes = self.annotator.clinical_data.copy(), self.annotator.source_code_map
-        data[code_level] = normalizes_source_codes(data[code_level], source_codes)
+        data[code_level] = normalizes_source_codes(data[code_level].to_frame(), source_codes)
 
         # run the method and verify the output
         umls_annotated_data = self.annotator.umls_cui_annotator(data, 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'yes')
@@ -270,7 +270,7 @@ class TestConceptAnnotator(TestCase):
 
         # prep data before running code
         data, source_codes = self.annotator.clinical_data.copy(), self.annotator.source_code_map
-        data[code_level] = normalizes_source_codes(data[code_level], source_codes)
+        data[code_level] = normalizes_source_codes(data[code_level].to_frame(), source_codes)
         self.annotator.clinical_data = data
 
         # run umls annotation
@@ -279,7 +279,7 @@ class TestConceptAnnotator(TestCase):
 
         # get dbxrefs
         stacked_dbxref = self.annotator.dbxref_mapper(umls_stack, 'CONCEPT_ID', 'concept')
-        self.assertTrue(len(stacked_dbxref) == 0)
+        self.assertTrue(len(stacked_dbxref) == 2)
         self.assertTrue(len(stacked_dbxref.columns) == 5)
         self.assertEqual(list(stacked_dbxref.columns), ['CONCEPT_ID', 'CONCEPT_DBXREF_ONT_URI',
                                                         'CONCEPT_DBXREF_ONT_TYPE', 'CONCEPT_DBXREF_ONT_LABEL',
@@ -311,7 +311,7 @@ class TestConceptAnnotator(TestCase):
         # test method
         results = self.annotator.clinical_concept_mapper()
         self.assertTrue(len(results) == 4)
-        self.assertTrue(len(results.columns) == 24)
+        self.assertTrue(len(results.columns) == 30)
 
         return None
 
@@ -339,7 +339,7 @@ class TestConceptAnnotator(TestCase):
         # test method
         results = self.annotator.clinical_concept_mapper()
         self.assertTrue(len(results) == 4)
-        self.assertTrue(len(results.columns) == 16)
+        self.assertTrue(len(results.columns) == 19)
 
         return None
 

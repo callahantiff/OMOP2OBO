@@ -136,6 +136,7 @@ class ConceptAnnotator(object):
             self.ont_dict: Dict = ontology_dictionary
 
         # check for UMLS MRCONSO file
+        # assumption (line 154) currently filtering to only keep 'ENG' codes, remove this constraint if too specific
         if not umls_mrconso_file:
             self.umls_data: Optional[pd.DataFrame] = None
         else:
@@ -150,10 +151,14 @@ class ConceptAnnotator(object):
                 headers = ['CUI', 'LANG', 'SAB', 'CODE']
                 self.umls_cui_data = pd.read_csv(umls_mrconso_file, sep='|', names=headers, low_memory=False,
                                                  header=None, usecols=[0, 1, 11, 13]).drop_duplicates().astype(str)
+                # light filtering and tidying
                 df = self.umls_cui_data[(self.umls_cui_data.CODE != 'NOCODE') & (self.umls_cui_data.LANG == 'ENG')]
                 self.umls_cui_data = df[['CUI', 'SAB', 'CODE']].drop_duplicates()
                 self.umls_cui_data['CODE'] = self.umls_cui_data['SAB'] + ':' + self.umls_cui_data['CODE'].str.lower()
-                self.umls_cui_data['CODE'] = normalizes_source_codes(self.umls_cui_data['CODE'], self.source_code_map)
+                self.umls_cui_data['CODE'] = self.umls_cui_data['CODE'].apply(
+                    lambda j: ':'.join(j.split(':')[1:]) if len(j.split(':')) > 2 else j)
+                self.umls_cui_data['CODE'] = normalizes_source_codes(self.umls_cui_data['CODE'].to_frame(),
+                                                                     self.source_code_map)
 
         # check for UMLS MRSTY file
         if not umls_mrsty_file:
@@ -199,7 +204,9 @@ class ConceptAnnotator(object):
 
         # merge reduced clinical concepts with umls concepts
         if cui_expand is not None:
+            # merge 1 - align omop source codes to umls sabs
             umls_cui_1 = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
+            # merge 2 - align umls cuis from merge 1 to cuis in full umls (this adds additional sabs not found in omop)
             umls_cui_2 = umls_cui_1[[key, code_level, 'CUI']].merge(self.umls_cui_data, how='left', on='CUI')
             umls_cui = pd.concat([umls_cui_1, umls_cui_2])
         else:
@@ -208,8 +215,7 @@ class ConceptAnnotator(object):
         umls_cui_semtype = umls_cui.merge(self.umls_tui_data, how='left', on='CUI').drop_duplicates()
 
         # update column names
-        updated_cols = [key, code_level, 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
-        umls_cui_semtype.columns = updated_cols
+        umls_cui_semtype.columns = [key, code_level, 'UMLS_CUI', 'UMLS_SAB', 'UMLS_CODE', 'UMLS_SEM_TYPE']
 
         return umls_cui_semtype
 
@@ -229,40 +235,44 @@ class ConceptAnnotator(object):
                 1       442264  68172002            UMLS_CODE   SCTID:68172002  MONDO       URL      DbXRef_SCTID
                 2      4029098 237913008  CONCEPT_SOURCE_CODE  SCTID:237913008  MONDO       URL      DbXRef_SCTID
         Args:
-            data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method (see INPUT above
-                for an example).
+            data: A stacked Pandas DataFrame containing output from the umls_cui_annotator method (see INPUT above).
             primary_key: A string containing the name of the primary key (i.e. CONCEPT_ID).
             code_type: A string containing the concept_level (i.e. concept or ancestor).
 
         Returns:
-            merged_dbxrefs: A stacked Pandas DataFrame containing the results from merging the ontology dbxrefs (see
-                OUTPUT above for an example).
+            merged_dbxrefs: A stacked Pandas DataFrame containing ontology dbxref merging results (see OUTPUT above).
         """
 
-        col_label = code_type.upper() + '_DBXREF_ONT_'  # column labels
+        col_lab = code_type.upper() + '_DBXREF_ONT_'  # column labels
         ont_labels = merge_dictionaries(self.ont_dict, 'label', reverse=True)
 
         # convert ontology dictionary to Pandas DataFrame
-        combo_dict_df = pd.concat([pd.DataFrame(self.ont_dict[ont]['dbxref'].items(),
-                                                columns=['CODE', col_label + 'URI']) for ont in self.ont_dict.keys()
-                                   if len(self.ont_dict[ont]['dbxref']) > 0])
-        # normalize source_code values
-        combo_dict_df['CODE'] = normalizes_source_codes(combo_dict_df['CODE'], self.source_code_map)
+        ont_df = pd.concat([pd.DataFrame(self.ont_dict[ont]['dbxref'].items(), columns=['CODE', col_lab + 'URI'])
+                            for ont in self.ont_dict.keys() if len(self.ont_dict[ont]['dbxref']) > 0])
+        # normalize source_code prefix values
+        ont_df['CODE'] = normalizes_source_codes(ont_df['CODE'].to_frame(), self.source_code_map)
+        # merge ontology data and clinical data and run ohdsi ananke approach to specifically pull umls ont mappings
+        if self.umls_cui_data is not None:
+            dbxrefs = pd.concat(
+                [data.merge(ont_df, how='inner', on='CODE').drop_duplicates(),
+                 ohdsi_ananke(list(self.ont_dict.keys()), ont_df.copy(), data, self.umls_cui_data.copy())]
+            )
+        else:
+            dbxrefs = data.merge(ont_df, how='inner', on='CODE').drop_duplicates()
 
-        # merge ontology data and clinical data
-        dbxrefs = data.merge(combo_dict_df, how='inner', on='CODE').drop_duplicates()
-        dbxrefs[col_label + 'TYPE'] = dbxrefs[col_label + 'URI'].apply(lambda x: x.split('/')[-1].split('_')[0])
-        dbxrefs[col_label + 'LABEL'] = dbxrefs[col_label + 'URI'].apply(lambda x: ont_labels[x])
+        # update content and labels
+        dbxrefs[col_lab + 'TYPE'] = dbxrefs[col_lab + 'URI'].apply(lambda x: x.split('/')[-1].split('_')[0])
+        dbxrefs[col_lab + 'LABEL'] = dbxrefs[col_lab + 'URI'].apply(lambda x: ont_labels[x])
         # update evidence formatting --> EX: CONCEPTS_DBXREF_UMLS:C0008533
-        dbxrefs[col_label + 'EVIDENCE'] = dbxrefs['CODE'].apply(lambda x: col_label[0:-4] + x)
+        dbxrefs[col_lab + 'EVIDENCE'] = dbxrefs['CODE'].apply(lambda x: col_lab[0:-4] + x)
         # drop unneeded columns
-        dbxrefs = dbxrefs[[primary_key] + [x for x in list(dbxrefs.columns) if x.startswith(col_label[0:-4])]]
+        dbxrefs = dbxrefs[[primary_key] + [x for x in list(dbxrefs.columns) if x.startswith(col_lab[0:-4])]]
 
         return dbxrefs.drop_duplicates()
 
     def exact_string_mapper(self, data: pd.DataFrame, primary_key: str, code_type: str) -> pd.DataFrame:
         """Takes a stacked Pandas DataFrame and merges it with a Pandas DataFrame version of the ontology-dictionary
-        object 'label' and'synonym' data.
+        object 'label' and 'synonym' data.
 
             INPUT:
                     CONCEPT_ID                         CONCEPT_LABEL                                 CONCEPT_SYNONYM
@@ -343,9 +353,9 @@ class ConceptAnnotator(object):
             code_level, code_strings = levels[level]['codes'][0], levels[level]['strings']  # type: ignore
             if level == 'ancestor' or any(x for x in data[code_level] if '|' in x):
                 data = column_splitter(data, primary_key, [code_level], '|')[[primary_key] + [code_level]]
-                data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
+                data[code_level] = normalizes_source_codes(data[code_level].to_frame(), self.source_code_map)
             else:
-                data[code_level] = normalizes_source_codes(data[code_level], self.source_code_map)
+                data[code_level] = normalizes_source_codes(data[code_level].to_frame(), self.source_code_map)
 
             # STEP 1: UMLS CUI + SEMANTIC TYPE ANNOTATION
             print('Performing UMLS CUI + Semantic Type Annotation')
