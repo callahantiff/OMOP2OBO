@@ -318,12 +318,13 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
     merged_data_ont = merged_data.merge(ont_data, how='inner', left_on='CODE_y', right_on='CODE').drop_duplicates()
 
     # drop unneeded columns
-    merged_data_ont = merged_data_ont[['CONCEPT_ID', 'CUI', 'CODE_COLUMN', 'CONCEPT_DBXREF_ONT_URI']]
+    dbxref_col = [x for x in merged_data_ont.columns if 'DBXREF' in x][0]
+    merged_data_ont = merged_data_ont[['CONCEPT_ID', 'CUI', 'CODE_COLUMN', dbxref_col]]
 
     # update cuis column
     merged_data_ont['CUI'] = merged_data_ont['CUI'].apply(lambda x: 'umls:' + x)
 
     # rename columns
-    merged_data_ont.columns = ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'CONCEPT_DBXREF_ONT_URI']
+    merged_data_ont.columns = ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', dbxref_col]
 
     return merged_data_ont
