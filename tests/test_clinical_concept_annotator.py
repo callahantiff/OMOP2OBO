@@ -254,7 +254,7 @@ class TestConceptAnnotator(TestCase):
         data[code_level] = normalizes_source_codes(data[code_level].to_frame(), source_codes)
 
         # run the method and verify the output
-        umls_annotated_data = self.annotator.umls_cui_annotator(data, 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE', 'yes')
+        umls_annotated_data = self.annotator.umls_cui_annotator(data, 'CONCEPT_ID', 'CONCEPT_SOURCE_CODE', True)
         self.assertTrue(len(umls_annotated_data) == 66)
         self.assertTrue(len(umls_annotated_data.columns) == 6)
         self.assertEqual(umls_annotated_data.at[0, 'UMLS_SEM_TYPE'], 'Amino Acid, Peptide, or Protein')
