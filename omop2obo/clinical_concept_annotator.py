@@ -176,7 +176,7 @@ class ConceptAnnotator(object):
                 self.umls_tui_data = pd.read_csv(umls_mrsty_file, header=None, sep='|', names=headers,
                                                  low_memory=False, usecols=[0, 3]).drop_duplicates().astype(str)
 
-    def umls_cui_annotator(self, data: pd.DataFrame, key: str, code_level: str, expand: bool = False) -> pd.DataFrame:
+    def umls_cui_annotator(self, data: pd.DataFrame, key: str, code_level: str, expand: bool = True) -> pd.DataFrame:
         """Method maps concepts in a clinical data file to UMLS concepts and semantic types from the umls_cui_data
         and umls_tui_data Pandas DataFrames.
 
