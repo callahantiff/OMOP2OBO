@@ -220,3 +220,28 @@ class TestDataUtils(unittest.TestCase):
         self.assertTrue(list(merged_data.columns) == ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'CONCEPT_DBXREF_ONT_URI'])
 
         return None
+
+    def tests_compiles_mapping_content(self):
+        """Tests the compiles_mapping_content method."""
+
+        # create required input resources
+        data_row = pd.Series({'CONCEPT_ID': '4098595',
+                              'CONCEPT_DBXREF_HP_URI': 'http://purl.obolibrary.org/obo/HP_0008181',
+                              'CONCEPT_DBXREF_HP_LABEL': 'abetalipoproteinemia',
+                              'CONCEPT_DBXREF_HP_EVIDENCE': 'CONCEPT_DBXREF_snomed:190787008',
+                              'CONCEPT_STR_HP_URI': 'http://purl.obolibrary.org/obo/HP_0008181',
+                              'CONCEPT_STR_HP_LABEL': 'abetalipoproteinemia',
+                              'CONCEPT_STR_HP_EVIDENCE': 'CONCEPT_SOURCE_LABEL:abetalipoproteinemia',
+                              'HP_SIM_ONT_URI': 'HP_0008181',
+                              'HP_SIM_ONT_LABEL': 'abetalipoproteinemia',
+                              'HP_SIM_ONT_EVIDENCE': 'HP_0008181_1.0'})
+
+        # test method
+        results = compiles_mapping_content(data_row, 'HP')
+        self.assertIsInstance(results, list)
+        self.assertEqual(len(results), 3)
+        self.assertIsInstance(results[0], list)
+        self.assertIsInstance(results[1], list)
+        self.assertIsInstance(results[2], str)
+
+        return None

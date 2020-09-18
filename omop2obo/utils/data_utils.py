@@ -331,3 +331,47 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
 
     return merged_data_ont
 
+
+def compiles_mapping_content(data_row: pd.Series, ont: str) -> List:
+    """Function takes a row of data from a Pandas DataFrame and processes it to return a single ontology mapping for
+    the clinical concept represented by the row.
+
+    Args:
+        data_row: A row from a Pandas DataFrame cont
+        ont: A string containing the name of an ontology (e.g. "HP", "MONDO").
+
+    Returns:
+        mapping_result: A list containing mapping results for a given row. The list contains three items: uris,
+        labels, evidence.
+    """
+
+    for level in ['CONCEPT', 'ANCESTOR']:
+        # dbxrefs
+        dbx_uri = [data_row[x].split('/')[-1] for x in data_row.keys() if level + '_DBXREF_' + ont + '_URI' in x]
+        dbx_label = [data_row[x] for x in data_row.keys() if level + '_DBXREF_' + ont + '_LABEL' in x]
+        dbx_evidence = [data_row[x] for x in data_row.keys() if level + '_DBXREF_' + ont + '_EVIDENCE' in x]
+        # strings
+        str_uri = [data_row[x].split('/')[-1] for x in data_row.keys() if level + '_STR_' + ont + '_URI' in x]
+        str_label = [data_row[x] for x in data_row.keys() if level + '_STR_' + ont + '_LABEL' in x]
+        str_evidence = [data_row[x] for x in data_row.keys() if level + '_STR_' + ont + '_EVIDENCE' in x]
+        # concept similarity
+        sim_uri = [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_URI' in x]
+        sim_label = [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_LABEL' in x]
+        sim_evidence = [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_EVIDENCE' in x]
+
+        if len(dbx_uri) > 0 or len(str_uri) > 0:
+            break
+
+    # put together mapping
+    if len(dbx_uri) > 0 or len(str_uri) > 0:
+        uris = list(unique_everseen(dbx_uri + str_uri))
+        labels = list(unique_everseen(dbx_label + str_label))
+        evidence = list(unique_everseen(dbx_evidence + str_evidence))
+        # add similarity if it overlaps with above
+        evidence = ' | '.join(evidence + [sim_evidence[sim_uri.index(x)] for x in sim_uri if x in uris])
+
+        mapping_result = [uris, labels, evidence]
+    else:
+        mapping_result = [sim_uri, sim_label, sim_evidence]
+
+    return mapping_result
