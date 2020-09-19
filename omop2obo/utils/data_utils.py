@@ -332,6 +332,36 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
     return merged_data_ont
 
 
+def normalizes_clinical_source_codes(dbxref_dict: Dict, source_dict: Dict):
+    """Function takes two dictionaries and from them creates a new dictionary. The first dictionary, contains ontology
+    database cross references and the second contains content to normalize the identifiers contained in the first
+    dictionary.
+
+    Args:
+        dbxref_dict: A dictionary of ontology identifiers and their database cross references.
+        source_dict: A dictionary containing information for normalizing the prefixes of the database cross references.
+
+        An example of each dictionary is shown below:
+        - dbxref_dict = {'DbXref', 'umls:c4022862': 'DbXref', 'umls:c0008733': 'DbXref'}
+        - source_dict = {'snm', 'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
+
+    Returns:
+        normalized_prefixes: A dictionary where the keys are database cross references and the values are strings
+            containing the database cross reference type and prefix from the key, separated by a star. For example:
+            {'umls:c4022862': 'DbXref*umls', 'umls:c0008733': 'DbXref*umls'}
+    """
+
+    normalized_prefixes = {}
+
+    # split prefix from number in each identifier
+    for key, value in dbxref_dict.items():
+        prefix, id_num = key.split(':')[0], key.split(':')[-1].lower()
+        norm_prefix = source_dict[prefix] if prefix in source_dict.keys() else prefix
+        normalized_prefixes[norm_prefix + ':' + id_num] = value + '*' + prefix
+
+    return normalized_prefixes
+
+
 def compiles_mapping_content(data_row: pd.Series, ont: str) -> List:
     """Function takes a row of data from a Pandas DataFrame and processes it to return a single ontology mapping for
     the clinical concept represented by the row.

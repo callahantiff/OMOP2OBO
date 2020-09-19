@@ -221,6 +221,20 @@ class TestDataUtils(unittest.TestCase):
 
         return None
 
+    def tests_normalizes_clinical_source_codes(self):
+        """Tests the normalizes_clinical_source_codes method."""
+
+        # set input arguments
+        dbxref_dict = {'umls:c0008733': 'DbXref', 'snomedct_us:462165005': 'DbXref'}
+        source_dict = {'snomedct_us': 'snomed'}
+
+        # test method
+        results = normalizes_clinical_source_codes(dbxref_dict, source_dict)
+        self.assertIsInstance(results, Dict)
+        self.assertEqual(len(results), 2)
+
+        return None
+
     def tests_compiles_mapping_content(self):
         """Tests the compiles_mapping_content method."""
 
