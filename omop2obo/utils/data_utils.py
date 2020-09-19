@@ -23,6 +23,7 @@ import re
 
 from functools import reduce
 from more_itertools import unique_everseen
+from tqdm import tqdm
 from typing import Callable, Dict, List  # type: ignore
 
 # ENVIRONMENT WARNINGS
@@ -393,16 +394,19 @@ def compiles_mapping_content(data_row: pd.Series, ont: str) -> List:
             break
 
     # put together mapping
-    if len(dbx_uri) > 0 or len(str_uri) > 0:
-        uris = list(unique_everseen(dbx_uri + str_uri))
-        labels = list(unique_everseen(dbx_label + str_label))
-        evidence = list(unique_everseen(dbx_evidence + str_evidence))
-        # add similarity if it overlaps with above
-        evidence = ' | '.join(evidence + [sim_evidence[sim_uri.index(x)] for x in sim_uri if x in uris])
-
-        mapping_result = [uris, labels, evidence]
+    if dbx_uri[0] == '' and str_uri[0] == '' and sim_uri[0] == '':
+        mapping_result = [None, None, None]
     else:
-        mapping_result = [sim_uri, sim_label, sim_evidence]
+        if len(dbx_uri) > 0 or len(str_uri) > 0:
+            uris = list(unique_everseen(dbx_uri + str_uri))
+            labels = list(unique_everseen(dbx_label + str_label))
+            evidence = list(unique_everseen(dbx_evidence + str_evidence))
+            # add similarity if it overlaps with above
+            evidence = ' | '.join(evidence + [sim_evidence[sim_uri.index(x)] for x in sim_uri if x in uris])
+
+            mapping_result = [uris, labels, evidence]
+        else:
+            mapping_result = [sim_uri, sim_label, sim_evidence]
 
     return mapping_result
 
@@ -494,3 +498,54 @@ def assigns_mapping_category(mapping_result: List, mapping_evidence: str) -> str
         mapping_category = mapping_category
 
     return mapping_category
+
+
+def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict):
+    """Function takes a Pandas Dataframe containing the results from running the OMOP2OBO exact and similarity
+    mapping functions. This function takes those results and aggregates them such that a single column set of
+    evidence is returned for each ontology (i.e. uris, labels, mapping category, and mapping evidence).
+
+    Args:
+        data: A Pandas DataFrame of mapping results from
+        onts: A list of strings representing ontologies (e.g. ["hp", "mondo"]).
+        ont_data: A nested dictionary of ontology data including mappings between ontology class URIs, labels,
+            synonyms, definitions, and dbxrefs.
+        source_codes: A dictionary containing dbxref mappings between dbxref prefixes that is designed to normalize
+            prefixes to a single type.
+
+    Return:
+        A Pandas DataFrame
+    """
+
+    print('\n*** Aggregating and Compiling Mapping Results')
+
+    # set input variables
+    mappings, cols = {x: [] for x in onts}, [x.lower() for x in data.columns]
+    clin_cols = [x for x in cols if (x.endswith('label') or x.endswith('nym')) and not any(y for y in onts if y in x)]
+
+    for idx, row in tqdm(data.iterrows(), total=data.shape[0]):
+        # # if row['CONCEPT_DBXREF_HP_URI'] != '' and row['CONCEPT_STR_HP_URI'] != '' and row['HP_SIM_ONT_URI'] != '':
+        # if row['CONCEPT_DBXREF_HP_URI'] == '' and row['CONCEPT_STR_HP_URI'] == '' and row['HP_SIM_ONT_URI'] == '':
+        #     break
+        for ont in [x.upper() for x in onts]:
+            mapping_info = compiles_mapping_content(row, ont)
+            if None not in mapping_info:
+                # format evidence
+                clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x in row.keys()}
+                ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
+                mapping_evidence = formats_mapping_evidence(ont_dict, source_codes, mapping_info, clin_data)
+                # assign mapping type
+                mapping_category = assigns_mapping_category(mapping_info, mapping_evidence)
+                # update mapping results dict
+                uri, label = ' | '.join(mapping_info[0]), ' | '.join(mapping_info[1])
+            else: uri, label, mapping_category, mapping_evidence = None, None, None, None
+            mappings[ont].append([uri, label, mapping_category, mapping_evidence])
+
+    # add aggregated mapping results back to data frame
+    for ontology in mappings.keys():
+        data[ontology + '_URI'] = [x for x in mappings[ontology][0]]
+        data[ontology + '_LABEL'] = [x for x in mappings[ontology][1]]
+        data[ontology + '_MAPPING'] = [x for x in mappings[ontology][2]]
+        data[ontology + '_EVIDENCE'] = [x for x in mappings[ontology][3]]
+
+    return data

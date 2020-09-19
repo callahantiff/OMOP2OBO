@@ -160,7 +160,7 @@ class TestDataUtils(unittest.TestCase):
 
         # set-up input data
         data = pd.DataFrame(['reactome:r-hsa-937045', 'http://linkedlifedata.com/resource/umls/id/C0010323',
-                            'snomedct_us:111395007', 'pesticides:derivatives/benazolin-ethyl'], columns=['CODE'])
+                             'snomedct_us:111395007', 'pesticides:derivatives/benazolin-ethyl'], columns=['CODE'])
 
         # set-up input dictionary
         source_code_dict = {'snomedct_us': 'snomed', 'http://linkedlifedata.com/resource/umls/id': 'umls'}
@@ -239,24 +239,35 @@ class TestDataUtils(unittest.TestCase):
         """Tests the compiles_mapping_content method."""
 
         # create required input resources
-        data_row = pd.Series({'CONCEPT_ID': '4098595',
-                              'CONCEPT_DBXREF_HP_URI': 'http://purl.obolibrary.org/obo/HP_0008181',
-                              'CONCEPT_DBXREF_HP_LABEL': 'abetalipoproteinemia',
-                              'CONCEPT_DBXREF_HP_EVIDENCE': 'CONCEPT_DBXREF_snomed:190787008',
-                              'CONCEPT_STR_HP_URI': 'http://purl.obolibrary.org/obo/HP_0008181',
-                              'CONCEPT_STR_HP_LABEL': 'abetalipoproteinemia',
-                              'CONCEPT_STR_HP_EVIDENCE': 'CONCEPT_SOURCE_LABEL:abetalipoproteinemia',
-                              'HP_SIM_ONT_URI': 'HP_0008181',
-                              'HP_SIM_ONT_LABEL': 'abetalipoproteinemia',
-                              'HP_SIM_ONT_EVIDENCE': 'HP_0008181_1.0'})
+        data_row_1 = pd.Series({'CONCEPT_ID': '4098595',
+                                'CONCEPT_DBXREF_HP_URI': 'http://purl.obolibrary.org/obo/HP_0008181',
+                                'CONCEPT_DBXREF_HP_LABEL': 'abetalipoproteinemia',
+                                'CONCEPT_DBXREF_HP_EVIDENCE': 'CONCEPT_DBXREF_snomed:190787008',
+                                'CONCEPT_STR_HP_URI': 'http://purl.obolibrary.org/obo/HP_0008181',
+                                'CONCEPT_STR_HP_LABEL': 'abetalipoproteinemia',
+                                'CONCEPT_STR_HP_EVIDENCE': 'CONCEPT_SOURCE_LABEL:abetalipoproteinemia',
+                                'HP_SIM_ONT_URI': 'HP_0008181',
+                                'HP_SIM_ONT_LABEL': 'abetalipoproteinemia',
+                                'HP_SIM_ONT_EVIDENCE': 'HP_0008181_1.0'})
+        data_row_2 = pd.Series({'CONCEPT_ID': '4098595', 'CONCEPT_DBXREF_HP_URI': '', 'CONCEPT_DBXREF_HP_LABEL': '',
+                                'CONCEPT_DBXREF_HP_EVIDENCE': '', 'CONCEPT_STR_HP_URI': '', 'CONCEPT_STR_HP_LABEL': '',
+                                'CONCEPT_STR_HP_EVIDENCE': '', 'HP_SIM_ONT_URI': '', 'HP_SIM_ONT_LABEL': '',
+                                'HP_SIM_ONT_EVIDENCE': ''})
 
         # test method
-        results = compiles_mapping_content(data_row, 'HP')
+        results = compiles_mapping_content(data_row_1, 'HP')
         self.assertIsInstance(results, list)
         self.assertEqual(len(results), 3)
         self.assertIsInstance(results[0], list)
         self.assertIsInstance(results[1], list)
         self.assertIsInstance(results[2], str)
+
+        results = compiles_mapping_content(data_row_2, 'HP')
+        self.assertIsInstance(results, list)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(results[0], None)
+        self.assertEqual(results[1], None)
+        self.assertEqual(results[2], None)
 
         return None
 
@@ -292,8 +303,9 @@ class TestDataUtils(unittest.TestCase):
 
         # set function inputs
         mapping_info = [['HP_0008181'], ['abetalipoproteinemia'], 'CONCEPT_DBXREF_snomed:190787008 | '
-                                                            'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
-                                                            'CONCEPT_SYNONYM:abetalipoproteinemia | HP_0008181_1.0']
+                                                                  'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
+                                                                  'CONCEPT_SYNONYM:abetalipoproteinemia | '
+                                                                  'HP_0008181_1.0']
         mapping_evidence = 'OBO_DbXref-OMOP_CONCEPT_CODE:umls_C0000744 | ' \
                            'OBO_LABEL-OMOP_CONCEPT_SYNONYM:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0 '
 
@@ -301,5 +313,10 @@ class TestDataUtils(unittest.TestCase):
         results = assigns_mapping_category(mapping_info, mapping_evidence)
         self.assertIsInstance(results, str)
         self.assertEqual(results, 'Automatic Exact - Concept')
+
+        return None
+
+    def tests_aggregates_mapping_results(self):
+        """Tests the aggregates_mapping_results method."""
 
         return None
