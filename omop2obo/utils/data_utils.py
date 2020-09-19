@@ -425,8 +425,6 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
     """
 
     dbx_evid, label_evid, syn_evid, sim_evid = [], [], [], []
-
-    # get ontology information for processing evidence
     ont_label, ont_syns, ont_syntyp = ont_dict['label'], ont_dict['synonym'], ont_dict['synonym_type']
     dbxref_type = normalizes_clinical_source_codes(ont_dict['dbxref_type'], source_dict)
 
@@ -462,3 +460,37 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
     compiled_evid = ' | '.join(list(filter(None, list(unique_everseen(dbx_evid + label_evid + syn_evid + sim_evid)))))
 
     return compiled_evid
+
+
+def assigns_mapping_category(mapping_result: List, mapping_evidence: str) -> str:
+    """Function takes a mapping result and evidence and uses it to determine the mapping category.
+
+    Args:
+        mapping_result: A list containing mapping results for a given row. The list contains three items: uris, labels,
+            evidence.
+        mapping_evidence: A string containing the compiled mapping evidence.
+
+    Returns:
+         mapping_category: A string containing the mapping category.
+    """
+
+    # determine if mapping is exact or constructor
+    if len(mapping_result[0]) == 1:
+        if 'CONCEPT_SIMILARITY:' in mapping_evidence and len(mapping_evidence.split(' | ')) == 1:
+            mapping_category = 'Manual Exact - Concept Similarity'
+        else:
+            mapping_category = 'Automatic Exact - '
+    elif len(mapping_result[0]) > 1:
+        mapping_category = 'Automatic Constructor - '
+    else:
+        mapping_category = ''
+
+    # determine mapping level (i.e. concept or ancestor)
+    if any(x for x in ['CONCEPT_CODE', 'CONCEPT_SYNONYM', 'CONCEPT_LABEL'] if x in mapping_evidence):
+        mapping_category = mapping_category + 'Concept'
+    elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x in mapping_evidence):
+        mapping_category = mapping_category + 'Ancestor'
+    else:
+        mapping_category = mapping_category
+
+    return mapping_category

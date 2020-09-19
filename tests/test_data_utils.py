@@ -286,3 +286,20 @@ class TestDataUtils(unittest.TestCase):
         self.assertEqual(results.split(' | ')[2], 'CONCEPT_SIMILARITY:HP_0008181_1.0')
 
         return None
+
+    def tests_assigns_mapping_category(self):
+        """Tests the assigns_mapping_category method."""
+
+        # set function inputs
+        mapping_info = [['HP_0008181'], ['abetalipoproteinemia'], 'CONCEPT_DBXREF_snomed:190787008 | '
+                                                            'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
+                                                            'CONCEPT_SYNONYM:abetalipoproteinemia | HP_0008181_1.0']
+        mapping_evidence = 'OBO_DbXref-OMOP_CONCEPT_CODE:umls_C0000744 | ' \
+                           'OBO_LABEL-OMOP_CONCEPT_SYNONYM:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0 '
+
+        # test method
+        results = assigns_mapping_category(mapping_info, mapping_evidence)
+        self.assertIsInstance(results, str)
+        self.assertEqual(results, 'Automatic Exact - Concept')
+
+        return None
