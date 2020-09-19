@@ -333,7 +333,7 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
 
 
 def normalizes_clinical_source_codes(dbxref_dict: Dict, source_dict: Dict):
-    """Function takes two dictionaries and from them creates a new dictionary. The first dictionary, contains ontology
+    """Function takes two dictionaries and uses them to create a new dictionary. The first dictionary, contains ontology
     database cross references and the second contains content to normalize the identifiers contained in the first
     dictionary.
 
@@ -405,3 +405,60 @@ def compiles_mapping_content(data_row: pd.Series, ont: str) -> List:
         mapping_result = [sim_uri, sim_label, sim_evidence]
 
     return mapping_result
+
+
+def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, clin_data: Dict) -> str:
+    """Takes a nested dictionary of ontology attributes, a dictionary of source code prefix mapping information, a
+    nested list containing aggregated mapping information, and a dictionary of clinical concept labels and synonyms.
+    The function uses this information to aggregate the evidence supporting the mapping provided in the result object.
+
+    Args:
+        ont_dict: A nested dictionary containing ontology attributes.
+        source_dict: A dictionary containing ontology prefixing information.
+        result: A list containing mapping results for a given row. The list contains three items: uris, labels,
+            evidence.
+        clin_data: A dictionary keyed by column identifier with values containing data from the keyed column.
+
+    Returns:
+        compiled_evid: A string containing the compiled mapping evidence. For example:
+            'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0'.
+    """
+
+    dbx_evid, label_evid, syn_evid, sim_evid = [], [], [], []
+
+    # get ontology information for processing evidence
+    ont_label, ont_syns, ont_syntyp = ont_dict['label'], ont_dict['synonym'], ont_dict['synonym_type']
+    dbxref_type = normalizes_clinical_source_codes(ont_dict['dbxref_type'], source_dict)
+
+    # sort clinical data
+    for x in result[2].split(' | '):
+        level = [x.split('_')[0] if ':' in x else 'CONCEPT_SIMILARITY'][0]
+        clin_update = {k: v for k, v in clin_data.items() if level in k}
+
+        if 'dbxref' in x.lower():
+            if x.split('_')[-1] in dbxref_type.keys(): prefix = dbxref_type[x.split('_')[-1]]
+            else: prefix = 'DbXref*' + x.split('_')[-1].split(':')[0]
+            updated_prefix = 'OBO_' + prefix.split('*')[0] + '-OMOP_' + level + '_CODE'
+            dbx_evid.append(updated_prefix + ':' + prefix.split('*')[-1] + '_' + x.split(':')[-1].replace(':', '_'))
+        if 'label' in x.lower():
+            label_evid, clin_lab = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'label' in x.lower()])
+            for lab in clin_lab.split(' | '):
+                if lab.lower() in ont_label.keys() and ont_label[lab.lower()].split('/')[-1] == result[0][0]:
+                    label_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_LABEL:' + x.split(':')[-1])
+                if lab.lower() in ont_syns.keys() and ont_syns[lab.lower()].split('/')[-1] == result[0][0]:
+                    label_evid.append('OBO_' + ont_syntyp[x.split(':')[-1]] + '-OMOP_CONCEPT_LABEL:' + x.split(':')[-1])
+        if 'synonym' in x.lower():
+            syn_evid, clin_syn = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'synonym' in x.lower()])
+            for syn in clin_syn.split(' | '):
+                if syn.lower() in ont_label.keys() and ont_label[syn.lower()].split('/')[-1] == result[0][0]:
+                    syn_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_SYNONYM:' + x.split(':')[-1])
+                if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] == result[0][0]:
+                    syn_lab = '-OMOP_' + level + '_SYNONYM:'
+                    syn_evid.append('OBO_' + ont_syntyp[x.split(':')[-1]] + syn_lab + x.split(':')[-1])
+        if level == 'CONCEPT_SIMILARITY':
+            sim_evid.append('CONCEPT_SIMILARITY:' + x)
+
+    # compile evidence
+    compiled_evid = ' | '.join(list(filter(None, list(unique_everseen(dbx_evid + label_evid + syn_evid + sim_evid)))))
+
+    return compiled_evid

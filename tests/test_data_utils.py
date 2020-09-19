@@ -259,3 +259,30 @@ class TestDataUtils(unittest.TestCase):
         self.assertIsInstance(results[2], str)
 
         return None
+
+    def tests_formats_mapping_evidence(self):
+        """Tests the formats_mapping_evidence method."""
+
+        # prepare needed input data
+        ont_dict = {'label': {'abetalipoproteinemia': 'http://purl.obolibrary.org/obo/HP_0008181'},
+                    'dbxref': {'snomedct_us:190787008': 'http://purl.obolibrary.org/obo/HP_0008181'},
+                    'dbxref_type': {'snomedct_us:190787008': 'DbXref'},
+                    'synonym': {'wet lung': 'http://purl.obolibrary.org/obo/HP_0100598'},
+                    'synonym_type': {'wet lung': 'hasExactSynonym'}}
+        source_dict = {'snomed:190787008': 'DbXref*snomedct_us'}
+        result = [['HP_0008181'], ['abetalipoproteinemia'], 'CONCEPT_DBXREF_snomed:190787008 | '
+                                                            'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
+                                                            'CONCEPT_SYNONYM:abetalipoproteinemia | HP_0008181_1.0']
+        clin_data = {'CONCEPT_LABEL': 'Abetalipoproteinemia',
+                     'CONCEPT_SOURCE_LABEL': 'Abetalipoproteinemia',
+                     'CONCEPT_SYNONYM': 'Abetalipoproteinaemia | Apolipoprotein B deficiency',
+                     'ANCESTOR_LABEL': 'Autosomal recessive hereditary disorder | Metabolic disorder | Finding'}
+
+        # test method
+        results = formats_mapping_evidence(ont_dict, source_dict, result, clin_data)
+        self.assertIsInstance(results, str)
+        self.assertEqual(results.split(' | ')[0], 'OBO_DbXref-OMOP_CONCEPT_CODE:snomed_190787008')
+        self.assertEqual(results.split(' | ')[1], 'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia')
+        self.assertEqual(results.split(' | ')[2], 'CONCEPT_SIMILARITY:HP_0008181_1.0')
+
+        return None
