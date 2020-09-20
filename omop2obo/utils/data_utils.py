@@ -559,7 +559,8 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
         A Pandas DataFrame
     """
 
-    print('\n*** Aggregating and Compiling Mapping Results')
+    print('\n#### AGGREGATING AND COMPILING MAPPING RESULTS ####')
+    print('Note. Until parallelized this step can up to several hours to complete for large concept sets...\n')
 
     # set input variables
     cols = [x.lower() for x in data.columns]

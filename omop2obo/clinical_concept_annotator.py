@@ -56,7 +56,8 @@ class ConceptAnnotator(object):
                  concept_strings: Tuple = None, ancestor_codes: Tuple = None, ancestor_strings: Tuple = None,
                  umls_mrconso_file: str = None, umls_mrsty_file: str = None, source_codes: str = None) -> None:
 
-        print('#### SETTING UP ENVIRONMENT ####')
+        print('#### GENERATING EXACT MATCH MAPPINGS ####')
+        print('*** Setting up Environment')
 
         # vocabulary source code mapping -- not tested in testing file
         source_code = 'resources/mappings/source_code_vocab_map.csv' if source_codes is None else source_codes
@@ -337,7 +338,6 @@ class ConceptAnnotator(object):
                 the input ontologies and clinical data.
         """
 
-        print('\n\n#### MAPPING CONCEPTS ####')
         level_maps = []
 
         if self.ancestor_codes is not None:
