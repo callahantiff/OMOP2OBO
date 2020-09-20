@@ -373,6 +373,8 @@ def filters_mapping_content(exact_results: List, similarity_results: List) -> Li
             - keep all concept similarity mappings with a score >= 0.75
         elif dbxref or string exact mapping at ancestor-level and all sim scores less < 0.75
             - set(dbxref results + string results) and add sim evidence if in set
+        elif dbxref or string exact mapping at ancestor-level and no similarity results
+            - set(dbxref results + string results)
         else:
             - keep all concept similarity mappings regardless of score
 
@@ -580,7 +582,6 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
                     map_evidence = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
                     # assign mapping type to aggregated map
                     map_category = assigns_mapping_category(map_info, map_evidence)
-                    # update mapping results dict
                     mappings.append([' | '.join(map_info[0]), ' | '.join(map_info[1]), map_category, map_evidence])
             else:
                 mappings.append([None, None, None, None])
