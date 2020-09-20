@@ -24,7 +24,7 @@ import re
 from functools import reduce
 from more_itertools import unique_everseen
 from tqdm import tqdm  # type: ignore
-from typing import Callable, Dict, List  # type: ignore
+from typing import Callable, Dict, List, Union  # type: ignore
 
 # ENVIRONMENT WARNINGS
 # WARNING 1 - Pandas: disable chained assignment warning rationale:
@@ -363,52 +363,89 @@ def normalizes_clinical_source_codes(dbxref_dict: Dict, source_dict: Dict):
     return normalized_prefixes
 
 
-def compiles_mapping_content(data_row: pd.Series, ont: str) -> List:
+def filters_mapping_content(exact_results: List, similarity_results: List) -> List:
+    """Parses compiled mapping results, when results exist, to determine a final aggregated mapping result. Note that
+    the following logic is used when determining which mapping evidence to aggregate (assuming there is at least 1
+    dbxref, string, or sim mapping result):
+        if dbxref or string exact mapping at concept-level:
+            - set(dbxref results + string results) and add sim evidence if in set
+        elif dbxref or string exact mapping at ancestor-level and all sim scores less >= 0.75
+            - keep all concept similarity mappings with a score >= 0.75
+        elif dbxref or string exact mapping at ancestor-level and all sim scores less < 0.75
+            - set(dbxref results + string results) and add sim evidence if in set
+        else:
+            - keep all concept similarity mappings regardless of score
+
+    Args:
+        exact_results: A nested list containing 3 sub-lists where sub-list[0] contains exact match uris, sub-list[1]
+            contains exact match labels, and sub-list[2] contains exact match evidence.
+        similarity_results: A nested list containing 3 sub-lists where sub-list[0] contains similarity uris,
+            sub-list[1] contains similarity labels, and sub-list[2] contains similarity evidence.
+
+    Returns:
+        mapping_result: A list containing mapping results for a given row. The list contains three items: uris,
+            labels, evidence.
+    """
+
+    exact_uri, exact_label, exact_evid = exact_results
+    sim_uri, sim_label, sim_evid = similarity_results
+
+    # format results
+    if exact_uri and 'CONCEPT' in exact_evid[0]:
+        uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
+        evidence = [sim_evid[0].split(' | ')[x] for x in [sim_uri.index(x) for x in sim_uri if x in uris]]
+        mapping_result = [uris, labels, ' | '.join(exact_evid + evidence)]  # type: ignore
+    elif exact_uri and sim_uri:
+        if any(x for x in sim_evid[0].split(' | ') if float(x.split('_')[-1]) >= 0.75):
+            evid_list = sim_evid[0].split(' | ')
+            sim_keep = [evid_list.index(x) for x in evid_list if float(x.split('_')[-1]) >= 0.75]
+            uris, labels = [sim_uri[x] for x in sim_keep], [sim_label[x] for x in sim_keep]
+            mapping_result = [uris, labels, ' | '.join([evid_list[x] for x in sim_keep])]  # type: ignore
+        else:
+            uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
+            evidence = [sim_evid[0].split(' | ')[x] for x in [sim_uri.index(x) for x in sim_uri if x in uris]]
+            mapping_result = [uris, labels, ' | '.join(exact_evid + evidence)]  # type: ignore
+    elif exact_uri and not sim_uri:
+        uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
+        mapping_result = [uris, labels, ' | '.join(exact_evid)]  # type: ignore
+    else:
+        mapping_result = [sim_uri, sim_label, ' | '.join(sim_evid)]  # type: ignore
+
+    return mapping_result
+
+
+def compiles_mapping_content(row: pd.Series, ont: str) -> List:
     """Function takes a row of data from a Pandas DataFrame and processes it to return a single ontology mapping for
     the clinical concept represented by the row.
 
     Args:
-        data_row: A row from a Pandas DataFrame cont
+        row: A row from a Pandas DataFrame cont
         ont: A string containing the name of an ontology (e.g. "HP", "MONDO").
 
     Returns:
-        mapping_result: A list containing mapping results for a given row. The list contains three items: uris,
-        labels, evidence.
+        A list containing mapping results for a given row. The list contains three items: uris, labels, evidence.
     """
 
+    relevant_cols = [x for x in row.keys() if any(y for y in ['_DBXREF_' + ont, '_STR_' + ont, ont + '_SIM'] if y in x)]
+
     for level in ['CONCEPT', 'ANCESTOR']:
-        dx_id, dx_lab, dx_ev, str_id, str_lab, str_ev, sim_id, sim_lab, sim_ev = ([] for _ in range(9))  # type: ignore
-
-        # dbxrefs
-        dx_id += [data_row[x].split(' | ') for x in data_row.keys() if level + '_DBXREF_' + ont + '_URI' in x]
-        dx_lab += [data_row[x].split(' | ') for x in data_row.keys() if level + '_DBXREF_' + ont + '_LABEL' in x]
-        dx_ev += [data_row[x] for x in data_row.keys() if level + '_DBXREF_' + ont + '_EVIDENCE' in x]
-        # strings
-        str_id += [data_row[x].split(' | ') for x in data_row.keys() if level + '_STR_' + ont + '_URI' in x]
-        str_lab += [data_row[x].split(' | ') for x in data_row.keys() if level + '_STR_' + ont + '_LABEL' in x]
-        str_ev += [data_row[x] for x in data_row.keys() if level + '_STR_' + ont + '_EVIDENCE' in x]
-        # concept similarity
-        sim_id += [data_row[x].split(' | ') for x in data_row.keys() if ont + '_SIM_ONT_URI' in x]
-        sim_lab += [data_row[x].split(' | ') for x in data_row.keys() if ont + '_SIM_ONT_LABEL' in x]
-        sim_ev += [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_EVIDENCE' in x]
-
-        if (dx_id != [] or str_id != []) and (dx_id[0] != [''] or str_id[0] != ['']): break
+        exact_uri, exact_label, exact_evid, sim_uri, sim_label, sim_evid = ([] for _ in range(6))  # type: ignore
+        for col in relevant_cols:
+            if level in col and any(y for y in ['DBXREF', 'STR'] if y in col):
+                if 'URI' in col and row[col] != '': exact_uri += [x.split('/')[-1] for x in row[col].split(' | ')]
+                if 'LABEL' in col and row[col] != '': exact_label += [x for x in row[col].split(' | ')]
+                if 'EVIDENCE' in col and row[col] != '': exact_evid += [row[col]]
+            if 'SIM' in col:
+                if 'URI' in col and row[col] != '': sim_uri += [x.split('/')[-1] for x in row[col].split(' | ')]
+                if 'LABEL' in col and row[col] != '': sim_label += [x for x in row[col].split(' | ')]
+                if 'EVIDENCE' in col and row[col] != '': sim_evid += [row[col]]
+        if exact_uri: break
 
     # put together mapping
-    if (dx_id == [] or str_id == []) or (dx_id[0] == [''] or str_id[0] == ['']):
-        mapping_result = [None] * 3  # type: ignore
+    if not exact_uri and not sim_uri:
+        return [None] * 3  # type: ignore
     else:
-        if dx_id[0][0] != '' or str_id[0][0] != '':
-            uris = list(unique_everseen([x.split('/')[-1] for x in dx_id[0]] + [x.split('/')[-1] for x in str_id[0]]))
-            labels = list(unique_everseen([x for x in dx_lab[0]] + [x for x in str_lab[0]]))
-            evidence = list(unique_everseen(dx_ev + str_ev))
-            # determine if similarity should be added and add the overlapping uri's evidence
-            evidence += [sim_ev[0].split(' | ')[x] for x in [sim_id[0].index(x) for x in sim_id[0] if x in uris]]
-            mapping_result = [uris, labels, ' | '.join(evidence)]  # type: ignore
-        else:
-            mapping_result = [sim_id, sim_lab, ' | '.join(sim_ev)]  # type: ignore
-
-    return mapping_result
+        return filters_mapping_content([exact_uri, exact_label, exact_evid], [sim_uri, sim_label, sim_evid])
 
 
 def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, clin_data: Dict) -> str:
@@ -528,23 +565,25 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
 
     for ont in [x.upper() for x in onts]:
         print('Processing {} Mappings'.format(ont))
-        mappings = []
+        mappings: List[Union[List[None], List[str]]] = []
         for idx, row in tqdm(data.iterrows(), total=data.shape[0]):
             ont_list = ['DBXREF_' + ont, 'STR_' + ont, ont + '_SIM']
             res = [x for x in row.keys() if row[x] != '' and any(y for y in ont_list if y in x)]
             if len(res) != 0:
-                # aggregate mapping info
                 map_info = compiles_mapping_content(row, ont)
-                # format aggregated mapping evidence
-                clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
-                ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
-                map_evidence = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
-                # assign mapping type to aggregated map
-                map_category = assigns_mapping_category(map_info, map_evidence)
-                # update mapping results dict
-                mappings.append([' | '.join(map_info[0]), ' | '.join(map_info[1]), map_category, map_evidence])
+                if None in map_info:
+                    mappings.append([None, None, None, None])
+                else:
+                    # format aggregated mapping evidence
+                    clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
+                    ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
+                    map_evidence = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
+                    # assign mapping type to aggregated map
+                    map_category = assigns_mapping_category(map_info, map_evidence)
+                    # update mapping results dict
+                    mappings.append([' | '.join(map_info[0]), ' | '.join(map_info[1]), map_category, map_evidence])
             else:
-                mappings.append([None, None, None, None])  # type: ignore
+                mappings.append([None, None, None, None])
 
         # add aggregated mapping results back to data frame
         data['AGGREGATED_' + ont + '_URI'] = [x[0] for x in mappings]

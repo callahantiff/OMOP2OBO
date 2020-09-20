@@ -235,6 +235,89 @@ class TestDataUtils(unittest.TestCase):
 
         return None
 
+    def tests_filters_mapping_content(self):
+        """Tests the filters_mapping_content method."""
+
+        # create input values
+        # test set 1
+        input_1_exact = [['HP_0008181', 'HP_0008181'], ['abetalipoproteinemia', 'abetalipoproteinemia'],
+                         ['CONCEPT_DBXREF_snomed:190787008', 'CONCEPT_SOURCE_LABEL:abetalipoproteinemia']]
+        input_1_sim = [['HP_0008181'], ['abetalipoproteinemia'], ['HP_0008181_1.0']]
+        # test set 2
+        input_2_exact = [['HP_0011276', 'HP_0000951'], ['vascular skin abnormality', 'abnormality of the skin'],
+                         ['ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871']]
+        input_2_sim = [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                       ['HP_0100309_0.75 | HP_0100310_0.786']]
+        # test set 3
+        input_3_exact = [['HP_0011276', 'HP_0000951'], ['vascular skin abnormality', 'abnormality of the skin'],
+                         ['CONCEPT_DBXREF_snomed:11263005 | CONCEPT_DBXREF_msh:d012871']]
+        input_3_sim = [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                       ['HP_0100309_0.278 | HP_0100310_0.266']]
+        # test set 4
+        input_4_exact = [['HP_0011276', 'HP_0000951'], ['vascular skin abnormality', 'abnormality of the skin'],
+                         ['ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871']]
+        input_4_sim = [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                       ['HP_0100309_0.278 | HP_0100310_0.266']]
+        # test set 5
+        input_5_exact = [['HP_0002011', 'HP_0002960', 'HP_0011096'],
+                         ['morphological central nervous system abnormality', 'peripheral demyelination'],
+                         ['ANCESTOR_DBXREF_snomed:23853001 | ANCESTOR_DBXREF_snomed:85828009', 'ANCESTOR_LABEL:demyelination']]
+        input_5_sim = [[], [], []]
+
+        # test method -- input set 1
+        results_1 = filters_mapping_content(input_1_exact, input_1_sim)
+        self.assertIsInstance(results_1, list)
+        self.assertEqual(len(results_1), 3)
+        self.assertIsInstance(results_1[0], list)
+        self.assertIsInstance(results_1[1], list)
+        self.assertIsInstance(results_1[2], str)
+        self.assertEqual(results_1, [['HP_0008181'],
+                                     ['abetalipoproteinemia'],
+                                     'CONCEPT_DBXREF_snomed:190787008 | CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
+                                     'HP_0008181_1.0'])
+        # test method -- input set 2
+        results_2 = filters_mapping_content(input_2_exact, input_2_sim)
+        self.assertIsInstance(results_2, list)
+        self.assertEqual(len(results_2), 3)
+        self.assertIsInstance(results_2[0], list)
+        self.assertIsInstance(results_2[1], list)
+        self.assertIsInstance(results_2[2], str)
+        self.assertEqual(results_2, [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                                     'HP_0100309_0.75 | HP_0100310_0.786'])
+        # test method -- input set 3
+        results_3 = filters_mapping_content(input_3_exact, input_3_sim)
+        self.assertIsInstance(results_3, list)
+        self.assertEqual(len(results_3), 3)
+        self.assertIsInstance(results_3[0], list)
+        self.assertIsInstance(results_3[1], list)
+        self.assertIsInstance(results_3[2], str)
+        self.assertEqual(results_3, [['HP_0011276', 'HP_0000951'],
+                                     ['vascular skin abnormality', 'abnormality of the skin'],
+                                     'CONCEPT_DBXREF_snomed:11263005 | CONCEPT_DBXREF_msh:d012871'])
+        # test method -- input set 4
+        results_4 = filters_mapping_content(input_4_exact, input_4_sim)
+        self.assertIsInstance(results_4, list)
+        self.assertEqual(len(results_4), 3)
+        self.assertIsInstance(results_4[0], list)
+        self.assertIsInstance(results_4[1], list)
+        self.assertIsInstance(results_4[2], str)
+        self.assertEqual(results_4, [['HP_0011276', 'HP_0000951'],
+                                     ['vascular skin abnormality', 'abnormality of the skin'],
+                                     'ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871'])
+        # test method -- input set 5
+        results_5 = filters_mapping_content(input_5_exact, input_5_sim)
+        self.assertIsInstance(results_5, list)
+        self.assertEqual(len(results_5), 3)
+        self.assertIsInstance(results_5[0], list)
+        self.assertIsInstance(results_5[1], list)
+        self.assertIsInstance(results_5[2], str)
+        self.assertEqual(results_5, [['HP_0002011', 'HP_0002960', 'HP_0011096'],
+                                     ['morphological central nervous system abnormality', 'peripheral demyelination'],
+                                     'ANCESTOR_DBXREF_snomed:23853001 | ANCESTOR_DBXREF_snomed:85828009 | '
+                                     'ANCESTOR_LABEL:demyelination'])
+
+        return None
+
     def tests_compiles_mapping_content(self):
         """Tests the compiles_mapping_content method."""
 
