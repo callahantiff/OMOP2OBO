@@ -23,7 +23,7 @@ import re
 
 from functools import reduce
 from more_itertools import unique_everseen
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 from typing import Callable, Dict, List  # type: ignore
 
 # ENVIRONMENT WARNINGS
@@ -377,36 +377,36 @@ def compiles_mapping_content(data_row: pd.Series, ont: str) -> List:
     """
 
     for level in ['CONCEPT', 'ANCESTOR']:
-        # dbxrefs
-        dbx_uri = [data_row[x].split('/')[-1] for x in data_row.keys() if level + '_DBXREF_' + ont + '_URI' in x]
-        dbx_label = [data_row[x] for x in data_row.keys() if level + '_DBXREF_' + ont + '_LABEL' in x]
-        dbx_evidence = [data_row[x] for x in data_row.keys() if level + '_DBXREF_' + ont + '_EVIDENCE' in x]
-        # strings
-        str_uri = [data_row[x].split('/')[-1] for x in data_row.keys() if level + '_STR_' + ont + '_URI' in x]
-        str_label = [data_row[x] for x in data_row.keys() if level + '_STR_' + ont + '_LABEL' in x]
-        str_evidence = [data_row[x] for x in data_row.keys() if level + '_STR_' + ont + '_EVIDENCE' in x]
-        # concept similarity
-        sim_uri = [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_URI' in x]
-        sim_label = [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_LABEL' in x]
-        sim_evidence = [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_EVIDENCE' in x]
+        dx_id, dx_lab, dx_ev, str_id, str_lab, str_ev, sim_id, sim_lab, sim_ev = ([] for _ in range(9))  # type: ignore
 
-        if len(dbx_uri) > 0 or len(str_uri) > 0:
-            break
+        # dbxrefs
+        dx_id += [data_row[x].split(' | ') for x in data_row.keys() if level + '_DBXREF_' + ont + '_URI' in x]
+        dx_lab += [data_row[x].split(' | ') for x in data_row.keys() if level + '_DBXREF_' + ont + '_LABEL' in x]
+        dx_ev += [data_row[x] for x in data_row.keys() if level + '_DBXREF_' + ont + '_EVIDENCE' in x]
+        # strings
+        str_id += [data_row[x].split(' | ') for x in data_row.keys() if level + '_STR_' + ont + '_URI' in x]
+        str_lab += [data_row[x].split(' | ') for x in data_row.keys() if level + '_STR_' + ont + '_LABEL' in x]
+        str_ev += [data_row[x] for x in data_row.keys() if level + '_STR_' + ont + '_EVIDENCE' in x]
+        # concept similarity
+        sim_id += [data_row[x].split(' | ') for x in data_row.keys() if ont + '_SIM_ONT_URI' in x]
+        sim_lab += [data_row[x].split(' | ') for x in data_row.keys() if ont + '_SIM_ONT_LABEL' in x]
+        sim_ev += [data_row[x] for x in data_row.keys() if ont + '_SIM_ONT_EVIDENCE' in x]
+
+        if (dx_id != [] or str_id != []) and (dx_id[0] != [''] or str_id[0] != ['']): break
 
     # put together mapping
-    if dbx_uri[0] == '' and str_uri[0] == '' and sim_uri[0] == '':
-        mapping_result = [None, None, None]
+    if (dx_id == [] or str_id == []) or (dx_id[0] == [''] or str_id[0] == ['']):
+        mapping_result = [None] * 3  # type: ignore
     else:
-        if len(dbx_uri) > 0 or len(str_uri) > 0:
-            uris = list(unique_everseen(dbx_uri + str_uri))
-            labels = list(unique_everseen(dbx_label + str_label))
-            evidence = list(unique_everseen(dbx_evidence + str_evidence))
-            # add similarity if it overlaps with above
-            evidence = ' | '.join(evidence + [sim_evidence[sim_uri.index(x)] for x in sim_uri if x in uris])
-
-            mapping_result = [uris, labels, evidence]
+        if dx_id[0][0] != '' or str_id[0][0] != '':
+            uris = list(unique_everseen([x.split('/')[-1] for x in dx_id[0]] + [x.split('/')[-1] for x in str_id[0]]))
+            labels = list(unique_everseen([x for x in dx_lab[0]] + [x for x in str_lab[0]]))
+            evidence = list(unique_everseen(dx_ev + str_ev))
+            # determine if similarity should be added and add the overlapping uri's evidence
+            evidence += [sim_ev[0].split(' | ')[x] for x in [sim_id[0].index(x) for x in sim_id[0] if x in uris]]
+            mapping_result = [uris, labels, ' | '.join(evidence)]  # type: ignore
         else:
-            mapping_result = [sim_uri, sim_label, sim_evidence]
+            mapping_result = [sim_id, sim_lab, ' | '.join(sim_ev)]  # type: ignore
 
     return mapping_result
 
@@ -428,7 +428,7 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
             'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0'.
     """
 
-    dbx_evid, label_evid, syn_evid, sim_evid = [], [], [], []
+    dbx_evid, label_evid, syn_evid, sim_evid = ([] for _ in range(4))  # type: ignore
     ont_label, ont_syns, ont_syntyp = ont_dict['label'], ont_dict['synonym'], ont_dict['synonym_type']
     dbxref_type = normalizes_clinical_source_codes(ont_dict['dbxref_type'], source_dict)
 
@@ -444,19 +444,19 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
             dbx_evid.append(updated_prefix + ':' + prefix.split('*')[-1] + '_' + x.split(':')[-1].replace(':', '_'))
         if 'label' in x.lower():
             label_evid, clin_lab = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'label' in x.lower()])
-            for lab in clin_lab.split(' | '):
-                if lab.lower() in ont_label.keys() and ont_label[lab.lower()].split('/')[-1] == result[0][0]:
+            for lab in set(clin_lab.split(' | ')):
+                if lab.lower() in ont_label.keys() and ont_label[lab.lower()].split('/')[-1] in result[0]:
                     label_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_LABEL:' + x.split(':')[-1])
-                if lab.lower() in ont_syns.keys() and ont_syns[lab.lower()].split('/')[-1] == result[0][0]:
-                    label_evid.append('OBO_' + ont_syntyp[x.split(':')[-1]] + '-OMOP_CONCEPT_LABEL:' + x.split(':')[-1])
+                if lab.lower() in ont_syns.keys() and ont_syns[lab.lower()].split('/')[-1] in result[0]:
+                    label_evid.append('OBO_' + ont_syntyp[lab.lower()] + '-OMOP_CONCEPT_LABEL:' + x.split(':')[-1])
         if 'synonym' in x.lower():
             syn_evid, clin_syn = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'synonym' in x.lower()])
-            for syn in clin_syn.split(' | '):
-                if syn.lower() in ont_label.keys() and ont_label[syn.lower()].split('/')[-1] == result[0][0]:
+            for syn in set(clin_syn.split(' | ')):
+                if syn.lower() in ont_label.keys() and ont_label[syn.lower()].split('/')[-1] in result[0]:
                     syn_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_SYNONYM:' + x.split(':')[-1])
-                if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] == result[0][0]:
+                if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] in result[0]:
                     syn_lab = '-OMOP_' + level + '_SYNONYM:'
-                    syn_evid.append('OBO_' + ont_syntyp[x.split(':')[-1]] + syn_lab + x.split(':')[-1])
+                    syn_evid.append('OBO_' + ont_syntyp[syn.lower()] + syn_lab + x.split(':')[-1])
         if level == 'CONCEPT_SIMILARITY':
             sim_evid.append('CONCEPT_SIMILARITY:' + x)
 
@@ -500,13 +500,16 @@ def assigns_mapping_category(mapping_result: List, mapping_evidence: str) -> str
     return mapping_category
 
 
-def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict):
+def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict) -> pd.DataFrame:
     """Function takes a Pandas Dataframe containing the results from running the OMOP2OBO exact and similarity
     mapping functions. This function takes those results and aggregates them such that a single column set of
     evidence is returned for each ontology (i.e. uris, labels, mapping category, and mapping evidence).
 
+    #TODO: this function could be parallelized
+
     Args:
-        data: A Pandas DataFrame of mapping results from
+        data: A Pandas DataFrame of mapping results from running the OMOP2OBO exact mapping and concept similarity
+            pipeline.
         onts: A list of strings representing ontologies (e.g. ["hp", "mondo"]).
         ont_data: A nested dictionary of ontology data including mappings between ontology class URIs, labels,
             synonyms, definitions, and dbxrefs.
@@ -520,32 +523,33 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
     print('\n*** Aggregating and Compiling Mapping Results')
 
     # set input variables
-    mappings, cols = {x: [] for x in onts}, [x.lower() for x in data.columns]
+    cols = [x.lower() for x in data.columns]
     clin_cols = [x for x in cols if (x.endswith('label') or x.endswith('nym')) and not any(y for y in onts if y in x)]
 
-    for idx, row in tqdm(data.iterrows(), total=data.shape[0]):
-        # # if row['CONCEPT_DBXREF_HP_URI'] != '' and row['CONCEPT_STR_HP_URI'] != '' and row['HP_SIM_ONT_URI'] != '':
-        # if row['CONCEPT_DBXREF_HP_URI'] == '' and row['CONCEPT_STR_HP_URI'] == '' and row['HP_SIM_ONT_URI'] == '':
-        #     break
-        for ont in [x.upper() for x in onts]:
-            mapping_info = compiles_mapping_content(row, ont)
-            if None not in mapping_info:
-                # format evidence
-                clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x in row.keys()}
+    for ont in [x.upper() for x in onts]:
+        print('Processing {} Mappings'.format(ont))
+        mappings = []
+        for idx, row in tqdm(data.iterrows(), total=data.shape[0]):
+            ont_list = ['DBXREF_' + ont, 'STR_' + ont, ont + '_SIM']
+            res = [x for x in row.keys() if row[x] != '' and any(y for y in ont_list if y in x)]
+            if len(res) != 0:
+                # aggregate mapping info
+                map_info = compiles_mapping_content(row, ont)
+                # format aggregated mapping evidence
+                clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
                 ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
-                mapping_evidence = formats_mapping_evidence(ont_dict, source_codes, mapping_info, clin_data)
-                # assign mapping type
-                mapping_category = assigns_mapping_category(mapping_info, mapping_evidence)
+                map_evidence = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
+                # assign mapping type to aggregated map
+                map_category = assigns_mapping_category(map_info, map_evidence)
                 # update mapping results dict
-                uri, label = ' | '.join(mapping_info[0]), ' | '.join(mapping_info[1])
-            else: uri, label, mapping_category, mapping_evidence = None, None, None, None
-            mappings[ont].append([uri, label, mapping_category, mapping_evidence])
+                mappings.append([' | '.join(map_info[0]), ' | '.join(map_info[1]), map_category, map_evidence])
+            else:
+                mappings.append([None, None, None, None])  # type: ignore
 
-    # add aggregated mapping results back to data frame
-    for ontology in mappings.keys():
-        data[ontology + '_URI'] = [x for x in mappings[ontology][0]]
-        data[ontology + '_LABEL'] = [x for x in mappings[ontology][1]]
-        data[ontology + '_MAPPING'] = [x for x in mappings[ontology][2]]
-        data[ontology + '_EVIDENCE'] = [x for x in mappings[ontology][3]]
+        # add aggregated mapping results back to data frame
+        data['AGGREGATED_' + ont + '_URI'] = [x[0] for x in mappings]
+        data['AGGREGATED_' + ont + '_LABEL'] = [x[1] for x in mappings]
+        data['AGGREGATED_' + ont + '_MAPPING'] = [x[2] for x in mappings]
+        data['AGGREGATED_' + ont + '_EVIDENCE'] = [x[3] for x in mappings]
 
     return data

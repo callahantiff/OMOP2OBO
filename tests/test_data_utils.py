@@ -319,4 +319,40 @@ class TestDataUtils(unittest.TestCase):
     def tests_aggregates_mapping_results(self):
         """Tests the aggregates_mapping_results method."""
 
+        # set-up inputs
+        data = pd.DataFrame({'CONCEPT_ID': ['4098595'],
+                             'CONCEPT_LABEL': ['Abetalipoproteinemia'],
+                             'CONCEPT_SOURCE_LABEL': ['Abetalipoproteinemia'],
+                             'CONCEPT_SYNONYM': ['Abetalipoproteinaemia | ABL - Abetalipoproteinaemia | '
+                                                 'Abetalipoproteinemia (disorder) | Apolipoprotein B deficiency | '
+                                                 'Abetalipoproteinemia | ABL - Abetalipoproteinemia'],
+                             'CONCEPT_DBXREF_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
+                             'CONCEPT_DBXREF_HP_LABEL': ['abetalipoproteinemia'],
+                             'CONCEPT_DBXREF_HP_EVIDENCE': ['CONCEPT_DBXREF_snomed:190787008'],
+                             'CONCEPT_STR_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
+                             'CONCEPT_STR_HP_LABEL': ['abetalipoproteinemia'],
+                             'CONCEPT_STR_HP_EVIDENCE': ['CONCEPT_SOURCE_LABEL:abetalipoproteinemia'],
+                             'HP_SIM_ONT_URI': ['HP_0008181'],
+                             'HP_SIM_ONT_LABEL': ['abetalipoproteinemia'],
+                             'HP_SIM_ONT_EVIDENCE': ['HP_0008181_1.0']})
+        ont_data = {'hp': {'label': {'abetalipoproteinemia': 'http://purl.obolibrary.org/obo/HP_0008181'},
+                           'dbxref': {'snomedct_us:190787008': 'http://purl.obolibrary.org/obo/HP_0008181'},
+                           'dbxref_type': {'snomedct_us:190787008': 'DbXref'},
+                           'synonym': {'wet lung': 'http://purl.obolibrary.org/obo/HP_0100598'},
+                           'synonym_type': {'wet lung': 'hasExactSynonym'}}}
+        source_codes = {'snomed:190787008': 'DbXref*snomedct_us'}
+
+        # test method
+        results = aggregates_mapping_results(data, ['hp'], ont_data, source_codes)
+        self.assertIsInstance(results, pd.DataFrame)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results.columns), 17)
+        # check annotated values
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_URI'], 'HP_0008181')
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_LABEL'], 'abetalipoproteinemia')
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_MAPPING'], 'Automatic Exact - Concept')
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_EVIDENCE'], 'OBO_DbXref-OMOP_CONCEPT_CODE:snomed_190787008 | '
+                                                                  'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia | '
+                                                                  'CONCEPT_SIMILARITY:HP_0008181_1.0')
+
         return None
