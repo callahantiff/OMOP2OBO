@@ -90,8 +90,8 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
     mappings = mapper.clinical_concept_mapper()
 
     # shortens long text fields in original output data (otherwise Excel expands columns into additional rows)
-    data_cols = ['CONCEPT_SOURCE_CODE', 'CONCEPT_SOURCE_LABEL', 'CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION',
-                 'CONCEPT_SYNONYM', 'ANCESTOR_CONCEPT_ID', 'ANCESTOR_SOURCE_CODE', 'ANCESTOR_LABEL']
+    data_cols = ['CONCEPT_SOURCE_CODE','CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION', 'CONCEPT_SYNONYM',
+                 'ANCESTOR_CONCEPT_ID', 'ANCESTOR_SOURCE_CODE', 'ANCESTOR_LABEL']
     for x in data_cols:
         mappings[x] = mappings[x].apply(lambda i: ' | '.join(i.split(' | ')[0:100]))
 
