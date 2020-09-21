@@ -295,7 +295,7 @@ class SimilarStringFinder(object):
         print('\n#### PERFORMING STRING SIMILARITY SEARCH ####')
 
         # STEP 1 - Pre-process Clinical and Ontology Data
-        print('\n*** Pre-Processing ...')
+        print('\n*** Pre-Processing Input Data ...')
         # subset input clinical data set to only include string columns
         print('Clinical Data')
         subset_data = self.clinical_data.copy()[[self.primary_key] + self.concept_strings].drop_duplicates()
