@@ -256,7 +256,7 @@ class ConceptAnnotator(object):
         if self.umls_cui_data is not None:
             dbxrefs = pd.concat(
                 [data.merge(ont_df, how='inner', on='CODE').drop_duplicates(),
-                 ohdsi_ananke(list(self.ont_dict.keys()), ont_df.copy(), data, self.umls_cui_data.copy())]
+                 ohdsi_ananke(primary_key, list(self.ont_dict.keys()), ont_df.copy(), data, self.umls_cui_data.copy())]
             )
         else:
             dbxrefs = data.merge(ont_df, how='inner', on='CODE').drop_duplicates()

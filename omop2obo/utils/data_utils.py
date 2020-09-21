@@ -290,13 +290,15 @@ def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False)
     return combined_dictionary
 
 
-def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, data2: pd.DataFrame) -> pd.DataFrame:
+def ohdsi_ananke(primary_key: str, ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, data2: pd.DataFrame) \
+        -> pd.DataFrame:
     """Function applies logic from the OHDSIAnanake method to extend data1, which contains dbxref mappings to OMOP
     concept ids with mappings from UMLS cuis to relevant umls ontology mappings. The merged data set is returned.
 
     Method adapted from: https://github.com/thepanacealab/OHDSIananke
 
     Args:
+        primary_key: A string containing the name of the primary key (i.e. CONCEPT_ID).
         ont_keys: A list of ontology type identifiers (i.e. ['hp', 'mondo']).
         ont_data: A Pandas DataFrame containing ontology dbxref information.
         data1: A stacked Pandas DataFrame containing source codes and umls cuis.
@@ -308,6 +310,7 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
     """
 
     # convert ont_data into a format that can be merged
+
     col = [x for x in ont_data.columns if 'URI' in x][0]
     ont_data['CODE'] = ont_data[col].apply(lambda x: x.split('/')[-1].lower().replace('_', ':'))
 
@@ -322,13 +325,13 @@ def ohdsi_ananke(ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, da
 
     # drop unneeded columns
     dbxref_col = [x for x in merged_data_ont.columns if 'DBXREF' in x][0]
-    merged_data_ont = merged_data_ont[['CONCEPT_ID', 'CUI', 'CODE_COLUMN', dbxref_col]]
+    merged_data_ont = merged_data_ont[[primary_key, 'CUI', 'CODE_COLUMN', dbxref_col]]
 
     # update cuis column
     merged_data_ont['CUI'] = merged_data_ont['CUI'].apply(lambda x: 'umls:' + x)
 
     # rename columns
-    merged_data_ont.columns = ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', dbxref_col]
+    merged_data_ont.columns = [primary_key, 'CODE', 'CODE_COLUMN', dbxref_col]
 
     return merged_data_ont
 

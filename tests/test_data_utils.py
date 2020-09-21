@@ -214,7 +214,7 @@ class TestDataUtils(unittest.TestCase):
                                       })
 
         # run method and test output
-        merged_data = ohdsi_ananke(['hp'], combo_dict_df, clinical_data, umls_cui_data)
+        merged_data = ohdsi_ananke('CONCEPT_ID', ['hp'], combo_dict_df, clinical_data, umls_cui_data)
         self.assertIsInstance(merged_data, pd.DataFrame)
         self.assertTrue(len(merged_data) == 3)
         self.assertTrue(list(merged_data.columns) == ['CONCEPT_ID', 'CODE', 'CODE_COLUMN', 'CONCEPT_DBXREF_ONT_URI'])
