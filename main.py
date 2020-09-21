@@ -90,7 +90,7 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
     mappings = mapper.clinical_concept_mapper()
 
     # shortens long text fields in original output data (otherwise Excel expands columns into additional rows)
-    data_cols = ['CONCEPT_SOURCE_CODE','CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION', 'CONCEPT_SYNONYM',
+    data_cols = ['CONCEPT_SOURCE_CODE', 'CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION', 'CONCEPT_SYNONYM',
                  'ANCESTOR_CONCEPT_ID', 'ANCESTOR_SOURCE_CODE', 'ANCESTOR_LABEL']
     for x in data_cols:
         mappings[x] = mappings[x].apply(lambda i: ' | '.join(i.split(' | ')[0:100]))
@@ -110,8 +110,8 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
                                   concept_strings=concept_strings)
 
         sim_mappings = sim.performs_similarity_search()
-        sim_mappings = sim_mappings[[primary_key] + [x for x in sim_mappings.columns if 'SIM' in x]].drop_duplicates()
         # get column names -- used later to organize output
+        sim_mappings = sim_mappings[[primary_key] + [x for x in sim_mappings.columns if 'SIM' in x]].drop_duplicates()
         sim_cols = [i for i in sim_mappings.columns if not any(j for j in start_cols if j in i)]
 
         # merge dbXref, exact string, and TF-IDF similarity results
