@@ -476,13 +476,13 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
 
     # sort clinical data
     for x in result[2].split(' | '):
-        level = [x.split('_')[0] if ':' in x else 'CONCEPT_SIMILARITY'][0]
-        clin_update = {k: v for k, v in clin_data.items() if level in k}
+        lvl = [x.split('_')[0] if ':' in x else 'CONCEPT_SIMILARITY'][0]
+        clin_update = {k: v for k, v in clin_data.items() if lvl in k}
 
         if 'dbxref' in x.lower():
             if x.split('_')[-1] in dbxref_type.keys(): prefix = dbxref_type[x.split('_')[-1]]
             else: prefix = 'DbXref*' + x.split('_')[-1].split(':')[0]
-            updated_prefix = 'OBO_' + prefix.split('*')[0] + '-OMOP_' + level + '_CODE'
+            updated_prefix = 'OBO_' + prefix.split('*')[0] + '-OMOP_' + lvl + '_CODE'
             dbx_evid.append(updated_prefix + ':' + prefix.split('*')[-1] + '_' + x.split(':')[-1].replace(':', '_'))
         if 'label' in x.lower():
             label_evid, clin_lab = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'label' in x.lower()])
@@ -490,16 +490,16 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
                 if lab.lower() in ont_label.keys() and ont_label[lab.lower()].split('/')[-1] in result[0]:
                     label_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_LABEL:' + x.split(':')[-1])
                 if lab.lower() in ont_syns.keys() and ont_syns[lab.lower()].split('/')[-1] in result[0]:
-                    label_evid.append('OBO_' + ont_syntyp[lab.lower()] + '-OMOP_CONCEPT_LABEL:' + x.split(':')[-1])
+                    label_evid.append('OBO_' + ont_syntyp[lab.lower()] + '-OMOP_' + lvl + '_LABEL:' + x.split(':')[-1])
         if 'synonym' in x.lower():
             syn_evid, clin_syn = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'synonym' in x.lower()])
             for syn in set(clin_syn.split(' | ')):
                 if syn.lower() in ont_label.keys() and ont_label[syn.lower()].split('/')[-1] in result[0]:
                     syn_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_SYNONYM:' + x.split(':')[-1])
                 if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] in result[0]:
-                    syn_lab = '-OMOP_' + level + '_SYNONYM:'
+                    syn_lab = '-OMOP_' + lvl + '_SYNONYM:'
                     syn_evid.append('OBO_' + ont_syntyp[syn.lower()] + syn_lab + x.split(':')[-1])
-        if level == 'CONCEPT_SIMILARITY':
+        if lvl == 'CONCEPT_SIMILARITY':
             sim_evid.append('CONCEPT_SIMILARITY:' + x)
 
     # compile evidence
