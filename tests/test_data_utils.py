@@ -261,7 +261,8 @@ class TestDataUtils(unittest.TestCase):
         # test set 5
         input_5_exact = [['HP_0002011', 'HP_0002960', 'HP_0011096'],
                          ['morphological central nervous system abnormality', 'peripheral demyelination'],
-                         ['ANCESTOR_DBXREF_snomed:23853001 | ANCESTOR_DBXREF_snomed:85828009', 'ANCESTOR_LABEL:demyelination']]
+                         ['ANCESTOR_DBXREF_snomed:23853001 | ANCESTOR_DBXREF_snomed:85828009',
+                          'ANCESTOR_LABEL:demyelination']]
         input_5_sim = [[], [], []]
 
         # test method -- input set 1
@@ -384,18 +385,30 @@ class TestDataUtils(unittest.TestCase):
     def tests_assigns_mapping_category(self):
         """Tests the assigns_mapping_category method."""
 
-        # set function inputs
-        mapping_info = [['HP_0008181'], ['abetalipoproteinemia'], 'CONCEPT_DBXREF_snomed:190787008 | '
-                                                                  'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
-                                                                  'CONCEPT_SYNONYM:abetalipoproteinemia | '
-                                                                  'HP_0008181_1.0']
-        mapping_evidence = 'OBO_DbXref-OMOP_CONCEPT_CODE:umls_C0000744 | ' \
-                           'OBO_LABEL-OMOP_CONCEPT_SYNONYM:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0 '
+        # set function input 1
+        mapping_info_1 = [['HP_0008181'], ['abetalipoproteinemia'], 'CONCEPT_DBXREF_snomed:190787008 | '
+                                                                    'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
+                                                                    'CONCEPT_SYNONYM:abetalipoproteinemia | '
+                                                                    'HP_0008181_1.0']
+        mapping_evidence_1 = 'OBO_DbXref-OMOP_CONCEPT_CODE:umls_C0000744 | ' \
+                             'OBO_LABEL-OMOP_CONCEPT_SYNONYM:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0'
 
-        # test method
-        results = assigns_mapping_category(mapping_info, mapping_evidence)
-        self.assertIsInstance(results, str)
-        self.assertEqual(results, 'Automatic Exact - Concept')
+        # set function inputs
+        mapping_info_2 = [['HP_0008181'], ['abetalipoproteinemia'],
+                          'CONCEPT_SIMILARITY:HP_0001950_0.526 | CONCEPT_SIMILARITY:HP_0001942_0.466 | '
+                          'CONCEPT_SIMILARITY:HP_0001948_0.314']
+        mapping_evidence_2 = 'CONCEPT_SIMILARITY:HP_0001950_0.526 | CONCEPT_SIMILARITY:HP_0001942_0.466 | ' \
+                             'CONCEPT_SIMILARITY:HP_0001948_0.314 '
+
+        # test method 1
+        results_1 = assigns_mapping_category(mapping_info_1, mapping_evidence_1)
+        self.assertIsInstance(results_1, str)
+        self.assertEqual(results_1, 'Automatic Exact - Concept')
+
+        # test method 2
+        results_2 = assigns_mapping_category(mapping_info_2, mapping_evidence_2)
+        self.assertIsInstance(results_2, str)
+        self.assertEqual(results_2, 'Automatic Exact - Concept')
 
         return None
 

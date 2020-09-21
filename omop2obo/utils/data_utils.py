@@ -508,22 +508,26 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
     return compiled_evid
 
 
-def assigns_mapping_category(mapping_result: List, mapping_evidence: str) -> str:
+def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
     """Function takes a mapping result and evidence and uses it to determine the mapping category.
 
     Args:
         mapping_result: A list containing mapping results for a given row. The list contains three items: uris, labels,
             evidence.
-        mapping_evidence: A string containing the compiled mapping evidence.
+        map_evidence: A string containing the compiled mapping evidence.
 
     Returns:
          mapping_category: A string containing the mapping category.
     """
 
-    # determine if mapping is exact or constructor
     if len(mapping_result[0]) == 1:
-        if 'CONCEPT_SIMILARITY:' in mapping_evidence and len(mapping_evidence.split(' | ')) == 1:
-            mapping_category = 'Manual Exact - Concept Similarity'
+        if 'CONCEPT_SIMILARITY:' in map_evidence:
+            if len(map_evidence.split(' | ')) == 1:
+                mapping_category = 'Manual Exact - Concept Similarity'
+            elif len(set([x.split(':')[0] for x in map_evidence.split(' | ')])) == 1:
+                mapping_category = 'Automatic Exact - Concept'
+            else:
+                mapping_category = 'Automatic Exact - '
         else:
             mapping_category = 'Automatic Exact - '
     elif len(mapping_result[0]) > 1:
@@ -532,9 +536,9 @@ def assigns_mapping_category(mapping_result: List, mapping_evidence: str) -> str
         mapping_category = ''
 
     # determine mapping level (i.e. concept or ancestor)
-    if any(x for x in ['CONCEPT_CODE', 'CONCEPT_SYNONYM', 'CONCEPT_LABEL'] if x in mapping_evidence):
+    if any(x for x in ['CONCEPT_CODE', 'CONCEPT_SYNONYM', 'CONCEPT_LABEL'] if x in map_evidence):
         mapping_category = mapping_category + 'Concept'
-    elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x in mapping_evidence):
+    elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x in map_evidence):
         mapping_category = mapping_category + 'Ancestor'
     else:
         mapping_category = mapping_category
