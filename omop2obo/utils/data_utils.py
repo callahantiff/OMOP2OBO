@@ -541,7 +541,7 @@ def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
     elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x in map_evidence):
         mapping_category = mapping_category + 'Ancestor'
     else:
-        mapping_category = mapping_category
+        mapping_category = mapping_category + ''
 
     return mapping_category
 
