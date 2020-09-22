@@ -7,6 +7,7 @@
 .idea/*
 *.pyc
 __pycache__
+.ipynb_checkpoints/*
 
 ## testing resources ##
 #################################
@@ -19,6 +20,7 @@ coverage.xml
 
 ## directories ##
 #################################
+releases/*
 resources/clinical_data
 !resources/clinical_data/README.md
 resources/mappings/

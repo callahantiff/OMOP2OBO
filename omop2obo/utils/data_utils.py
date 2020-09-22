@@ -23,7 +23,8 @@ import re
 
 from functools import reduce
 from more_itertools import unique_everseen
-from typing import Callable, Dict, List  # type: ignore
+from tqdm import tqdm  # type: ignore
+from typing import Callable, Dict, List, Union  # type: ignore
 
 # ENVIRONMENT WARNINGS
 # WARNING 1 - Pandas: disable chained assignment warning rationale:
@@ -225,22 +226,35 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str, c
 
 def normalizes_source_codes(data: pd.DataFrame, source_code_dict: Dict) -> pd.Series:
     """Takes a Pandas DataFrame column containing source code values that need normalization and normalizes them
-    using values from a pre-built dictionary (resources/mappings/source_code_vocab_map.csv).
+    using values from a pre-built dictionary (resources/mappings/source_code_vocab_map.csv). The function is designed
+    to normalize identifier prefixes according to the specifications in the source_code_dict. It provides some light
+    regex support for the following scenarios:
+        - ICD10CM:C85.92 --> icd10:c85.92
+        - http://www.snomedbrowser.com/codes/details/12132356564 --> snomed_12132356564
+        - http://www.orpha.net/ordo/orphanet_1920 --> orphanet_1920
+
+    Assumption: assumes that the column to normalize is always the 0th index.
 
     Args:
         data: A column from a Pandas DataFrame containing unstacked identifiers that need normalization (e.g.
             umls:c123456, http://www.snomedbrowser.com/codes/details/12132356564, rxnorm:12345).
-        source_code_dict:
+        source_code_dict: A dictionary keyed by input prefix with values reflecting the preferred prefixes in the
+            source_code_dict file. For example:
+                {'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
 
     Returns:
-        A Pandas DataFrame column that has been normalized.
+        A Pandas Series that has been normalized.
     """
 
     # split prefix from number in each identifier
-    prefix = data.apply(lambda j: j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1])
-    id_num = data.apply(lambda j: [x for x in re.split('[:|/]', j) if x != ''][-1]).str.lower()
+    prefix = data[data.columns[0]].apply(lambda j: j.rstrip([x for x in re.split('[_:|/]', j) if x != ''][-1])[:-1]
+                                         if 'http' in j and '_' in j else
+                                         j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1])
+    id_num = data[data.columns[0]].apply(lambda j: [x for x in re.split('[_:|/]', j) if x != ''][-1]
+                                         if 'http' in j and '_' in j else
+                                         [x for x in re.split('[:|/]', j) if x != ''][-1]).str.lower()
 
-    # normalize prefix
+    # normalize prefix to dictionary and clean up urls
     norm_prefix = prefix.apply(lambda j: source_code_dict[j] if j in source_code_dict.keys() else j)
 
     # concat normalized identifier and number back together
@@ -274,3 +288,316 @@ def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False)
             combined_dictionary.update(dictionaries[dictionary][key_type])
 
     return combined_dictionary
+
+
+def ohdsi_ananke(primary_key: str, ont_keys: list, ont_data: pd.DataFrame, data1: pd.DataFrame, data2: pd.DataFrame) \
+        -> pd.DataFrame:
+    """Function applies logic from the OHDSIAnanake method to extend data1, which contains dbxref mappings to OMOP
+    concept ids with mappings from UMLS cuis to relevant umls ontology mappings. The merged data set is returned.
+
+    Method adapted from: https://github.com/thepanacealab/OHDSIananke
+
+    Args:
+        primary_key: A string containing the name of the primary key (i.e. CONCEPT_ID).
+        ont_keys: A list of ontology type identifiers (i.e. ['hp', 'mondo']).
+        ont_data: A Pandas DataFrame containing ontology dbxref information.
+        data1: A stacked Pandas DataFrame containing source codes and umls cuis.
+        data2: A Pandas DataFrame containing UMLS cuis and mappings to ontologies.
+
+    Returns:
+        dbxrefs: A Pandas DataFrame containing the data from data1 merged with new entries from the umls cui data (
+            data2).
+    """
+
+    # convert ont_data into a format that can be merged
+
+    col = [x for x in ont_data.columns if 'URI' in x][0]
+    ont_data['CODE'] = ont_data[col].apply(lambda x: x.split('/')[-1].lower().replace('_', ':'))
+
+    # filter umls cui data to only
+    data2_filtered = data2[(data2['CODE'].apply(lambda x: x if x.split(':')[0] in ont_keys else 999) != 999)]
+
+    # merge with filtered data with ontology data
+    merged_data = data1.merge(data2_filtered, how='inner', left_on='CODE', right_on='CUI').drop_duplicates()
+
+    # merge with ont labels
+    merged_data_ont = merged_data.merge(ont_data, how='inner', left_on='CODE_y', right_on='CODE').drop_duplicates()
+
+    # drop unneeded columns
+    dbxref_col = [x for x in merged_data_ont.columns if 'DBXREF' in x][0]
+    merged_data_ont = merged_data_ont[[primary_key, 'CUI', 'CODE_COLUMN', dbxref_col]]
+
+    # update cuis column
+    merged_data_ont['CUI'] = merged_data_ont['CUI'].apply(lambda x: 'umls:' + x)
+
+    # rename columns
+    merged_data_ont.columns = [primary_key, 'CODE', 'CODE_COLUMN', dbxref_col]
+
+    return merged_data_ont
+
+
+def normalizes_clinical_source_codes(dbxref_dict: Dict, source_dict: Dict):
+    """Function takes two dictionaries and uses them to create a new dictionary. The first dictionary, contains ontology
+    database cross references and the second contains content to normalize the identifiers contained in the first
+    dictionary.
+
+    Args:
+        dbxref_dict: A dictionary of ontology identifiers and their database cross references.
+        source_dict: A dictionary containing information for normalizing the prefixes of the database cross references.
+
+        An example of each dictionary is shown below:
+        - dbxref_dict = {'DbXref', 'umls:c4022862': 'DbXref', 'umls:c0008733': 'DbXref'}
+        - source_dict = {'snm', 'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
+
+    Returns:
+        normalized_prefixes: A dictionary where the keys are database cross references and the values are strings
+            containing the database cross reference type and prefix from the key, separated by a star. For example:
+            {'umls:c4022862': 'DbXref*umls', 'umls:c0008733': 'DbXref*umls'}
+    """
+
+    normalized_prefixes = {}
+
+    # split prefix from number in each identifier
+    for key, value in dbxref_dict.items():
+        prefix, id_num = key.split(':')[0], key.split(':')[-1].lower()
+        norm_prefix = source_dict[prefix] if prefix in source_dict.keys() else prefix
+        normalized_prefixes[norm_prefix + ':' + id_num] = value + '*' + prefix
+
+    return normalized_prefixes
+
+
+def filters_mapping_content(exact_results: List, similarity_results: List) -> List:
+    """Parses compiled mapping results, when results exist, to determine a final aggregated mapping result. Note that
+    the following logic is used when determining which mapping evidence to aggregate (assuming there is at least 1
+    dbxref, string, or sim mapping result):
+        if dbxref or string exact mapping at concept-level:
+            - set(dbxref results + string results) and add sim evidence if in set
+        elif dbxref or string exact mapping at ancestor-level and all sim scores less >= 0.75
+            - keep all concept similarity mappings with a score >= 0.75
+        elif dbxref or string exact mapping at ancestor-level and all sim scores less < 0.75
+            - set(dbxref results + string results) and add sim evidence if in set
+        elif dbxref or string exact mapping at ancestor-level and no similarity results
+            - set(dbxref results + string results)
+        else:
+            - keep all concept similarity mappings regardless of score
+
+    Args:
+        exact_results: A nested list containing 3 sub-lists where sub-list[0] contains exact match uris, sub-list[1]
+            contains exact match labels, and sub-list[2] contains exact match evidence.
+        similarity_results: A nested list containing 3 sub-lists where sub-list[0] contains similarity uris,
+            sub-list[1] contains similarity labels, and sub-list[2] contains similarity evidence.
+
+    Returns:
+        mapping_result: A list containing mapping results for a given row. The list contains three items: uris,
+            labels, evidence.
+    """
+
+    exact_uri, exact_label, exact_evid = exact_results
+    sim_uri, sim_label, sim_evid = similarity_results
+
+    # format results
+    if exact_uri and 'CONCEPT' in exact_evid[0]:
+        uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
+        evidence = [sim_evid[0].split(' | ')[x] for x in [sim_uri.index(x) for x in sim_uri if x in uris]]
+        mapping_result = [uris, labels, ' | '.join(exact_evid + evidence)]  # type: ignore
+    elif exact_uri and sim_uri:
+        if any(x for x in sim_evid[0].split(' | ') if float(x.split('_')[-1]) >= 0.75):
+            evid_list = sim_evid[0].split(' | ')
+            sim_keep = [evid_list.index(x) for x in evid_list if float(x.split('_')[-1]) >= 0.75]
+            uris, labels = [sim_uri[x] for x in sim_keep], [sim_label[x] for x in sim_keep]
+            mapping_result = [uris, labels, ' | '.join([evid_list[x] for x in sim_keep])]  # type: ignore
+        else:
+            uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
+            evidence = [sim_evid[0].split(' | ')[x] for x in [sim_uri.index(x) for x in sim_uri if x in uris]]
+            mapping_result = [uris, labels, ' | '.join(exact_evid + evidence)]  # type: ignore
+    elif exact_uri and not sim_uri:
+        uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
+        mapping_result = [uris, labels, ' | '.join(exact_evid)]  # type: ignore
+    else:
+        mapping_result = [sim_uri, sim_label, ' | '.join(sim_evid)]  # type: ignore
+
+    return mapping_result
+
+
+def compiles_mapping_content(row: pd.Series, ont: str) -> List:
+    """Function takes a row of data from a Pandas DataFrame and processes it to return a single ontology mapping for
+    the clinical concept represented by the row.
+
+    Args:
+        row: A row from a Pandas DataFrame cont
+        ont: A string containing the name of an ontology (e.g. "HP", "MONDO").
+
+    Returns:
+        A list containing mapping results for a given row. The list contains three items: uris, labels, evidence.
+    """
+
+    relevant_cols = [x for x in row.keys() if any(y for y in ['_DBXREF_' + ont, '_STR_' + ont, ont + '_SIM'] if y in x)]
+
+    for level in ['CONCEPT', 'ANCESTOR']:
+        exact_uri, exact_label, exact_evid, sim_uri, sim_label, sim_evid = ([] for _ in range(6))  # type: ignore
+        for col in relevant_cols:
+            if level in col and any(y for y in ['DBXREF', 'STR'] if y in col):
+                if 'URI' in col and row[col] != '': exact_uri += [x.split('/')[-1] for x in row[col].split(' | ')]
+                if 'LABEL' in col and row[col] != '': exact_label += [x for x in row[col].split(' | ')]
+                if 'EVIDENCE' in col and row[col] != '': exact_evid += [row[col]]
+            if 'SIM' in col:
+                if 'URI' in col and row[col] != '': sim_uri += [x.split('/')[-1] for x in row[col].split(' | ')]
+                if 'LABEL' in col and row[col] != '': sim_label += [x for x in row[col].split(' | ')]
+                if 'EVIDENCE' in col and row[col] != '': sim_evid += [row[col]]
+        if exact_uri: break
+
+    # put together mapping
+    if not exact_uri and not sim_uri:
+        return [None] * 3  # type: ignore
+    else:
+        return filters_mapping_content([exact_uri, exact_label, exact_evid], [sim_uri, sim_label, sim_evid])
+
+
+def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, clin_data: Dict) -> str:
+    """Takes a nested dictionary of ontology attributes, a dictionary of source code prefix mapping information, a
+    nested list containing aggregated mapping information, and a dictionary of clinical concept labels and synonyms.
+    The function uses this information to aggregate the evidence supporting the mapping provided in the result object.
+
+    Args:
+        ont_dict: A nested dictionary containing ontology attributes.
+        source_dict: A dictionary containing ontology prefixing information.
+        result: A list containing mapping results for a given row. The list contains three items: uris, labels,
+            evidence.
+        clin_data: A dictionary keyed by column identifier with values containing data from the keyed column.
+
+    Returns:
+        compiled_evid: A string containing the compiled mapping evidence. For example:
+            'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0'.
+    """
+
+    dbx_evid, label_evid, syn_evid, sim_evid = ([] for _ in range(4))  # type: ignore
+    ont_label, ont_syns, ont_syntyp = ont_dict['label'], ont_dict['synonym'], ont_dict['synonym_type']
+    dbxref_type = normalizes_clinical_source_codes(ont_dict['dbxref_type'], source_dict)
+
+    # sort clinical data
+    for x in result[2].split(' | '):
+        lvl = [x.split('_')[0] if ':' in x else 'CONCEPT_SIMILARITY'][0]
+        clin_update = {k: v for k, v in clin_data.items() if lvl in k}
+
+        if 'dbxref' in x.lower():
+            if x.split('_')[-1] in dbxref_type.keys(): prefix = dbxref_type[x.split('_')[-1]]
+            else: prefix = 'DbXref*' + x.split('_')[-1].split(':')[0]
+            updated_prefix = 'OBO_' + prefix.split('*')[0] + '-OMOP_' + lvl + '_CODE'
+            dbx_evid.append(updated_prefix + ':' + prefix.split('*')[-1] + '_' + x.split(':')[-1].replace(':', '_'))
+        if 'label' in x.lower():
+            label_evid, clin_lab = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'label' in x.lower()])
+            for lab in set(clin_lab.split(' | ')):
+                if lab.lower() in ont_label.keys() and ont_label[lab.lower()].split('/')[-1] in result[0]:
+                    label_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_LABEL:' + x.split(':')[-1])
+                if lab.lower() in ont_syns.keys() and ont_syns[lab.lower()].split('/')[-1] in result[0]:
+                    label_evid.append('OBO_' + ont_syntyp[lab.lower()] + '-OMOP_' + lvl + '_LABEL:' + x.split(':')[-1])
+        if 'synonym' in x.lower():
+            syn_evid, clin_syn = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'synonym' in x.lower()])
+            for syn in set(clin_syn.split(' | ')):
+                if syn.lower() in ont_label.keys() and ont_label[syn.lower()].split('/')[-1] in result[0]:
+                    syn_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_SYNONYM:' + x.split(':')[-1])
+                if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] in result[0]:
+                    syn_lab = '-OMOP_' + lvl + '_SYNONYM:'
+                    syn_evid.append('OBO_' + ont_syntyp[syn.lower()] + syn_lab + x.split(':')[-1])
+        if lvl == 'CONCEPT_SIMILARITY':
+            sim_evid.append('CONCEPT_SIMILARITY:' + x)
+
+    # compile evidence
+    compiled_evid = ' | '.join(list(filter(None, list(unique_everseen(dbx_evid + label_evid + syn_evid + sim_evid)))))
+
+    return compiled_evid
+
+
+def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
+    """Function takes a mapping result and evidence and uses it to determine the mapping category.
+
+    Args:
+        mapping_result: A list containing mapping results for a given row. The list contains three items: uris, labels,
+            evidence.
+        map_evidence: A string containing the compiled mapping evidence.
+
+    Returns:
+         mapping_category: A string containing the mapping category.
+    """
+
+    if len(mapping_result[0]) == 1:
+        if 'CONCEPT_SIMILARITY:' in map_evidence:
+            if len(map_evidence.split(' | ')) == 1:
+                mapping_category = 'Manual Exact - Concept Similarity'
+            elif len(set([x.split(':')[0] for x in map_evidence.split(' | ')])) == 1:
+                mapping_category = 'Automatic Exact - Concept'
+            else:
+                mapping_category = 'Automatic Exact - '
+        else:
+            mapping_category = 'Automatic Exact - '
+    elif len(mapping_result[0]) > 1:
+        mapping_category = 'Automatic Constructor - '
+    else:
+        mapping_category = ''
+
+    # determine mapping level (i.e. concept or ancestor)
+    if any(x for x in ['CONCEPT_CODE', 'CONCEPT_SYNONYM', 'CONCEPT_LABEL'] if x in map_evidence):
+        mapping_category = mapping_category + 'Concept'
+    elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x in map_evidence):
+        mapping_category = mapping_category + 'Ancestor'
+    else:
+        mapping_category = mapping_category + ''
+
+    return mapping_category
+
+
+def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict) -> pd.DataFrame:
+    """Function takes a Pandas Dataframe containing the results from running the OMOP2OBO exact and similarity
+    mapping functions. This function takes those results and aggregates them such that a single column set of
+    evidence is returned for each ontology (i.e. uris, labels, mapping category, and mapping evidence).
+
+    #TODO: this function could be parallelized
+
+    Args:
+        data: A Pandas DataFrame of mapping results from running the OMOP2OBO exact mapping and concept similarity
+            pipeline.
+        onts: A list of strings representing ontologies (e.g. ["hp", "mondo"]).
+        ont_data: A nested dictionary of ontology data including mappings between ontology class URIs, labels,
+            synonyms, definitions, and dbxrefs.
+        source_codes: A dictionary containing dbxref mappings between dbxref prefixes that is designed to normalize
+            prefixes to a single type.
+
+    Return:
+        A Pandas DataFrame
+    """
+
+    print('\n#### AGGREGATING AND COMPILING MAPPING RESULTS ####')
+    print('Note. Until parallelized this step can up to several hours to complete for large concept sets...\n')
+
+    # set input variables
+    cols = [x.lower() for x in data.columns]
+    clin_cols = [x for x in cols if (x.endswith('label') or x.endswith('nym')) and not any(y for y in onts if y in x)]
+
+    for ont in [x.upper() for x in onts]:
+        print('Processing {} Mappings'.format(ont))
+        mappings: List[Union[List[None], List[str]]] = []
+        for idx, row in tqdm(data.iterrows(), total=data.shape[0]):
+            ont_list = ['DBXREF_' + ont, 'STR_' + ont, ont + '_SIM']
+            res = [x for x in row.keys() if row[x] != '' and any(y for y in ont_list if y in x)]
+            if len(res) != 0:
+                map_info = compiles_mapping_content(row, ont)
+                if None in map_info:
+                    mappings.append([None, None, None, None])
+                else:
+                    # format aggregated mapping evidence
+                    clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
+                    ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
+                    map_evidence = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
+                    # assign mapping type to aggregated map
+                    map_category = assigns_mapping_category(map_info, map_evidence)
+                    mappings.append([' | '.join(map_info[0]), ' | '.join(map_info[1]), map_category, map_evidence])
+            else:
+                mappings.append([None, None, None, None])
+
+        # add aggregated mapping results back to data frame
+        data['AGGREGATED_' + ont + '_URI'] = [x[0] for x in mappings]
+        data['AGGREGATED_' + ont + '_LABEL'] = [x[1] for x in mappings]
+        data['AGGREGATED_' + ont + '_MAPPING'] = [x[2] for x in mappings]
+        data['AGGREGATED_' + ont + '_EVIDENCE'] = [x[3] for x in mappings]
+
+    return data

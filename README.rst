@@ -28,10 +28,11 @@ Coming soon!
 .. All code and output for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__ for full release .. archive.
 .. 
 .. **Current Release:**  
-.. 
+.. This release extends v1.0.0 by incorporating several more OBOs and 
 .. - ``v2.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/PheKnowLator/wiki/v2.0.0>`__.
+.. - 
 .. 
-.. **Prior Releases:**  
+.. **Prior Releases:**  (UPDATE ME)
 .. 
 .. - ``v1.0.0`` ➞ data and code can be directly downloaded (PUT DOID MAP HERE) `here <https://github.com/callahantiff/PheKnowLator/wiki/v1.0.0>`__.
 .. 
@@ -87,11 +88,11 @@ Dependencies
 
 - This software also relies on `OWLTools <https://github.com/owlcollab/owltools>`__. If cloning the repository, the ``owltools`` library file will automatically be included and placed in the correct repository.
 
--  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__ and `MRSTY <https://www.ncbi.nlm.nih.gov/books/NBK9685/table/ch03.Tf/>`_. Using these data requires a license agreement. Note that in order to get the `MRSTY` file you will need to download the UMLS Metathesaurus and run MetamorphoSys. Once both data sources are obtained, please place the files in the ``resources/mappings`` directory.
+-  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__ and `MRSTY <https://www.ncbi.nlm.nih.gov/books/NBK9685/table/ch03.Tf/>`_. Using these data requires a license agreement. Note that in order to get the `MRSTY` file you will need to download the UMLS Metathesaurus and run MetamorphoSys. Once both data sources are obtained, please place the files in the ``resources/mappings`` directory.  
 
 *DATA*
 
-- **Clinical Data:** This repository assumes that the clinical data that needs mapping has been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to extracted from the OMOP CDM. An example of what is expected for input clinical data can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
+- **Clinical Data:** This repository assumes that the clinical data that needs mapping has been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to have been extracted from the OMOP CDM. An example of what is expected for this input can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
 
 - **Ontology Data:** Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
 
@@ -216,6 +217,10 @@ If you follow the instructions for how to format clinical data (`here <https://g
 .. code:: bash
  
  python main.py --clinical_domain condition --onts hp --onts mondo --clinical_data resources/clinical_data/omop2obo_conditions_june2020.csv
+
+|
+
+*JUPYTER NOTEBOOK* ➞ `omop2obo_notebook.ipynb <https://github.com/callahantiff/OMOP2OBO/blob/master/omop2obo_notebook.ipynb>`_ 
 
 |
 

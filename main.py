@@ -12,6 +12,7 @@ from datetime import date, datetime
 from typing import Tuple
 
 from omop2obo import ConceptAnnotator, OntologyDownloader, OntologyInfoExtractor, SimilarStringFinder
+from omop2obo.utils import aggregates_mapping_results
 
 
 @click.command()
@@ -26,7 +27,7 @@ from omop2obo import ConceptAnnotator, OntologyDownloader, OntologyInfoExtractor
 @click.option('--ancestor_codes', multiple=True, default=['ANCESTOR_SOURCE_CODE'])
 @click.option('--ancestor_strings', multiple=True, default=['ANCESTOR_LABEL', 'ANCESTOR_SYNONYM'])
 @click.option('--outfile', required=True, default='./resources/mapping/OMOP2OBO_MAPPED_')
-def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, clinical_data: str, primary_key: str,
+def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, clinical_data: str, primary_key: str,
          concept_codes: Tuple, concept_strings: Tuple, ancestor_codes: Tuple, ancestor_strings: Tuple, outfile: str):
     """The OMOP2OBO package provides functionality to assist with mapping OMOP standard clinical terminology concepts to
     OBO terms. Successfully running this program requires several input parameters, which are specified below:
@@ -34,25 +35,15 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
     PARAMETERS:
 
         ont_file: 'resources/oontology_source_list.txt'
-
         tfidf_mapping: "yes" if want to perform cosine similarity mapping using a TF-IDF matrix.
-
         clinical_domain: clinical domain of input data (i.e. "conditions", "drugs", or "measurements").
-
         onts: A comma-separated list of ontology prefixes that matches 'resources/oontology_source_list.txt'.
-
         clinical_data: The filepath to the clinical data needing mapping.
-
         primary_key: The name of the file to use as the primary key.
-
         concept_codes: A comma-separated list of concept-level codes to use for DbXRef mapping.
-
         concept_strings: A comma-separated list of concept-level strings to map to use for exact string mapping.
-
         ancestor_codes: A comma-separated list of ancestor-level codes to use for DbXRef mapping.
-
         ancestor_strings: A comma-separated list of ancestor-level strings to map to use for exact string mapping.
-
         outfile: The filepath for where to write output data to.
 
     Several dependencies must be addressed before running this file. Please see the README for instructions.
@@ -97,7 +88,16 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
                               if len(glob.glob('resources/mappings/*MRSTY*')) > 0 else None)
 
     mappings = mapper.clinical_concept_mapper()
+
+    # shortens long text fields in original output data (otherwise Excel expands columns into additional rows)
+    data_cols = ['CONCEPT_SOURCE_CODE', 'CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION', 'CONCEPT_SYNONYM',
+                 'ANCESTOR_CONCEPT_ID', 'ANCESTOR_SOURCE_CODE', 'ANCESTOR_LABEL']
+    for x in data_cols:
+        mappings[x] = mappings[x].apply(lambda i: ' | '.join(i.split(' | ')[0:100]))
+
+    print('\nSaving Results: {}'.format('Exact Match'))
     mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
+
     # get column names -- used later to organize output
     start_cols = [i for i in mappings.columns if not any(j for j in ['STR', 'DBXREF', 'EVIDENCE'] if j in i)]
     exact_cols = [i for i in mappings.columns if i not in start_cols]
@@ -110,17 +110,18 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
                                   concept_strings=concept_strings)
 
         sim_mappings = sim.performs_similarity_search()
-        sim_mappings = sim_mappings[[primary_key] + [x for x in sim_mappings.columns if 'SIM' in x]].drop_duplicates()
         # get column names -- used later to organize output
+        sim_mappings = sim_mappings[[primary_key] + [x for x in sim_mappings.columns if 'SIM' in x]].drop_duplicates()
         sim_cols = [i for i in sim_mappings.columns if not any(j for j in start_cols if j in i)]
 
         # merge dbXref, exact string, and TF-IDF similarity results
         merged_scores = pd.merge(mappings, sim_mappings, how='left', on=primary_key)
-        # re-order columns and write out data
         mappings = merged_scores[start_cols + exact_cols + sim_cols]
+
+        print('\nSaving Results: {}'.format('TF-IDF Cosine Similarity'))
         mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
-    # polish output
+    # clean up output
     if clinical_domain == 'LABS':
         result_type_idx, updated_data = list(mappings.columns).index('RESULT_TYPE'), []
         for idx, row in mappings.iterrows():
@@ -136,10 +137,11 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: str, cli
         data_expanded = pd.DataFrame(updated_data, columns=list(mappings.columns))
     else:
         data_expanded = mappings.copy()
-
-    # remove nan
     data_expanded.fillna('', inplace=True)
-    data_expanded.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
+
+    # aggregate mapping evidence
+    updated_mappings = aggregates_mapping_results(data_expanded, onts, ont_data, mapper.source_code_map)
+    updated_mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
 
 if __name__ == '__main__':
