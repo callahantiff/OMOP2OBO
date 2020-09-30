@@ -35,6 +35,10 @@ class ConceptAnnotator(object):
         umls_cui_data: A Pandas DataFrame containing UMLS CUI data from MRCONSO.RRF.
         umls_tui_data: A Pandas DataFrame containing UMLS CUI data from MRSTY.RRF.
         source_code_map: A dictionary containing clinical vocabulary source code abbreviations.
+        umls_double_merge: A bool specifying whether to merge UMLS SAB codes with OMOP source codes once or twice.
+            Merging once will only align OMOP source codes to UMLS SAB, twice with take the CUIs from the first merge
+            and merge them again with the full UMLS SAB set resulting in a larger set of matches. The default value
+            is True, which means that the merge will be performed twice.
 
     Raises:
         TypeError:
@@ -54,10 +58,13 @@ class ConceptAnnotator(object):
 
     def __init__(self, clinical_file: str, ontology_dictionary: Dict, primary_key: str, concept_codes: Tuple,
                  concept_strings: Tuple = None, ancestor_codes: Tuple = None, ancestor_strings: Tuple = None,
-                 umls_mrconso_file: str = None, umls_mrsty_file: str = None, source_codes: str = None) -> None:
+                 umls_mrconso_file: str = None, umls_mrsty_file: str = None, umls_expand: bool = True,
+                 source_codes: str = None) -> None:
 
         print('#### GENERATING EXACT MATCH MAPPINGS ####')
         print('*** Setting up Environment')
+
+        self.umls_double_merge: bool = umls_expand
 
         # vocabulary source code mapping -- not tested in testing file
         source_code = 'resources/mappings/source_code_vocab_map.csv' if source_codes is None else source_codes
@@ -177,7 +184,7 @@ class ConceptAnnotator(object):
                 self.umls_tui_data = pd.read_csv(umls_mrsty_file, header=None, sep='|', names=headers,
                                                  low_memory=False, usecols=[0, 3]).drop_duplicates().astype(str)
 
-    def umls_cui_annotator(self, data: pd.DataFrame, key: str, code_level: str, expand: bool = True) -> pd.DataFrame:
+    def umls_cui_annotator(self, data: pd.DataFrame, key: str, code_level: str) -> pd.DataFrame:
         """Method maps concepts in a clinical data file to UMLS concepts and semantic types from the umls_cui_data
         and umls_tui_data Pandas DataFrames.
 
@@ -185,9 +192,7 @@ class ConceptAnnotator(object):
             data: A Pandas DatFrame containing clinical data.
             key: A string containing the name of the primary key (i.e. CONCEPT_ID).
             code_level: A string containing the name of the source code column (i.e. CONCEPT_SOURCE_CODE).
-            expand: A string indicating whether or not to merge source codes with the UMLS a single time or
-                twice. If merging twice this will take advantage of the UMLS mappings and obtain all source
-                vocabulary codes mapped to any cui that mapped to an OMOP source code during the first merge.
+
 
         Returns:
            umls_cui_semtype: A Pandas DataFrame containing clinical concept ids and source codes as well as UMLS
@@ -204,7 +209,7 @@ class ConceptAnnotator(object):
         clinical_ids = data[[key, code_level]].drop_duplicates()
 
         # merge reduced clinical concepts with umls concepts
-        if expand is True:
+        if self.umls_double_merge is True:
             # merge 1 - align omop source codes to umls sabs
             umls_cui_1 = clinical_ids.merge(self.umls_cui_data, how='inner', left_on=code_level, right_on='CODE')
             # merge 2 - align umls cuis from merge 1 to cuis in full umls (this adds additional sabs not found in omop)

@@ -72,6 +72,7 @@ setup(
         'google-cloud-core==1.3.0',
         'google-cloud-storage==1.28.0',
         'lxml',
+        'more-itertools==8.2.0',
         'nltk==3.5',
         'oauth2client==4.1.3',
         'pandas==1.0.3',

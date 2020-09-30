@@ -19,6 +19,7 @@ from omop2obo.utils import aggregates_mapping_results
 @click.option('--ont_file', type=click.Path(exists=True), required=True, default='resources/ontology_source_list.txt')
 @click.option('--tfidf_mapping', required=True, default='no')
 @click.option('--clinical_domain', required=True)
+@click.option('--merge', required=True, multiple=True, default='True or False - UMLS Expanded Merge')
 @click.option('--onts', required=True, multiple=True, default=['List'])
 @click.option('--clinical_data', type=click.Path(exists=True), required=True)
 @click.option('--primary_key', required=True, default='CONCEPT_ID')
@@ -28,7 +29,8 @@ from omop2obo.utils import aggregates_mapping_results
 @click.option('--ancestor_strings', multiple=True, default=['ANCESTOR_LABEL', 'ANCESTOR_SYNONYM'])
 @click.option('--outfile', required=True, default='./resources/mapping/OMOP2OBO_MAPPED_')
 def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, clinical_data: str, primary_key: str,
-         concept_codes: Tuple, concept_strings: Tuple, ancestor_codes: Tuple, ancestor_strings: Tuple, outfile: str):
+         concept_codes: Tuple, concept_strings: Tuple, ancestor_codes: Tuple, ancestor_strings: Tuple,
+         merge: bool, outfile: str):
     """The OMOP2OBO package provides functionality to assist with mapping OMOP standard clinical terminology concepts to
     OBO terms. Successfully running this program requires several input parameters, which are specified below:
 
@@ -44,6 +46,10 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
         concept_strings: A comma-separated list of concept-level strings to map to use for exact string mapping.
         ancestor_codes: A comma-separated list of ancestor-level codes to use for DbXRef mapping.
         ancestor_strings: A comma-separated list of ancestor-level strings to map to use for exact string mapping.
+        merge: A bool specifying whether to merge UMLS SAB codes with OMOP source codes once or twice.
+            Merging once will only align OMOP source codes to UMLS SAB, twice with take the CUIs from the first merge
+            and merge them again with the full UMLS SAB set resulting in a larger set of matches. The default value
+            is True, which means that the merge will be performed twice.
         outfile: The filepath for where to write output data to.
 
     Several dependencies must be addressed before running this file. Please see the README for instructions.
@@ -77,6 +83,7 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
 
     mapper = ConceptAnnotator(clinical_file=clinical_data,
                               ontology_dictionary={k: v for k, v in ont_data.items() if k in onts},
+                              umls_expand=merge,
                               primary_key=primary_key,
                               concept_codes=concept_codes,
                               concept_strings=concept_strings,

@@ -139,6 +139,7 @@ There are a few ways to run ``omop2obo``. An example workflow is provided below.
  # process clinical data 
  mapper = ConceptAnnotator(clinical_file='resources/clinical_data/omop2obo_conditions_june2020.csv',
                            ontology_dictionary={k: v for k, v in ont_data.items() if k in ['hp', 'mondo']},
+                           merge=True,
                            primary_key='CONCEPT_ID',
                            concept_codes=tuple(['CONCEPT_SOURCE_CODE']),
                            concept_strings=tuple(['CONCEPT_LABEL', 'CONCEPT_SYNONYM']),
@@ -180,13 +181,16 @@ There are a few ways to run ``omop2obo``. An example workflow is provided below.
   python main.py --help
   Usage: main.py [OPTIONS]
 
-  The OMOP2OBO package provides functionality to assist with mapping OMOP 
-  standard clinical terminology concepts to OBO terms.
+  The OMOP2OBO package provides functionality to assist with mapping OMOP standard clinical terminology
+  concepts to OBO terms. Successfully running this program requires several input parameters, which are
+  specified below:
+
 
   PARAMETERS:
       ont_file: 'resources/oontology_source_list.txt'
       tfidf_mapping: "yes" if want to perform cosine similarity mapping using a TF-IDF matrix.
       clinical_domain: clinical domain of input data (i.e. "conditions", "drugs", or "measurements").
+      merge: A bool specifying whether to merge UMLS SAB codes with OMOP source codes once or twice.
       onts: A comma-separated list of ontology prefixes that matches 'resources/oontology_source_list.txt'.
       clinical_data: The filepath to the clinical data needing mapping.
       primary_key: The name of the file to use as the primary key.
@@ -202,6 +206,7 @@ There are a few ways to run ``omop2obo``. An example workflow is provided below.
     --ont_file PATH          [required]
     --tfidf_mapping TEXT     [required]
     --clinical_domain TEXT   [required]
+    --merge                  [required]
     --ont TEXT               [required]
     --clinical_data PATH     [required]
     --primary_key TEXT       [required]
