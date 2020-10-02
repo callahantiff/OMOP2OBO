@@ -4,8 +4,7 @@
 import pandas as pd
 import unittest
 
-from typing import Dict
-
+from typing import Dict, Tuple
 from omop2obo.utils import *
 
 
@@ -84,6 +83,14 @@ class TestDataUtils(unittest.TestCase):
                           'hyperekplexia 3': 'http://purl.obolibrary.org/obo/MONDO_0013827',
                           'color vision disorder': 'http://purl.obolibrary.org/obo/MONDO_0001703'}}
         }
+
+        # create example result data
+        self.ont_data = {'hp': {'label': {'abetalipoproteinemia': 'http://purl.obolibrary.org/obo/HP_0008181'},
+                                'dbxref': {'snomedct_us:190787008': 'http://purl.obolibrary.org/obo/HP_0008181'},
+                                'dbxref_type': {'snomedct_us:190787008': 'DbXref'},
+                                'synonym': {'wet lung': 'http://purl.obolibrary.org/obo/HP_0100598'},
+                                'synonym_type': {'wet lung': 'hasExactSynonym'}}}
+        self.source_codes = {'snomed:190787008': 'DbXref*snomedct_us'}
 
         return None
 
@@ -235,29 +242,127 @@ class TestDataUtils(unittest.TestCase):
 
         return None
 
-    def tests_filters_mapping_content(self):
-        """Tests the filters_mapping_content method."""
+    def tests_filters_mapping_content_scenario1(self):
+        """Tests the filters_mapping_content method - scenario 1."""
 
         # create input values
         # test set 1
         input_1_exact = [['HP_0008181', 'HP_0008181'], ['abetalipoproteinemia', 'abetalipoproteinemia'],
                          ['CONCEPT_DBXREF_snomed:190787008', 'CONCEPT_SOURCE_LABEL:abetalipoproteinemia']]
         input_1_sim = [['HP_0008181'], ['abetalipoproteinemia'], ['HP_0008181_1.0']]
+
+        # test method -- input set 1
+        results_1 = filters_mapping_content(input_1_exact, input_1_sim, 0.25)
+        self.assertIsInstance(results_1[0], list)
+        self.assertEqual(len(results_1[0]), 3)
+        self.assertIsInstance(results_1[1], list)
+        self.assertEqual(len(results_1[1]), 3)
+        self.assertEqual(results_1[0], [['HP_0008181'], ['abetalipoproteinemia'],
+                                        'CONCEPT_DBXREF_snomed:190787008 | CONCEPT_SOURCE_LABEL:abetalipoproteinemia'])
+        self.assertEqual(results_1[1], [['HP_0008181'], ['abetalipoproteinemia'], 'HP_0008181_1.0'])
+
+        return None
+
+    def tests_filters_mapping_content_scenario2(self):
+        """Tests the filters_mapping_content method - scenario 2."""
+
+        # create input values
         # test set 2
         input_2_exact = [['HP_0011276', 'HP_0000951'], ['vascular skin abnormality', 'abnormality of the skin'],
                          ['ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871']]
         input_2_sim = [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
                        ['HP_0100309_0.75 | HP_0100310_0.786']]
+
+        # test method -- input set 2
+        results_2 = filters_mapping_content(input_2_exact, input_2_sim, 0.25)
+        self.assertIsInstance(results_2[0], list)
+        self.assertEqual(len(results_2[0]), 3)
+        self.assertIsInstance(results_2[1], list)
+        self.assertEqual(len(results_2[1]), 3)
+        self.assertEqual(results_2[0], [['HP_0011276', 'HP_0000951'],
+                                        ['vascular skin abnormality', 'abnormality of the skin'],
+                                        'ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871'])
+        self.assertEqual(results_2[1], [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                                        'HP_0100309_0.75 | HP_0100310_0.786'])
+
+        return None
+
+    def tests_filters_mapping_content_scenario2_threshold(self):
+        """Tests the filters_mapping_content method - scenario 2 with high thresholding."""
+
+        # create input values
+        # test set 2
+        input_2a_exact = [['HP_0011276', 'HP_0000951'], ['vascular skin abnormality', 'abnormality of the skin'],
+                          ['ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871']]
+        input_2a_sim = [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                        ['HP_0100309_0.75 | HP_0100310_0.786']]
+
+        # test method -- input set 2
+        results_2a = filters_mapping_content(input_2a_exact, input_2a_sim, 0.76)
+        print(results_2a)
+        self.assertIsInstance(results_2a[0], list)
+        self.assertEqual(len(results_2a[0]), 3)
+        self.assertIsInstance(results_2a[1], list)
+        self.assertEqual(len(results_2a[1]), 3)
+        self.assertEqual(results_2a[0], [['HP_0011276', 'HP_0000951'],
+                                         ['vascular skin abnormality', 'abnormality of the skin'],
+                                         'ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871'])
+        self.assertEqual(results_2a[1], [['HP_0100310'], ['epidural hemorrhage'], 'HP_0100310_0.786'])
+
+        return None
+
+    def tests_filters_mapping_content_scenario3(self):
+        """Tests the filters_mapping_content method - scenario 3."""
+
+        # create input values
         # test set 3
         input_3_exact = [['HP_0011276', 'HP_0000951'], ['vascular skin abnormality', 'abnormality of the skin'],
                          ['CONCEPT_DBXREF_snomed:11263005 | CONCEPT_DBXREF_msh:d012871']]
         input_3_sim = [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
                        ['HP_0100309_0.278 | HP_0100310_0.266']]
+
+        # test method -- input set 3
+        results_3 = filters_mapping_content(input_3_exact, input_3_sim, 0.25)
+        self.assertIsInstance(results_3[0], list)
+        self.assertEqual(len(results_3[0]), 3)
+        self.assertIsInstance(results_3[1], list)
+        self.assertEqual(len(results_3[1]), 3)
+        self.assertEqual(results_3[0], [['HP_0011276', 'HP_0000951'],
+                                        ['vascular skin abnormality', 'abnormality of the skin'],
+                                        'CONCEPT_DBXREF_snomed:11263005 | CONCEPT_DBXREF_msh:d012871'])
+        self.assertEqual(results_3[1], [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                                        'HP_0100309_0.278 | HP_0100310_0.266'])
+
+        return None
+
+    def tests_filters_mapping_content_scenario4(self):
+        """Tests the filters_mapping_content method - scenario 4."""
+
+        # create input values
         # test set 4
         input_4_exact = [['HP_0011276', 'HP_0000951'], ['vascular skin abnormality', 'abnormality of the skin'],
                          ['ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871']]
         input_4_sim = [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
                        ['HP_0100309_0.278 | HP_0100310_0.266']]
+
+        # test method -- input set 4
+        results_4 = filters_mapping_content(input_4_exact, input_4_sim, 0.25)
+        self.assertIsInstance(results_4[0], list)
+        self.assertEqual(len(results_4[0]), 3)
+        self.assertIsInstance(results_4[1], list)
+        self.assertEqual(len(results_4[1]), 3)
+        self.assertEqual(results_4[0], [['HP_0011276', 'HP_0000951'],
+                                        ['vascular skin abnormality', 'abnormality of the skin'],
+                                        'ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871'])
+        self.assertEqual(results_4[1], [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
+                                        'HP_0100309_0.278 | HP_0100310_0.266'])
+
+        return None
+
+    def tests_filters_mapping_content_scenario5(self):
+        """Tests the filters_mapping_content method - scenario 5."""
+
+        # create input values
         # test set 5
         input_5_exact = [['HP_0002011', 'HP_0002960', 'HP_0011096'],
                          ['morphological central nervous system abnormality', 'peripheral demyelination'],
@@ -265,62 +370,23 @@ class TestDataUtils(unittest.TestCase):
                           'ANCESTOR_LABEL:demyelination']]
         input_5_sim = [[], [], []]
 
-        # test method -- input set 1
-        results_1 = filters_mapping_content(input_1_exact, input_1_sim)
-        self.assertIsInstance(results_1, list)
-        self.assertEqual(len(results_1), 3)
-        self.assertIsInstance(results_1[0], list)
-        self.assertIsInstance(results_1[1], list)
-        self.assertIsInstance(results_1[2], str)
-        self.assertEqual(results_1, [['HP_0008181'],
-                                     ['abetalipoproteinemia'],
-                                     'CONCEPT_DBXREF_snomed:190787008 | CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
-                                     'HP_0008181_1.0'])
-        # test method -- input set 2
-        results_2 = filters_mapping_content(input_2_exact, input_2_sim)
-        self.assertIsInstance(results_2, list)
-        self.assertEqual(len(results_2), 3)
-        self.assertIsInstance(results_2[0], list)
-        self.assertIsInstance(results_2[1], list)
-        self.assertIsInstance(results_2[2], str)
-        self.assertEqual(results_2, [['HP_0100309', 'HP_0100310'], ['subdural hemorrhage', 'epidural hemorrhage'],
-                                     'HP_0100309_0.75 | HP_0100310_0.786'])
-        # test method -- input set 3
-        results_3 = filters_mapping_content(input_3_exact, input_3_sim)
-        self.assertIsInstance(results_3, list)
-        self.assertEqual(len(results_3), 3)
-        self.assertIsInstance(results_3[0], list)
-        self.assertIsInstance(results_3[1], list)
-        self.assertIsInstance(results_3[2], str)
-        self.assertEqual(results_3, [['HP_0011276', 'HP_0000951'],
-                                     ['vascular skin abnormality', 'abnormality of the skin'],
-                                     'CONCEPT_DBXREF_snomed:11263005 | CONCEPT_DBXREF_msh:d012871'])
-        # test method -- input set 4
-        results_4 = filters_mapping_content(input_4_exact, input_4_sim)
-        self.assertIsInstance(results_4, list)
-        self.assertEqual(len(results_4), 3)
-        self.assertIsInstance(results_4[0], list)
-        self.assertIsInstance(results_4[1], list)
-        self.assertIsInstance(results_4[2], str)
-        self.assertEqual(results_4, [['HP_0011276', 'HP_0000951'],
-                                     ['vascular skin abnormality', 'abnormality of the skin'],
-                                     'ANCESTOR_DBXREF_snomed:11263005 | ANCESTOR_DBXREF_msh:d012871'])
         # test method -- input set 5
-        results_5 = filters_mapping_content(input_5_exact, input_5_sim)
-        self.assertIsInstance(results_5, list)
-        self.assertEqual(len(results_5), 3)
+        results_5 = filters_mapping_content(input_5_exact, input_5_sim, 0.25)
         self.assertIsInstance(results_5[0], list)
+        self.assertEqual(len(results_5[0]), 3)
         self.assertIsInstance(results_5[1], list)
-        self.assertIsInstance(results_5[2], str)
-        self.assertEqual(results_5, [['HP_0002011', 'HP_0002960', 'HP_0011096'],
-                                     ['morphological central nervous system abnormality', 'peripheral demyelination'],
-                                     'ANCESTOR_DBXREF_snomed:23853001 | ANCESTOR_DBXREF_snomed:85828009 | '
-                                     'ANCESTOR_LABEL:demyelination'])
+        self.assertEqual(len(results_5[1]), 3)
+        self.assertEqual(results_5[0], [['HP_0002011', 'HP_0002960', 'HP_0011096'],
+                                        ['morphological central nervous system abnormality',
+                                         'peripheral demyelination'],
+                                        'ANCESTOR_DBXREF_snomed:23853001 | ANCESTOR_DBXREF_snomed:85828009 | '
+                                        'ANCESTOR_LABEL:demyelination'])
+        self.assertEqual(results_5[1], [None, None, None])
 
         return None
 
-    def tests_compiles_mapping_content(self):
-        """Tests the compiles_mapping_content method."""
+    def tests_compiles_mapping_content_1(self):
+        """Tests the compiles_mapping_content method - round 1."""
 
         # create required input resources
         data_row_1 = pd.Series({'CONCEPT_ID': '4098595',
@@ -339,19 +405,53 @@ class TestDataUtils(unittest.TestCase):
                                 'HP_SIM_ONT_EVIDENCE': ''})
 
         # test method
-        results = compiles_mapping_content(data_row_1, 'HP')
-        self.assertIsInstance(results, list)
-        self.assertEqual(len(results), 3)
+        results = compiles_mapping_content(data_row_1, 'HP', 0.75)
         self.assertIsInstance(results[0], list)
         self.assertIsInstance(results[1], list)
-        self.assertIsInstance(results[2], str)
+        self.assertEqual(len(results[0]), 3)
+        self.assertEqual(len(results[1]), 3)
+        self.assertIsInstance(results[0][0], list)
+        self.assertIsInstance(results[0][1], list)
+        self.assertIsInstance(results[0][2], str)
 
-        results = compiles_mapping_content(data_row_2, 'HP')
-        self.assertIsInstance(results, list)
-        self.assertEqual(len(results), 3)
-        self.assertEqual(results[0], None)
-        self.assertEqual(results[1], None)
-        self.assertEqual(results[2], None)
+        results = compiles_mapping_content(data_row_2, 'HP', 0.75)
+        self.assertIsInstance(results[0], list)
+        self.assertIsInstance(results[1], list)
+        self.assertEqual(len(results[0]), 3)
+        self.assertEqual(len(results[1]), 3)
+        self.assertEqual(results[0][0], None)
+        self.assertEqual(results[0][1], None)
+        self.assertEqual(results[0][2], None)
+
+        return None
+
+    def tests_compiles_mapping_content_2(self):
+        """Tests the compiles_mapping_content method - round 2."""
+
+        # create required input resources
+        data_row_1 = pd.Series({'CONCEPT_ID': '4134318',
+                                'CONCEPT_DBXREF_HP_URI': '',
+                                'CONCEPT_DBXREF_HP_LABEL': '',
+                                'CONCEPT_DBXREF_HP_EVIDENCE': '',
+                                'CONCEPT_STR_HP_URI': 'http://purl.obolibrary.org/obo/HP_0041249',
+                                'CONCEPT_STR_HP_LABEL': 'fractured nose',
+                                'CONCEPT_STR_HP_EVIDENCE': 'CONCEPT_SYNONYM:fractured_nose',
+                                'HP_SIM_ONT_URI': 'HP_0041249 | HP_0010939 | HP_0004646 | HP_0010941 | HP_0041162 | '
+                                                  'HP_0041248',
+                                'HP_SIM_ONT_LABEL': 'fractured nose | abnormality of the nasal bone | hypoplasia of '
+                                                    'the nasal bone | aplasia of the nasal bone | fractured foot bone '
+                                                    '| fractured carpal bone',
+                                'HP_SIM_ONT_EVIDENCE': 'HP_0041249_1.0 | HP_0010939_0.379 | HP_0004646_0.352 | '
+                                                       'HP_0010941_0.352 | HP_0041162_0.31 | HP_0041248_0.303'})
+
+        # test method
+        results = compiles_mapping_content(data_row_1, 'HP', 0.75)
+        self.assertIsInstance(results[0], list)
+        self.assertIsInstance(results[1], list)
+        self.assertEqual(len(results[0]), 3)
+        self.assertEqual(len(results[1]), 3)
+        self.assertEqual(results[0][2], 'CONCEPT_SYNONYM:fractured_nose')
+        self.assertEqual(results[1][2], 'HP_0041249_1.0')
 
         return None
 
@@ -365,9 +465,10 @@ class TestDataUtils(unittest.TestCase):
                     'synonym': {'wet lung': 'http://purl.obolibrary.org/obo/HP_0100598'},
                     'synonym_type': {'wet lung': 'hasExactSynonym'}}
         source_dict = {'snomed:190787008': 'DbXref*snomedct_us'}
-        result = [['HP_0008181'], ['abetalipoproteinemia'], 'CONCEPT_DBXREF_snomed:190787008 | '
-                                                            'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
-                                                            'CONCEPT_SYNONYM:abetalipoproteinemia | HP_0008181_1.0']
+        result = ([['HP_0008181'], ['abetalipoproteinemia'],
+                   'CONCEPT_DBXREF_snomed:190787008 | CONCEPT_DBXREF_umls:C0000744 | '
+                   'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | CONCEPT_SYNONYM:abetalipoproteinemia'],
+                  [['HP_0008181'], ['abetalipoproteinemia'], 'HP_0008181_1.0'])
         clin_data = {'CONCEPT_LABEL': 'Abetalipoproteinemia',
                      'CONCEPT_SOURCE_LABEL': 'Abetalipoproteinemia',
                      'CONCEPT_SYNONYM': 'Abetalipoproteinaemia | Apolipoprotein B deficiency',
@@ -375,10 +476,11 @@ class TestDataUtils(unittest.TestCase):
 
         # test method
         results = formats_mapping_evidence(ont_dict, source_dict, result, clin_data)
-        self.assertIsInstance(results, str)
-        self.assertEqual(results.split(' | ')[0], 'OBO_DbXref-OMOP_CONCEPT_CODE:snomed_190787008')
-        self.assertEqual(results.split(' | ')[1], 'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia')
-        self.assertEqual(results.split(' | ')[2], 'CONCEPT_SIMILARITY:HP_0008181_1.0')
+        self.assertIsInstance(results, Tuple)
+        self.assertEqual(results[0], 'OBO_DbXref-OMOP_CONCEPT_CODE:snomed_190787008 | '
+                                     'OBO_DbXref-OMOP_CONCEPT_CODE:umls_C0000744 | '
+                                     'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia')
+        self.assertEqual(results[1], 'CONCEPT_SIMILARITY:HP_0008181_1.0')
 
         return None
 
@@ -386,69 +488,99 @@ class TestDataUtils(unittest.TestCase):
         """Tests the assigns_mapping_category method."""
 
         # set function input 1
-        mapping_info_1 = [['HP_0008181'], ['abetalipoproteinemia'], 'CONCEPT_DBXREF_snomed:190787008 | '
-                                                                    'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | '
-                                                                    'CONCEPT_SYNONYM:abetalipoproteinemia | '
-                                                                    'HP_0008181_1.0']
-        mapping_evidence_1 = 'OBO_DbXref-OMOP_CONCEPT_CODE:umls_C0000744 | ' \
-                             'OBO_LABEL-OMOP_CONCEPT_SYNONYM:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0'
+        mapping_info_1 = [['HP_0008181'], ['abetalipoproteinemia'],
+                          'CONCEPT_DBXREF_snomed:190787008 | CONCEPT_DBXREF_umls:C0000744 | '
+                          'CONCEPT_SOURCE_LABEL:abetalipoproteinemia | CONCEPT_SYNONYM:abetalipoproteinemia']
+        mapping_evidence_1 = 'OBO_DbXref-OMOP_CONCEPT_CODE:snomedct_us_190787008 | ' \
+                             'OBO_DbXref-OMOP_CONCEPT_CODE:umls_C0000744 | ' \
+                             'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia | ' \
+                             'OBO_LABEL-OMOP_CONCEPT_SYNONYM:abetalipoproteinemia '
 
         # set function inputs
-        mapping_info_2 = [['HP_0008181'], ['abetalipoproteinemia'],
-                          'CONCEPT_SIMILARITY:HP_0001950_0.526 | CONCEPT_SIMILARITY:HP_0001942_0.466 | '
-                          'CONCEPT_SIMILARITY:HP_0001948_0.314']
-        mapping_evidence_2 = 'CONCEPT_SIMILARITY:HP_0001950_0.526 | CONCEPT_SIMILARITY:HP_0001942_0.466 | ' \
-                             'CONCEPT_SIMILARITY:HP_0001948_0.314 '
+        mapping_info_2 = [['HP_0008181'], ['abetalipoproteinemia'], 'HP_0008181_1.0']
+        mapping_evidence_2 = 'CONCEPT_SIMILARITY:HP_0008181_1.0'
 
-        # test method 1
+        # test method - exact
         results_1 = assigns_mapping_category(mapping_info_1, mapping_evidence_1)
         self.assertIsInstance(results_1, str)
         self.assertEqual(results_1, 'Automatic Exact - Concept')
 
-        # test method 2
+        # test method - similarity
         results_2 = assigns_mapping_category(mapping_info_2, mapping_evidence_2)
         self.assertIsInstance(results_2, str)
-        self.assertEqual(results_2, 'Automatic Exact - Concept')
+        self.assertEqual(results_2, 'Manual Exact - Concept Similarity')
 
         return None
 
-    def tests_aggregates_mapping_results(self):
-        """Tests the aggregates_mapping_results method."""
+    def tests_aggregates_mapping_results_full_SimResults(self):
+        """Tests the aggregates_mapping_results method when there is similarity data."""
 
         # set-up inputs
-        data = pd.DataFrame({'CONCEPT_ID': ['4098595'],
-                             'CONCEPT_LABEL': ['Abetalipoproteinemia'],
-                             'CONCEPT_SOURCE_LABEL': ['Abetalipoproteinemia'],
-                             'CONCEPT_SYNONYM': ['Abetalipoproteinaemia | ABL - Abetalipoproteinaemia | '
-                                                 'Abetalipoproteinemia (disorder) | Apolipoprotein B deficiency | '
-                                                 'Abetalipoproteinemia | ABL - Abetalipoproteinemia'],
-                             'CONCEPT_DBXREF_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
-                             'CONCEPT_DBXREF_HP_LABEL': ['abetalipoproteinemia'],
-                             'CONCEPT_DBXREF_HP_EVIDENCE': ['CONCEPT_DBXREF_snomed:190787008'],
-                             'CONCEPT_STR_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
-                             'CONCEPT_STR_HP_LABEL': ['abetalipoproteinemia'],
-                             'CONCEPT_STR_HP_EVIDENCE': ['CONCEPT_SOURCE_LABEL:abetalipoproteinemia'],
-                             'HP_SIM_ONT_URI': ['HP_0008181'],
-                             'HP_SIM_ONT_LABEL': ['abetalipoproteinemia'],
-                             'HP_SIM_ONT_EVIDENCE': ['HP_0008181_1.0']})
-        ont_data = {'hp': {'label': {'abetalipoproteinemia': 'http://purl.obolibrary.org/obo/HP_0008181'},
-                           'dbxref': {'snomedct_us:190787008': 'http://purl.obolibrary.org/obo/HP_0008181'},
-                           'dbxref_type': {'snomedct_us:190787008': 'DbXref'},
-                           'synonym': {'wet lung': 'http://purl.obolibrary.org/obo/HP_0100598'},
-                           'synonym_type': {'wet lung': 'hasExactSynonym'}}}
-        source_codes = {'snomed:190787008': 'DbXref*snomedct_us'}
+        data1 = pd.DataFrame({'CONCEPT_ID': ['4098595'],
+                              'CONCEPT_LABEL': ['Abetalipoproteinemia'],
+                              'CONCEPT_SOURCE_LABEL': ['Abetalipoproteinemia'],
+                              'CONCEPT_SYNONYM': ['Abetalipoproteinaemia | ABL - Abetalipoproteinaemia | '
+                                                  'Abetalipoproteinemia (disorder) | Apolipoprotein B deficiency | '
+                                                  'Abetalipoproteinemia | ABL - Abetalipoproteinemia'],
+                              'CONCEPT_DBXREF_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
+                              'CONCEPT_DBXREF_HP_LABEL': ['abetalipoproteinemia'],
+                              'CONCEPT_DBXREF_HP_EVIDENCE': ['CONCEPT_DBXREF_snomed:190787008'],
+                              'CONCEPT_STR_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
+                              'CONCEPT_STR_HP_LABEL': ['abetalipoproteinemia'],
+                              'CONCEPT_STR_HP_EVIDENCE': ['CONCEPT_SOURCE_LABEL:abetalipoproteinemia'],
+                              'HP_SIM_ONT_URI': ['HP_0008181'],
+                              'HP_SIM_ONT_LABEL': ['abetalipoproteinemia'],
+                              'HP_SIM_ONT_EVIDENCE': ['HP_0008181_1.0']})
 
-        # test method
-        results = aggregates_mapping_results(data, ['hp'], ont_data, source_codes)
+        # test method when there is similarity data
+        results = aggregates_mapping_results(data1, ['hp'], self.ont_data, self.source_codes, 0.25)
         self.assertIsInstance(results, pd.DataFrame)
         self.assertEqual(len(results), 1)
-        self.assertEqual(len(results.columns), 17)
+        self.assertEqual(len(results.columns), 21)
         # check annotated values
         self.assertEqual(results.at[0, 'AGGREGATED_HP_URI'], 'HP_0008181')
         self.assertEqual(results.at[0, 'AGGREGATED_HP_LABEL'], 'abetalipoproteinemia')
         self.assertEqual(results.at[0, 'AGGREGATED_HP_MAPPING'], 'Automatic Exact - Concept')
         self.assertEqual(results.at[0, 'AGGREGATED_HP_EVIDENCE'], 'OBO_DbXref-OMOP_CONCEPT_CODE:snomed_190787008 | '
-                                                                  'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia | '
-                                                                  'CONCEPT_SIMILARITY:HP_0008181_1.0')
+                                                                  'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia')
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_URI'], 'HP_0008181')
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_LABEL'], 'abetalipoproteinemia')
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_MAPPING'], 'Manual Exact - Concept Similarity')
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_EVIDENCE'], 'CONCEPT_SIMILARITY:HP_0008181_1.0')
+
+        return None
+
+    def tests_aggregates_mapping_results_full_NoSimResults(self):
+        """Tests the aggregates_mapping_results method when there is similarity data - no similarity data."""
+
+        # set-up inputs
+        data2 = pd.DataFrame({'CONCEPT_ID': ['4098595'],
+                              'CONCEPT_LABEL': ['Abetalipoproteinemia'],
+                              'CONCEPT_SOURCE_LABEL': ['Abetalipoproteinemia'],
+                              'CONCEPT_SYNONYM': ['Abetalipoproteinaemia | ABL - Abetalipoproteinaemia | '
+                                                  'Abetalipoproteinemia (disorder) | Apolipoprotein B deficiency | '
+                                                  'Abetalipoproteinemia | ABL - Abetalipoproteinemia'],
+                              'CONCEPT_DBXREF_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
+                              'CONCEPT_DBXREF_HP_LABEL': ['abetalipoproteinemia'],
+                              'CONCEPT_DBXREF_HP_EVIDENCE': ['CONCEPT_DBXREF_snomed:190787008'],
+                              'CONCEPT_STR_HP_URI': ['http://purl.obolibrary.org/obo/HP_0008181'],
+                              'CONCEPT_STR_HP_LABEL': ['abetalipoproteinemia'],
+                              'CONCEPT_STR_HP_EVIDENCE': ['CONCEPT_SOURCE_LABEL:abetalipoproteinemia']})
+
+        # test method when there is no similarity data
+        results = aggregates_mapping_results(data2, ['hp'], self.ont_data, self.source_codes, 0.25)
+        self.assertIsInstance(results, pd.DataFrame)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results.columns), 18)
+        # check annotated values
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_URI'], 'HP_0008181')
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_LABEL'], 'abetalipoproteinemia')
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_MAPPING'], 'Automatic Exact - Concept')
+        self.assertEqual(results.at[0, 'AGGREGATED_HP_EVIDENCE'], 'OBO_DbXref-OMOP_CONCEPT_CODE:snomed_190787008 | '
+                                                                  'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia')
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_URI'], None)
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_LABEL'], None)
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_MAPPING'], None)
+        self.assertEqual(results.at[0, 'SIMILARITY_HP_EVIDENCE'], None)
 
         return None
