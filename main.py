@@ -147,7 +147,7 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
     data_expanded.fillna('', inplace=True)
 
     # aggregate mapping evidence
-    updated_mappings = aggregates_mapping_results(data_expanded, onts, ont_data, mapper.source_code_map)
+    updated_mappings = aggregates_mapping_results(data_expanded, onts, ont_data, mapper.source_code_map, 0.25)
     updated_mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
 
