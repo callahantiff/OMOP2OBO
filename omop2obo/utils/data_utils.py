@@ -587,11 +587,13 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
                 clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
                 ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
                 ext_evid, sim_evid = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
-                if ext_evid != '':  # get exact match info
+                # get exact mapping information
+                if ext_evid != '':
                     exact_mappings.append([' | '.join(map_info[0][0]), ' | '.join(map_info[0][1]),
                                            assigns_mapping_category(map_info[0], ext_evid), ext_evid])
-                else: sim_mappings.append([None] * 4)
-                if sim_evid != '':  # get similarity info
+                else: exact_mappings.append([None] * 4)
+                # get similarity information
+                if sim_evid != '':
                     sim_mappings.append([' | '.join(map_info[1][0]), ' | '.join(map_info[1][1]),
                                          assigns_mapping_category(map_info[1], sim_evid), sim_evid])
                 else: sim_mappings.append([None] * 4)
