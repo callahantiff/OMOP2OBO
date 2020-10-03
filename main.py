@@ -96,18 +96,12 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
 
     mappings = mapper.clinical_concept_mapper()
 
-    # shortens long text fields in original output data (otherwise Excel expands columns into additional rows)
-    data_cols = ['CONCEPT_SOURCE_CODE', 'CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION', 'CONCEPT_SYNONYM',
-                 'ANCESTOR_CONCEPT_ID', 'ANCESTOR_SOURCE_CODE', 'ANCESTOR_LABEL']
-    for x in data_cols:
-        mappings[x] = mappings[x].apply(lambda i: ' | '.join(i.split(' | ')[0:100]))
-
-    print('\nSaving Results: {}'.format('Exact Match'))
-    mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
-
     # get column names -- used later to organize output
     start_cols = [i for i in mappings.columns if not any(j for j in ['STR', 'DBXREF', 'EVIDENCE'] if j in i)]
     exact_cols = [i for i in mappings.columns if i not in start_cols]
+
+    print('\nSaving Results: {}'.format('Exact Match'))
+    mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
     # STEP 4: TF-IDF SIMILARITY MAPPING
     if tfidf_mapping is not None:
@@ -124,6 +118,12 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
         # merge dbXref, exact string, and TF-IDF similarity results
         merged_scores = pd.merge(mappings, sim_mappings, how='left', on=primary_key)
         mappings = merged_scores[start_cols + exact_cols + sim_cols]
+
+        # shortens long text fields in original output data (otherwise Excel expands columns into additional rows)
+        data_cols = ['CONCEPT_SOURCE_CODE', 'CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION', 'CONCEPT_SYNONYM',
+                     'ANCESTOR_CONCEPT_ID', 'ANCESTOR_SOURCE_CODE', 'ANCESTOR_LABEL']
+        for x in data_cols:
+            mappings[x] = mappings[x].apply(lambda i: ' | '.join(i.split(' | ')[0:100]))
 
         print('\nSaving Results: {}'.format('TF-IDF Cosine Similarity'))
         mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
@@ -147,7 +147,7 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
     data_expanded.fillna('', inplace=True)
 
     # aggregate mapping evidence
-    updated_mappings = aggregates_mapping_results(data_expanded, onts, ont_data, mapper.source_code_map)
+    updated_mappings = aggregates_mapping_results(data_expanded, onts, ont_data, mapper.source_code_map, 0.25)
     updated_mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
 

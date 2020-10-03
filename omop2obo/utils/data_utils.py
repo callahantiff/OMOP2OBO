@@ -24,7 +24,7 @@ import re
 from functools import reduce
 from more_itertools import unique_everseen
 from tqdm import tqdm  # type: ignore
-from typing import Callable, Dict, List, Union  # type: ignore
+from typing import Any, Callable, Dict, List, Optional, Tuple  # type: ignore
 
 # ENVIRONMENT WARNINGS
 # WARNING 1 - Pandas: disable chained assignment warning rationale:
@@ -247,12 +247,15 @@ def normalizes_source_codes(data: pd.DataFrame, source_code_dict: Dict) -> pd.Se
     """
 
     # split prefix from number in each identifier
-    prefix = data[data.columns[0]].apply(lambda j: j.rstrip([x for x in re.split('[_:|/]', j) if x != ''][-1])[:-1]
-                                         if 'http' in j and '_' in j else
-                                         j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1])
-    id_num = data[data.columns[0]].apply(lambda j: [x for x in re.split('[_:|/]', j) if x != ''][-1]
-                                         if 'http' in j and '_' in j else
-                                         [x for x in re.split('[:|/]', j) if x != ''][-1]).str.lower()
+    prefix = data[data.columns[0]].apply(
+        lambda j: j.rstrip([x for x in re.split('[_:|/]', j) if x != ''][-1])[:-1] if 'http' in j and '_' in j else
+        j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1]
+    )
+
+    id_num = data[data.columns[0]].apply(
+        lambda j: [x for x in re.split('[_:|/]', j) if x != ''][-1] if 'http' in j and '_' in j else
+        [x for x in re.split('[:|/]', j) if x != ''][-1]
+    ).str.lower()
 
     # normalize prefix to dictionary and clean up urls
     norm_prefix = prefix.apply(lambda j: source_code_dict[j] if j in source_code_dict.keys() else j)
@@ -366,66 +369,56 @@ def normalizes_clinical_source_codes(dbxref_dict: Dict, source_dict: Dict):
     return normalized_prefixes
 
 
-def filters_mapping_content(exact_results: List, similarity_results: List) -> List:
-    """Parses compiled mapping results, when results exist, to determine a final aggregated mapping result. Note that
-    the following logic is used when determining which mapping evidence to aggregate (assuming there is at least 1
-    dbxref, string, or sim mapping result):
-        if dbxref or string exact mapping at concept-level:
-            - set(dbxref results + string results) and add sim evidence if in set
-        elif dbxref or string exact mapping at ancestor-level and all sim scores less >= 0.75
-            - keep all concept similarity mappings with a score >= 0.75
-        elif dbxref or string exact mapping at ancestor-level and all sim scores less < 0.75
-            - set(dbxref results + string results) and add sim evidence if in set
-        elif dbxref or string exact mapping at ancestor-level and no similarity results
-            - set(dbxref results + string results)
-        else:
-            - keep all concept similarity mappings regardless of score
+def filters_mapping_content(exact_results: List, similarity_results: List, threshold: float) -> Tuple:
+    """Parses compiled mapping results, when results exist, to determine a final aggregated mapping result.
 
     Args:
         exact_results: A nested list containing 3 sub-lists where sub-list[0] contains exact match uris, sub-list[1]
             contains exact match labels, and sub-list[2] contains exact match evidence.
         similarity_results: A nested list containing 3 sub-lists where sub-list[0] contains similarity uris,
             sub-list[1] contains similarity labels, and sub-list[2] contains similarity evidence.
+        threshold: A float that specifies a cut-off for filtering cosine similarity results.
 
     Returns:
-        mapping_result: A list containing mapping results for a given row. The list contains three items: uris,
-            labels, evidence.
+        A tuple of lists containing mapping results for a given row. The first tuple contains exact mapping results
+            and the second contains similarity results. Both lists contains 3 items: uris, labels, and evidence.
     """
 
     exact_uri, exact_label, exact_evid = exact_results
     sim_uri, sim_label, sim_evid = similarity_results
+    exact_result: Optional[List[Any]] = [None, None, None]
+    sim_result: Optional[List[Any]] = [None, None, None]
 
     # format results
-    if exact_uri and 'CONCEPT' in exact_evid[0]:
-        uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
-        evidence = [sim_evid[0].split(' | ')[x] for x in [sim_uri.index(x) for x in sim_uri if x in uris]]
-        mapping_result = [uris, labels, ' | '.join(exact_evid + evidence)]  # type: ignore
-    elif exact_uri and sim_uri:
-        if any(x for x in sim_evid[0].split(' | ') if float(x.split('_')[-1]) >= 0.75):
+    if exact_uri:
+        exact_result = [list(unique_everseen(exact_uri)),
+                        list(unique_everseen(exact_label)),
+                        ' | '.join(exact_evid)]
+    if sim_uri:
+        if any(x for x in sim_evid[0].split(' | ') if float(x.split('_')[-1]) == 1.0):
             evid_list = sim_evid[0].split(' | ')
-            sim_keep = [evid_list.index(x) for x in evid_list if float(x.split('_')[-1]) >= 0.75]
+            sim_keep = [evid_list.index(x) for x in evid_list if float(x.split('_')[-1]) == 1.0]
             uris, labels = [sim_uri[x] for x in sim_keep], [sim_label[x] for x in sim_keep]
-            mapping_result = [uris, labels, ' | '.join([evid_list[x] for x in sim_keep])]  # type: ignore
+            sim_result = [uris, labels, ' | '.join([evid_list[x] for x in sim_keep])]
+        elif any(x for x in sim_evid[0].split(' | ') if float(x.split('_')[-1]) >= threshold):
+            evid_list = sim_evid[0].split(' | ')
+            sim_keep = [evid_list.index(x) for x in evid_list if float(x.split('_')[-1]) >= threshold]
+            uris, labels = [sim_uri[x] for x in sim_keep], [sim_label[x] for x in sim_keep]
+            sim_result = [uris, labels, ' | '.join([evid_list[x] for x in sim_keep])]
         else:
-            uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
-            evidence = [sim_evid[0].split(' | ')[x] for x in [sim_uri.index(x) for x in sim_uri if x in uris]]
-            mapping_result = [uris, labels, ' | '.join(exact_evid + evidence)]  # type: ignore
-    elif exact_uri and not sim_uri:
-        uris, labels = list(unique_everseen(exact_uri)), list(unique_everseen(exact_label))
-        mapping_result = [uris, labels, ' | '.join(exact_evid)]  # type: ignore
-    else:
-        mapping_result = [sim_uri, sim_label, ' | '.join(sim_evid)]  # type: ignore
+            sim_result = [sim_uri, sim_label, ' | '.join(sim_evid)]
 
-    return mapping_result
+    return exact_result, sim_result
 
 
-def compiles_mapping_content(row: pd.Series, ont: str) -> List:
+def compiles_mapping_content(row: pd.Series, ont: str, threshold: float) -> Tuple:
     """Function takes a row of data from a Pandas DataFrame and processes it to return a single ontology mapping for
     the clinical concept represented by the row.
 
     Args:
         row: A row from a Pandas DataFrame cont
         ont: A string containing the name of an ontology (e.g. "HP", "MONDO").
+        threshold: A float that specifies a cut-off for filtering cosine similarity results.
 
     Returns:
         A list containing mapping results for a given row. The list contains three items: uris, labels, evidence.
@@ -448,12 +441,12 @@ def compiles_mapping_content(row: pd.Series, ont: str) -> List:
 
     # put together mapping
     if not exact_uri and not sim_uri:
-        return [None] * 3  # type: ignore
+        return [None] * 3, [None] * 3  # type: ignore
     else:
-        return filters_mapping_content([exact_uri, exact_label, exact_evid], [sim_uri, sim_label, sim_evid])
+        return filters_mapping_content([exact_uri, exact_label, exact_evid], [sim_uri, sim_label, sim_evid], threshold)
 
 
-def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, clin_data: Dict) -> str:
+def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: Tuple, clin_data: Dict) -> Tuple:
     """Takes a nested dictionary of ontology attributes, a dictionary of source code prefix mapping information, a
     nested list containing aggregated mapping information, and a dictionary of clinical concept labels and synonyms.
     The function uses this information to aggregate the evidence supporting the mapping provided in the result object.
@@ -466,46 +459,51 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: List, cl
         clin_data: A dictionary keyed by column identifier with values containing data from the keyed column.
 
     Returns:
-        compiled_evid: A string containing the compiled mapping evidence. For example:
-            'OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia | CONCEPT_SIMILARITY:HP_0008181_1.0'.
+        A tuple. Where the first item contains evidence for exact matches and the second contains evidence for cosine
+            similarity results. For example:
+            ('OBO_LABEL-OMOP_CONCEPT_LABEL:abetalipoproteinemia', 'CONCEPT_SIMILARITY:HP_0008181_1.0')
     """
 
-    dbx_evid, label_evid, syn_evid, sim_evid = ([] for _ in range(4))  # type: ignore
-    ont_label, ont_syns, ont_syntyp = ont_dict['label'], ont_dict['synonym'], ont_dict['synonym_type']
+    dbx_evid, lab_evid, syn_evid, sim_evid = ([] for _ in range(4))  # type: ignore
+    ont_label, ont_syns, ont_syntp = ont_dict['label'], ont_dict['synonym'], ont_dict['synonym_type']
     dbxref_type = normalizes_clinical_source_codes(ont_dict['dbxref_type'], source_dict)
 
     # sort clinical data
-    for x in result[2].split(' | '):
-        lvl = [x.split('_')[0] if ':' in x else 'CONCEPT_SIMILARITY'][0]
-        clin_update = {k: v for k, v in clin_data.items() if lvl in k}
+    if None not in result[0]:
+        for x in result[0][2].split(' | '):
+            lvl = x.split('_')[0]
+            clin = {k: v for k, v in clin_data.items() if lvl in k}
 
-        if 'dbxref' in x.lower():
-            if x.split('_')[-1] in dbxref_type.keys(): prefix = dbxref_type[x.split('_')[-1]]
-            else: prefix = 'DbXref*' + x.split('_')[-1].split(':')[0]
-            updated_prefix = 'OBO_' + prefix.split('*')[0] + '-OMOP_' + lvl + '_CODE'
-            dbx_evid.append(updated_prefix + ':' + prefix.split('*')[-1] + '_' + x.split(':')[-1].replace(':', '_'))
-        if 'label' in x.lower():
-            label_evid, clin_lab = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'label' in x.lower()])
-            for lab in set(clin_lab.split(' | ')):
-                if lab.lower() in ont_label.keys() and ont_label[lab.lower()].split('/')[-1] in result[0]:
-                    label_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_LABEL:' + x.split(':')[-1])
-                if lab.lower() in ont_syns.keys() and ont_syns[lab.lower()].split('/')[-1] in result[0]:
-                    label_evid.append('OBO_' + ont_syntyp[lab.lower()] + '-OMOP_' + lvl + '_LABEL:' + x.split(':')[-1])
-        if 'synonym' in x.lower():
-            syn_evid, clin_syn = [], ' | '.join([clin_update[x] for x in clin_update.keys() if 'synonym' in x.lower()])
-            for syn in set(clin_syn.split(' | ')):
-                if syn.lower() in ont_label.keys() and ont_label[syn.lower()].split('/')[-1] in result[0]:
-                    syn_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_SYNONYM:' + x.split(':')[-1])
-                if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] in result[0]:
-                    syn_lab = '-OMOP_' + lvl + '_SYNONYM:'
-                    syn_evid.append('OBO_' + ont_syntyp[syn.lower()] + syn_lab + x.split(':')[-1])
-        if lvl == 'CONCEPT_SIMILARITY':
-            sim_evid.append('CONCEPT_SIMILARITY:' + x)
+            if 'dbxref' in x.lower():
+                if x.split('_')[-1] in dbxref_type.keys():
+                    prefix = dbxref_type[x.split('_')[-1]]
+                else:
+                    prefix = 'DbXref*' + x.split('_')[-1].split(':')[0]
+                updated_prefix = 'OBO_' + prefix.split('*')[0] + '-OMOP_' + lvl + '_CODE'
+                dbx_evid.append(updated_prefix + ':' + prefix.split('*')[-1] + '_' + x.split(':')[-1].replace(':', '_'))
+            if 'label' in x.lower():
+                lab_evid, clin_lab = [], ' | '.join([clin[x] for x in clin.keys() if 'label' in x.lower()])
+                for lab in set(clin_lab.split(' | ')):
+                    if lab.lower() in ont_label.keys() and ont_label[lab.lower()].split('/')[-1] in result[0][0]:
+                        lab_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_LABEL:' + x.split(':')[-1])
+                    if lab.lower() in ont_syns.keys() and ont_syns[lab.lower()].split('/')[-1] in result[0][0]:
+                        lab_evid.append('OBO_' + ont_syntp[lab.lower()] + '-OMOP_' + lvl + '_LABEL:' + x.split(':')[-1])
+            if 'synonym' in x.lower():
+                syn_evid, clin_syn = [], ' | '.join([clin[x] for x in clin.keys() if 'synonym' in x.lower()])
+                for syn in set(clin_syn.split(' | ')):
+                    if syn.lower() in ont_label.keys() and ont_label[syn.lower()].split('/')[-1] in result[0][0]:
+                        syn_evid.append('OBO_LABEL-OMOP_' + x.split('_')[0] + '_SYNONYM:' + x.split(':')[-1])
+                    if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] in result[0][0]:
+                        syn_lab = '-OMOP_' + lvl + '_SYNONYM:'
+                        syn_evid.append('OBO_' + ont_syntp[syn.lower()] + syn_lab + x.split(':')[-1])
+    if None not in result[1]:
+        sim_evid = ['CONCEPT_SIMILARITY:' + x for x in result[1][-1].split(' | ')]
 
     # compile evidence
-    compiled_evid = ' | '.join(list(filter(None, list(unique_everseen(dbx_evid + label_evid + syn_evid + sim_evid)))))
+    compiled_exact = ' | '.join(list(filter(None, list(unique_everseen(dbx_evid + lab_evid + syn_evid)))))
+    compiled_sim = ' | '.join(list(filter(None, list(unique_everseen(sim_evid)))))
 
-    return compiled_evid
+    return compiled_exact, compiled_sim
 
 
 def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
@@ -546,12 +544,13 @@ def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
     return mapping_category
 
 
-def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict) -> pd.DataFrame:
+def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict,
+                               threshold: float = 0.25) -> pd.DataFrame:
     """Function takes a Pandas Dataframe containing the results from running the OMOP2OBO exact and similarity
     mapping functions. This function takes those results and aggregates them such that a single column set of
     evidence is returned for each ontology (i.e. uris, labels, mapping category, and mapping evidence).
 
-    #TODO: this function could be parallelized
+    #TODO: this function could (should) be parallelized
 
     Args:
         data: A Pandas DataFrame of mapping results from running the OMOP2OBO exact mapping and concept similarity
@@ -561,9 +560,12 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
             synonyms, definitions, and dbxrefs.
         source_codes: A dictionary containing dbxref mappings between dbxref prefixes that is designed to normalize
             prefixes to a single type.
+        threshold: A float that specifies a cut-off for filtering cosine similarity results (default = 0.25).
 
     Return:
-        A Pandas DataFrame
+        A Pandas DataFrame containing the original columns with 8 additional columns per ontology, where the first
+            set of 4 columns contain the exact match results and the second set of 4 columns contains the concept
+            similarity results.
     """
 
     print('\n#### AGGREGATING AND COMPILING MAPPING RESULTS ####')
@@ -575,29 +577,38 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
 
     for ont in [x.upper() for x in onts]:
         print('Processing {} Mappings'.format(ont))
-        mappings: List[Union[List[None], List[str]]] = []
+        exact_mappings: List[Any] = []
+        sim_mappings: List[Any] = []
         for idx, row in tqdm(data.iterrows(), total=data.shape[0]):
             ont_list = ['DBXREF_' + ont, 'STR_' + ont, ont + '_SIM']
             res = [x for x in row.keys() if row[x] != '' and any(y for y in ont_list if y in x)]
             if len(res) != 0:
-                map_info = compiles_mapping_content(row, ont)
-                if None in map_info:
-                    mappings.append([None, None, None, None])
-                else:
-                    # format aggregated mapping evidence
-                    clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
-                    ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
-                    map_evidence = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
-                    # assign mapping type to aggregated map
-                    map_category = assigns_mapping_category(map_info, map_evidence)
-                    mappings.append([' | '.join(map_info[0]), ' | '.join(map_info[1]), map_category, map_evidence])
+                map_info = compiles_mapping_content(row, ont, threshold)
+                clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
+                ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
+                ext_evid, sim_evid = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
+                # get exact mapping information
+                if ext_evid != '':
+                    exact_mappings.append([' | '.join(map_info[0][0]), ' | '.join(map_info[0][1]),
+                                           assigns_mapping_category(map_info[0], ext_evid), ext_evid])
+                else: exact_mappings.append([None] * 4)
+                # get similarity information
+                if sim_evid != '':
+                    sim_mappings.append([' | '.join(map_info[1][0]), ' | '.join(map_info[1][1]),
+                                         assigns_mapping_category(map_info[1], sim_evid), sim_evid])
+                else: sim_mappings.append([None] * 4)
             else:
-                mappings.append([None, None, None, None])
+                exact_mappings.append([None] * 4)
+                sim_mappings.append([None] * 4)
 
         # add aggregated mapping results back to data frame
-        data['AGGREGATED_' + ont + '_URI'] = [x[0] for x in mappings]
-        data['AGGREGATED_' + ont + '_LABEL'] = [x[1] for x in mappings]
-        data['AGGREGATED_' + ont + '_MAPPING'] = [x[2] for x in mappings]
-        data['AGGREGATED_' + ont + '_EVIDENCE'] = [x[3] for x in mappings]
+        data['AGGREGATED_' + ont + '_URI'] = [x[0] for x in exact_mappings]
+        data['AGGREGATED_' + ont + '_LABEL'] = [x[1] for x in exact_mappings]
+        data['AGGREGATED_' + ont + '_MAPPING'] = [x[2] for x in exact_mappings]
+        data['AGGREGATED_' + ont + '_EVIDENCE'] = [x[3] for x in exact_mappings]
+        data['SIMILARITY_' + ont + '_URI'] = [x[0] for x in sim_mappings]
+        data['SIMILARITY_' + ont + '_LABEL'] = [x[1] for x in sim_mappings]
+        data['SIMILARITY_' + ont + '_MAPPING'] = [x[2] for x in sim_mappings]
+        data['SIMILARITY_' + ont + '_EVIDENCE'] = [x[3] for x in sim_mappings]
 
     return data
