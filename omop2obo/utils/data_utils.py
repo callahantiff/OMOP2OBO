@@ -611,4 +611,9 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
         data['SIMILARITY_' + ont + '_MAPPING'] = [x[2] for x in sim_mappings]
         data['SIMILARITY_' + ont + '_EVIDENCE'] = [x[3] for x in sim_mappings]
 
+    # shortens long text fields in original output data (otherwise Excel expands columns into additional rows)
+    size_limit = 32500  # current size limit for an Excel column
+    for x in data.columns:
+        data[x] = data[x].apply(lambda i: i[0:size_limit] if not isinstance(i, int) and i is not None else i)
+
     return data
