@@ -125,7 +125,9 @@ class OntologyInfoExtractor(object):
             for ont_file in tqdm(pickled_data):
                 if 'master' not in ont_file:  # ignore existing pickled master_ontology_dictionary files
                     with open(ont_file, 'rb') as _file:
-                        ontology_data[ont_file.split('/')[-1].split('_')[0]] = pickle.load(_file)
+                        ont_data = pickle.load(_file)
+                        ont_id = list(ont_data['label'].values())[0].split('/')[-1].split('_')[0].lower()
+                        ontology_data[ont_id] = ont_data
                     _file.close()
 
             # write out all ontologies into a single pickled file
