@@ -483,8 +483,8 @@ class TestDataUtils(unittest.TestCase):
 
         return None
 
-    def tests_assigns_mapping_category(self):
-        """Tests the assigns_mapping_category method."""
+    def tests_assigns_mapping_category_exact(self):
+        """Tests the assigns_mapping_category method when evidence is exact."""
 
         # set function input 1
         mapping_info_1 = [['HP_0008181'], ['abetalipoproteinemia'],
@@ -503,6 +503,20 @@ class TestDataUtils(unittest.TestCase):
         results_1 = assigns_mapping_category(mapping_info_1, mapping_evidence_1)
         self.assertIsInstance(results_1, str)
         self.assertEqual(results_1, 'Automatic Exact - Concept')
+
+        # test method - similarity
+        results_2 = assigns_mapping_category(mapping_info_2, mapping_evidence_2)
+        self.assertIsInstance(results_2, str)
+        self.assertEqual(results_2, 'Manual Exact - Concept Similarity')
+
+        return None
+
+    def tests_assigns_mapping_category_similarity(self):
+        """Tests the assigns_mapping_category method when evidence is from concept similarity."""
+
+        # set function inputs
+        mapping_info_2 = [['HP_0008181'], ['abetalipoproteinemia'], 'HP_0008181_1.0']
+        mapping_evidence_2 = 'CONCEPT_SIMILARITY:HP_0008181_1.0'
 
         # test method - similarity
         results_2 = assigns_mapping_category(mapping_info_2, mapping_evidence_2)
