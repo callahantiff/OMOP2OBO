@@ -89,6 +89,9 @@ class SimilarStringFinder(object):
             except pd.errors.ParserError:
                 self.clinical_data = pd.read_csv(clinical_file, header=0, sep='\t', low_memory=False).astype(str)
 
+            self.clinical_data.fillna('', inplace=True)
+            self.clinical_data = self.clinical_data.replace('nan', '')
+
         # check primary key
         if not isinstance(primary_key, str): raise TypeError('primary_key must be type str.')
         else: self.primary_key: str = primary_key
@@ -242,7 +245,7 @@ class SimilarStringFinder(object):
                     0    4311399         HP_0002617        dilatation       MONDO_0001273             megacolon
         """
 
-        onts, ont_uri = [x.upper() for x in ontology_type], 'http://purl.obolibrary.org/obo/'
+        onts, ont_uri = ontology_type, 'http://purl.obolibrary.org/obo/'
         ont_labels = merge_dictionaries(self.ont_dict, 'label', reverse=True)
         corpus_id, corpus_idx = self.corpus_modifier(corpus, onts)  # convert corpus to dictionary for faster look-up
         results: Dict = {x: [] for x in onts}
@@ -256,7 +259,7 @@ class SimilarStringFinder(object):
             match_vars = corpus_id[row[self.primary_key]]
             var_id = set([i for j in [corpus_idx[x] for x in match_vars] for i in j])
             scores = [x for y in [self.similarity_search(ont_matrix, v, top_n) for v in set(var_id)] for x in y]
-            match_info = [[x[1], '_'.join(ont_corpus[x[0]][0].split('_')[0:2])] for x in scores if x[1] > 0.2]
+            match_info = [[x[1], '_'.join(ont_corpus[x[0]][0].split('_')[0:2])] for x in scores if x[1] > 0.25]
 
             if len(match_info) > 0:  # extract matches by ontology type
                 for ont in onts:
@@ -307,7 +310,7 @@ class SimilarStringFinder(object):
         # convert ont dictionary into dictionary of Pandas DataFrames keyed by ontology type
         ont_data_dict = {}
         for ont in self.ont_dict.keys():
-            print('Ontology Data: {}'.format(ont))
+            print('Ontology Data: {}'.format(ont.upper()))
             ont_df = pd.concat([pd.DataFrame(self.ont_dict[ont][str_col].items(), columns=['CODE', 'ONT_URI'])
                                 for str_col in ['label', 'definition', 'synonym']])
             ont_df['ONT_URI'] = ont_df['ONT_URI'].apply(lambda x: x.split('/')[-1])
@@ -322,9 +325,13 @@ class SimilarStringFinder(object):
 
         # STEP 3 - Calculating Cosine Similarity
         print('\n*** Calculating Cosine Similarity')
-        cosine_sim = self.scores_tfidf(corpus, list(ont_data_dict.keys()), 10, 75)
+        keys = self.ont_dict.keys()
+        ont_lists = [list(self.ont_dict[x]['label'].values())[0].split('/')[-1].split('_')[0] for x in keys]
+        cosine_sim = self.scores_tfidf(corpus, ont_lists, 10, 75)
 
         # merge results with clinical data
         complete_mapping = pd.merge(self.clinical_data, cosine_sim, how='left', on=self.primary_key)
+        complete_mapping.columns = [x.upper() for x in complete_mapping.columns]
+        complete_mapping.fillna('', inplace=True)
 
         return complete_mapping
