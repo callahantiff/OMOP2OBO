@@ -259,7 +259,7 @@ class SimilarStringFinder(object):
             match_vars = corpus_id[row[self.primary_key]]
             var_id = set([i for j in [corpus_idx[x] for x in match_vars] for i in j])
             scores = [x for y in [self.similarity_search(ont_matrix, v, top_n) for v in set(var_id)] for x in y]
-            match_info = [[x[1], '_'.join(ont_corpus[x[0]][0].split('_')[0:2])] for x in scores if x[1] > 0.25]
+            match_info = [[x[1], '_'.join(ont_corpus[x[0]][0].split('_')[0:2])] for x in scores if x[1] >= 0.25]
 
             if len(match_info) > 0:  # extract matches by ontology type
                 for ont in onts:
