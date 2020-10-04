@@ -522,14 +522,15 @@ def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
         if 'CONCEPT_SIMILARITY:' in map_evidence:
             if len(map_evidence.split(' | ')) == 1:
                 mapping_category = 'Manual Exact - Concept Similarity'
-            elif len(set([x.split(':')[0] for x in map_evidence.split(' | ')])) == 1:
-                mapping_category = 'Automatic Exact - Concept'
             else:
-                mapping_category = 'Automatic Exact - '
+                mapping_category = 'Automatic Exact - Concept'
         else:
             mapping_category = 'Automatic Exact - '
     elif len(mapping_result[0]) > 1:
-        mapping_category = 'Automatic Constructor - '
+        if 'CONCEPT_SIMILARITY:' in map_evidence:
+            mapping_category = 'Automatic Constructor - Concept'
+        else:
+            mapping_category = 'Automatic Constructor - '
     else:
         mapping_category = ''
 
@@ -585,8 +586,7 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
             if len(res) != 0:
                 map_info = compiles_mapping_content(row, ont, threshold)
                 clin_data = {x.upper(): row[x.upper()] for x in clin_cols if x.upper() in row.keys()}
-                ont_dict = ont_data[ont.lower() if ont != 'uberon' else 'ext']
-                ext_evid, sim_evid = formats_mapping_evidence(ont_dict, source_codes, map_info, clin_data)
+                ext_evid, sim_evid = formats_mapping_evidence(ont_data[ont.lower()], source_codes, map_info, clin_data)
                 # get exact mapping information
                 if ext_evid != '':
                     exact_mappings.append([' | '.join(map_info[0][0]), ' | '.join(map_info[0][1]),
