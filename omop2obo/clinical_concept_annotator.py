@@ -97,8 +97,6 @@ class ConceptAnnotator(object):
                 self.clinical_data: pd.DataFrame = pd.read_csv(clinical_file, header=0, low_memory=False).astype(str)
             except pd.errors.ParserError:
                 self.clinical_data = pd.read_csv(clinical_file, header=0, sep='\t', low_memory=False).astype(str)
-            self.clinical_data.fillna('', inplace=True)
-            self.clinical_data = self.clinical_data.replace('nan', '')
 
         # check primary key
         if not isinstance(primary_key, str):
