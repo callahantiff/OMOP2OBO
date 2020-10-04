@@ -104,6 +104,7 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
     mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
     # STEP 4: TF-IDF SIMILARITY MAPPING
+    # currently keeps the top 75th percentile among scores >=0.25
     if tfidf_mapping is not None:
         sim = SimilarStringFinder(clinical_file=clinical_data,
                                   ontology_dictionary={k: v for k, v in ont_data.items() if k in onts},
