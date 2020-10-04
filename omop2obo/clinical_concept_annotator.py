@@ -422,5 +422,7 @@ class ConceptAnnotator(object):
         print('Combining Concept and Ancestor Maps')
         full_map = reduce(lambda x, y: pd.merge(x, y, how='outer', on=self.primary_key), level_maps)
         complete_map = pd.merge(self.clinical_data, full_map, how='left', on=self.primary_key)
+        complete_map.columns = [x.upper() for x in complete_map.columns]
+        complete_map.fillna('', inplace=True)
 
         return complete_map
