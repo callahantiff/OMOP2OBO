@@ -105,7 +105,7 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
 
     # STEP 4: TF-IDF SIMILARITY MAPPING
     if tfidf_mapping is not None:
-        sim = SimilarStringFinder(clinical_file=outfile + clinical_domain.upper() + date_today + '.csv',
+        sim = SimilarStringFinder(clinical_file=clinical_data,
                                   ontology_dictionary={k: v for k, v in ont_data.items() if k in onts},
                                   primary_key=primary_key,
                                   concept_strings=concept_strings)
@@ -118,12 +118,6 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
         # merge dbXref, exact string, and TF-IDF similarity results
         merged_scores = pd.merge(mappings, sim_mappings, how='left', on=primary_key)
         mappings = merged_scores[start_cols + exact_cols + sim_cols]
-
-        # shortens long text fields in original output data (otherwise Excel expands columns into additional rows)
-        data_cols = ['CONCEPT_SOURCE_CODE', 'CONCEPT_VOCAB', 'CONCEPT_VOCAB_VERSION', 'CONCEPT_SYNONYM',
-                     'ANCESTOR_CONCEPT_ID', 'ANCESTOR_SOURCE_CODE', 'ANCESTOR_LABEL']
-        for x in data_cols:
-            mappings[x] = mappings[x].apply(lambda i: ' | '.join(i.split(' | ')[0:100]))
 
         print('\nSaving Results: {}'.format('TF-IDF Cosine Similarity'))
         mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
@@ -146,7 +140,6 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
         data_expanded = mappings.copy()
     data_expanded.fillna('', inplace=True)
 
-    # aggregate mapping evidence
     updated_mappings = aggregates_mapping_results(data_expanded, onts, ont_data, mapper.source_code_map, 0.25)
     updated_mappings.to_csv(outfile + clinical_domain.upper() + date_today + '.csv', sep=',', index=False, header=True)
 
