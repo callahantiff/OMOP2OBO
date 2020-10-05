@@ -22,6 +22,8 @@ from typing import Dict, List, Optional, Tuple
 
 from omop2obo.utils import column_splitter, data_frame_subsetter, merge_dictionaries
 
+# TODO: Update script so all ontologies in the ont list (i.e. ontology_dictionary keys) are processed in parallel.
+
 # load stopwords into environment -- horrible workaround until Travis is fixed
 # nltk.download('wordnet')
 stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd",
