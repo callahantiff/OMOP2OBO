@@ -23,6 +23,7 @@ coverage.xml
 releases/*
 resources/clinical_data
 !resources/clinical_data/README.md
+resources/documentation/KG_Figure.gliffy
 resources/mappings/
 !resources/mappings/condition_codes/.gitkeep
 !resources/mappings/laboratory_tests/.gitkeep
@@ -35,3 +36,4 @@ resources/programming/
 ## scripts ##
 #################################
 scratch.py
+
