@@ -376,6 +376,8 @@ class ConceptAnnotator(object):
             # STEP 2 - DBXREF ANNOTATION
             print('Performing DbXRef Annotation')
             stacked_dbxref = self.dbxref_mapper(data_stacked.copy(), primary_key, level)
+            # files = 'resources/mappings/' + level + '_dbXRef_Mappings.csv'
+            # stacked_dbxref.to_csv(files, sep=',', index=False, header=True)
 
             # STEP 3 - EXACT STRING MAPPING
             print('Performing Exact String Mapping')
@@ -384,6 +386,8 @@ class ConceptAnnotator(object):
             split_strings = split_strings[[primary_key] + code_strings]  # type: ignore
             split_strings_stacked = data_frame_subsetter(split_strings, primary_key, code_strings)  # type: ignore
             stacked_strings = self.exact_string_mapper(split_strings_stacked, primary_key, level)
+            # files_str = 'resources/mappings/' + level + '_String_Mappings.csv'
+            # stacked_strings.to_csv(files_str, sep=',', index=False, header=True)
 
             # STEP 4 - COMBINE RESULTS
             print('Aggregating Mapping Results')
