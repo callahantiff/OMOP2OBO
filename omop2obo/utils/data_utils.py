@@ -519,19 +519,16 @@ def assigns_mapping_category(primary_key: str, mapping_result: List, map_evidenc
          mapping_category: A string containing the mapping category.
     """
 
-    if len(mapping_result[0]) == 1:
-        if 'CONCEPT_SIMILARITY:' in map_evidence:
-            if len(map_evidence.split(' | ')) == 1:
-                mapping_category = 'Manual Exact - Concept Similarity'
-            else:
-                mapping_category = 'Automatic Exact - Concept'
-        else:
-            mapping_category = 'Automatic Exact - '
-    elif len(mapping_result[0]) > 1:
-        if 'CONCEPT_SIMILARITY:' in map_evidence:
+    if 'CONCEPT_SIMILARITY:' in map_evidence:
+        if len(map_evidence.split(' | ')) > 1:
             mapping_category = 'Automatic Constructor - Concept'
         else:
-            mapping_category = 'Automatic Constructor - '
+            mapping_category = 'Manual Exact - Concept Similarity'
+    elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x not in map_evidence):
+        if len(mapping_result[0]) > 1:
+            mapping_category = 'Automatic Constructor - Concept'
+        else:
+            mapping_category = 'Automatic Exact - Concept'
     else:
         mapping_category = ''
 
