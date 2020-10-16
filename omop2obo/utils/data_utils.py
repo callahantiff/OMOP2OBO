@@ -506,10 +506,11 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: Tuple, c
     return compiled_exact, compiled_sim
 
 
-def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
+def assigns_mapping_category(primary_key: str, mapping_result: List, map_evidence: str) -> str:
     """Function takes a mapping result and evidence and uses it to determine the mapping category.
 
     Args:
+        primary_key: A string containing the primary column key (e.g. CONCEPT_ID).
         mapping_result: A list containing mapping results for a given row. The list contains three items: uris, labels,
             evidence.
         map_evidence: A string containing the compiled mapping evidence.
@@ -535,7 +536,8 @@ def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
         mapping_category = ''
 
     # determine mapping level (i.e. concept or ancestor)
-    if any(x for x in ['CONCEPT_CODE', 'CONCEPT_SYNONYM', 'CONCEPT_LABEL'] if x in map_evidence):
+    key = primary_key.split('_')[0]
+    if any(x for x in [key + '_CODE', key + '_SYNONYM', key + '_LABEL'] if x in map_evidence):
         mapping_category = mapping_category + 'Concept'
     elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x in map_evidence):
         mapping_category = mapping_category + 'Ancestor'
@@ -545,7 +547,7 @@ def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
     return mapping_category
 
 
-def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict,
+def aggregates_mapping_results(primary_key: str, data: pd.DataFrame, onts: List, ont_data: Dict, source_codes: Dict,
                                threshold: float = 0.25) -> pd.DataFrame:
     """Function takes a Pandas Dataframe containing the results from running the OMOP2OBO exact and similarity
     mapping functions. This function takes those results and aggregates them such that a single column set of
@@ -554,6 +556,7 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
     #TODO: this function could (should) be parallelized
 
     Args:
+        primary_key: A string containing the primary column key (e.g. CONCEPT_ID).
         data: A Pandas DataFrame of mapping results from running the OMOP2OBO exact mapping and concept similarity
             pipeline.
         onts: A list of strings representing ontologies (e.g. ["hp", "mondo"]).
@@ -590,12 +593,12 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
                 # get exact mapping information
                 if ext_evid != '':
                     exact_mappings.append([' | '.join(map_info[0][0]), ' | '.join(map_info[0][1]),
-                                           assigns_mapping_category(map_info[0], ext_evid), ext_evid])
+                                           assigns_mapping_category(primary_key, map_info[0], ext_evid), ext_evid])
                 else: exact_mappings.append([None] * 4)
                 # get similarity information
                 if sim_evid != '':
                     sim_mappings.append([' | '.join(map_info[1][0]), ' | '.join(map_info[1][1]),
-                                         assigns_mapping_category(map_info[1], sim_evid), sim_evid])
+                                         assigns_mapping_category(primary_key, map_info[1], sim_evid), sim_evid])
                 else: sim_mappings.append([None] * 4)
             else:
                 exact_mappings.append([None] * 4)

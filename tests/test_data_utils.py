@@ -500,12 +500,12 @@ class TestDataUtils(unittest.TestCase):
         mapping_evidence_2 = 'CONCEPT_SIMILARITY:HP_0008181_1.0'
 
         # test method - exact
-        results_1 = assigns_mapping_category(mapping_info_1, mapping_evidence_1)
+        results_1 = assigns_mapping_category('CONCEPT_ID', mapping_info_1, mapping_evidence_1)
         self.assertIsInstance(results_1, str)
         self.assertEqual(results_1, 'Automatic Exact - Concept')
 
         # test method - similarity
-        results_2 = assigns_mapping_category(mapping_info_2, mapping_evidence_2)
+        results_2 = assigns_mapping_category('CONCEPT_ID', mapping_info_2, mapping_evidence_2)
         self.assertIsInstance(results_2, str)
         self.assertEqual(results_2, 'Manual Exact - Concept Similarity')
 
@@ -519,7 +519,7 @@ class TestDataUtils(unittest.TestCase):
         mapping_evidence_2 = 'CONCEPT_SIMILARITY:HP_0008181_1.0'
 
         # test method - similarity
-        results_2 = assigns_mapping_category(mapping_info_2, mapping_evidence_2)
+        results_2 = assigns_mapping_category('CONCEPT_ID', mapping_info_2, mapping_evidence_2)
         self.assertIsInstance(results_2, str)
         self.assertEqual(results_2, 'Manual Exact - Concept Similarity')
 
@@ -546,7 +546,7 @@ class TestDataUtils(unittest.TestCase):
                               'HP_SIM_ONT_EVIDENCE': ['HP_0008181_1.0']})
 
         # test method when there is similarity data
-        results = aggregates_mapping_results(data1, ['hp'], self.ont_data, self.source_codes, 0.25)
+        results = aggregates_mapping_results('CONCEPT_ID', data1, ['hp'], self.ont_data, self.source_codes, 0.25)
         self.assertIsInstance(results, pd.DataFrame)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results.columns), 21)
@@ -581,7 +581,7 @@ class TestDataUtils(unittest.TestCase):
                               'CONCEPT_STR_HP_EVIDENCE': ['CONCEPT_SOURCE_LABEL:abetalipoproteinemia']})
 
         # test method when there is no similarity data
-        results = aggregates_mapping_results(data2, ['hp'], self.ont_data, self.source_codes, 0.25)
+        results = aggregates_mapping_results('CONCEPT_ID', data2, ['hp'], self.ont_data, self.source_codes, 0.25)
         self.assertIsInstance(results, pd.DataFrame)
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results.columns), 18)
