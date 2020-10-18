@@ -15,6 +15,15 @@ Pandas DataFrame manipulations
 Dictionary manipulations
 * merge_dictionaries
 
+Mapping Result Aggregation
+* ohdsi_ananke
+* normalizes_clinical_source_codes
+* filters_mapping_content
+* compiles_mapping_content
+* formats_mapping_evidence
+* assigns_mapping_category
+* aggregates_mapping_results
+
 """
 
 # import needed libraries
