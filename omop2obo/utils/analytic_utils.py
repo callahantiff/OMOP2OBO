@@ -13,7 +13,6 @@ Data Manipulation
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
-from tqdm import tqdm
 from typing import List
 
 
@@ -67,19 +66,39 @@ def reconfigures_dataframe(split_list: List, data_frame: pd.DataFrame) -> pd.Dat
     return reconfigured_data
 
 
-# def splits_data_frame(onts: List, data_frame: pd.DataFrame) -> List:
-#     """
-#
-#     Args:
-#         onts: A list of string, where each string represents an ontology (e.g. ['HP, 'MONDO']).
-#         data_frame: A pandas data frame containing data. It is assumed that there will be columns in the data frame
-#             that correspond to at least one of the ontologies in onts.
-#
-#     Returns:
-#         XX: A list of Pandas
-#     """
-#
-#     # re-configure data
-#     hp_dbxref = data_frame.groupby('Arb_Person_ID')
-#
-#     return
+def splits_concept_levels(data: pd.DataFrame, type_col: str) -> List:
+    """Takes a Pandas DataFrame and a string containing a keyword and with the keyword, splits the input DataFrame
+    into concept and ancestor-level data. The keyword is used to obtain relevant columns where the data differs for
+    concepts and ancestors.
+
+    Args:
+        data: A Pandas DataFrame containing stacked mapping results.
+        type_col: A string containing the data type to parse (e.g. "DBXREF" or "STRING").
+
+    Returns:
+        A list of tuples, each tuple contains a Pandas DataFrame and a list, the first contains a subset of the
+            original data to a specific set of columns and the list contains all ontology concepts that were
+            annotated to the OMOP concepts contained in the Pandas DataFrame. The first tuple contains data at the
+            concept level and the second tuple contains data at the ancestor level.
+    """
+
+    # extract relevant columns
+    all_cols = [x for x in data.columns if type_col not in x]
+    conc_type = [x for x in data.columns
+                 if 'CONCEPT' in x.upper() and type_col.upper() in x.upper()]
+    conc_type_uri = [x for x in conc_type if x.upper().endswith('URI')][0]
+    anc_type = [x for x in data.columns
+                if 'ANCESTOR' in x.upper() and type_col.upper() in x.upper()]
+    anc_type_uri = [x for x in anc_type if x.upper().endswith('URI')][0]
+
+    # extract concept codes from ancestor codes
+    concept = data[all_cols + [x for x in data.columns
+                               if 'CONCEPT_' + type_col in x]].dropna(subset=conc_type, how='all').drop_duplicates()
+    ancestor = data[all_cols + [x for x in data.columns
+                                if 'ANCESTOR_' + type_col in x]].dropna(subset=anc_type, how='all').drop_duplicates()
+
+    # get counts of ontology concepts at each concept level
+    concept_ont_codes = [i for j in [x.split(' | ') for x in list(concept[conc_type_uri])] for i in j]
+    ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
+
+    return [(concept, concept_ont_codes), (ancestor, ancestor_ont_codes)]

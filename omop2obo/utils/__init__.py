@@ -14,4 +14,4 @@ __all__ = ['gets_ontology_statistics', 'gets_ontology_classes', 'gets_ontology_c
            'data_frame_supersetter', 'column_splitter', 'aggregates_column_values', 'data_frame_grouper',
            'normalizes_source_codes', 'merge_dictionaries', 'ohdsi_ananke', 'normalizes_clinical_source_codes',
            'filters_mapping_content', 'compiles_mapping_content', 'formats_mapping_evidence',
-           'assigns_mapping_category', 'aggregates_mapping_results', 'reconfigures_dataframe']
+           'assigns_mapping_category', 'aggregates_mapping_results', 'reconfigures_dataframe', 'splits_concept_levels']

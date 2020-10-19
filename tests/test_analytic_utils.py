@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import numpy as np
 import pandas as pd
 import unittest
 
-from typing import Dict, Tuple
+from typing import List, Tuple
 from omop2obo.utils import *
 
 
@@ -57,6 +58,91 @@ class TestAnalyticUtils(unittest.TestCase):
                                                                                           'MONDO_0001221']
                                          })
 
+        self.dbxref_test2 = pd.DataFrame({'CONCEPT_ID': [22274, 22281, 22288, 22340, 22350],
+                                          'CONCEPT_LABEL': ['Neoplasm of uncertain behavior of larynx', 'Hb SS disease',
+                                                            'Hereditary elliptocytosis',
+                                                            'Esophageal varices without bleeding', 'Edema of larynx'],
+                                          'CONCEPT_DBXREF_CATEGORY_URI': [np.nan, np.nan, 'HP_0004445', np.nan,
+                                                                          'HP_0012027'],
+                                          'CONCEPT_DBXREF_CATEGORY_LABEL': [np.nan, np.nan, 'elliptocytosis', np.nan,
+                                                                            'laryngeal edema'],
+                                          'CONCEPT_DBXREF_CATEGORY_EVIDENCE': [np.nan, np.nan,
+                                                                               'CONCEPT_DBXREF_snomed:191169008 | '
+                                                                               'CONCEPT_DBXREF_umls:C0013902', np.nan,
+                                                                               'CONCEPT_DBXREF_snomed:51599000 | '
+                                                                               'CONCEPT_DBXREF_umls:C0023052'],
+                                          'ANCESTOR_DBXREF_CATEGORY_URI': ['HP_0012288 | HP_0100606 | HP_0100605 | '
+                                                                           'HP_0002664 | HP_0002795 | HP_0002094 | '
+                                                                           'HP_0002098', 'HP_0001903 | HP_0002664 | '
+                                                                                         'HP_0010566 | HP_0001871 | '
+                                                                                         'HP_0001877', 'HP_0004445 | '
+                                                                                                       'HP_0001871 | '
+                                                                                                       'HP_0001877',
+                                                                           'HP_0001626 | HP_0002619 | HP_0002040 | '
+                                                                           'HP_0011024', 'HP_0000969 | HP_0012027 | '
+                                                                                         'HP_0002795 | HP_0002094 | '
+                                                                                         'HP_0002098 | HP_0100665'],
+                                          'ANCESTOR_DBXREF_CATEGORY_LABEL': ['neoplasm of head and neck | neoplasm of '
+                                                                             'the respiratory system | neoplasm of '
+                                                                             'the larynx | neoplasm | functional '
+                                                                             'respiratory abnormality | dyspnea | '
+                                                                             'respiratory distress',
+                                                                             'anemia | neoplasm | hamartoma | '
+                                                                             'abnormality of blood and blood-forming '
+                                                                             'tissues | abnormal erythrocyte '
+                                                                             'morphology', 'elliptocytosis | '
+                                                                                           'abnormality of blood and '
+                                                                                           'blood-forming tissues | '
+                                                                                           'abnormal erythrocyte '
+                                                                                           'morphology',
+                                                                             'abnormality of the cardiovascular '
+                                                                             'system | varicose veins | esophageal '
+                                                                             'varix | abnormality of the '
+                                                                             'gastrointestinal tract',
+                                                                             'edema | laryngeal edema | functional '
+                                                                             'respiratory abnormality | dyspnea | '
+                                                                             'respiratory distress | angioedema'],
+                                          'ANCESTOR_DBXREF_CATEGORY_EVIDENCE': ['ANCESTOR_DBXREF_snomed:255055008 | '
+                                                                                'ANCESTOR_DBXREF_snomed:448708002 | '
+                                                                                'ANCESTOR_DBXREF_snomed:126667002 | '
+                                                                                'ANCESTOR_DBXREF_snomed:126692004 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0027651 | '
+                                                                                'ANCESTOR_DBXREF_umls:C1260922 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0013404 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0018671 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0035244 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0023055',
+                                                                                'ANCESTOR_DBXREF_snomed:165397008 | '
+                                                                                'ANCESTOR_DBXREF_snomed:271737000 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0027651 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0018552 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0018939 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0391870 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0162119 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0002871',
+                                                                                'ANCESTOR_DBXREF_snomed:191169008 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0018939 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0391870 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0013902 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0427480',
+                                                                                'ANCESTOR_DBXREF_snomed:49601007 | '
+                                                                                'ANCESTOR_DBXREF_snomed:128060009 | '
+                                                                                'ANCESTOR_DBXREF_snomed:28670008 | '
+                                                                                'ANCESTOR_DBXREF_meddra:10056091 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0017178 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0007222 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0042345 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0014867',
+                                                                                'ANCESTOR_DBXREF_snomed:267038008 | '
+                                                                                'ANCESTOR_DBXREF_snomed:51599000 | '
+                                                                                'ANCESTOR_DBXREF_umls:C1260922 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0013404 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0013604 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0002994 | '
+                                                                                'ANCESTOR_DBXREF_umls:C0023052']
+
+                                          })
+
         return None
 
     def test_reconfigures_dataframe(self):
@@ -69,5 +155,33 @@ class TestAnalyticUtils(unittest.TestCase):
         self.assertTrue(len(stacked_data) == 10)
         self.assertEqual(list(stacked_data.columns), ['CONCEPT_ID', 'CONCEPT_LABEL', 'CONCEPT_DBXREF_CATEGORY_URI',
                                                       'ANCESTOR_DBXREF_CATEGORY_URI', 'CATEGORY'])
+
+        return None
+
+    def test_splits_concept_levels(self):
+        """Tests the splits concept levels method."""
+
+        split_data = splits_concept_levels(self.dbxref_test2, 'DBXREF')
+
+        # check output
+        self.assertIsInstance(split_data, List)
+        self.assertTrue(len(split_data) == 2)
+        concept_data, ancestor_data = split_data
+
+        # check concept-level results
+        self.assertIsInstance(concept_data, Tuple)
+        self.assertTrue(len(concept_data) == 2)
+        self.assertIsInstance(concept_data[0], pd.DataFrame)
+        self.assertTrue(len(concept_data[0]) == 2)
+        self.assertIsInstance(concept_data[1], List)
+        self.assertTrue(len(concept_data[1]) == 2)
+
+        # check ancestor-level results
+        self.assertIsInstance(ancestor_data, Tuple)
+        self.assertTrue(len(ancestor_data) == 2)
+        self.assertIsInstance(ancestor_data[0], pd.DataFrame)
+        self.assertTrue(len(ancestor_data[0]) == 5)
+        self.assertIsInstance(ancestor_data[1], List)
+        self.assertTrue(len(ancestor_data[1]) == 25)
 
         return None
