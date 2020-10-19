@@ -10,6 +10,7 @@ Data Manipulation
 """
 
 # import needed libraries
+import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
 from tqdm import tqdm
@@ -43,16 +44,18 @@ def reconfigures_dataframe(split_list: List, data_frame: pd.DataFrame) -> pd.Dat
     # get non-ontology columns
     non_category_columns = [x for x in data_frame.columns if not any(i for i in split_list if i.lower() in x.lower())]
 
+    # make sure that all blank variables are converted to NaN
+    data_frame = data_frame.replace(r'^\s*$', np.nan, regex=True)
+
     # identify which columns belong to each of the input ontologies
     category_split_data = []
     for x in split_list:
         # get category-specific columns
         cat_columns = [i for i in data_frame.columns if x.lower() in i.lower()]
         # subset original data to include non-category and specific single category data
-        cat_data = data_frame[non_category_columns + cat_columns]
-        # drop rows where all category columns are NaN
-        cat_data = cat_data.dropna(subset=cat_columns)
-        # rename data
+        cat_data = data_frame[non_category_columns + cat_columns].drop_duplicates()
+        # drop rows where all category columns are NaN and blank string
+        cat_data = cat_data.dropna(subset=cat_columns, how='all')
         cat_data.columns = non_category_columns + [col.upper().replace(x.upper(), 'CATEGORY') for col in cat_columns]
         # add category specific column
         cat_data['CATEGORY'] = [x] * len(cat_data)
