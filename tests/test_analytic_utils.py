@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import unittest
 
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from omop2obo.utils import *
 
 
@@ -183,5 +183,49 @@ class TestAnalyticUtils(unittest.TestCase):
         self.assertTrue(len(ancestor_data[0]) == 5)
         self.assertIsInstance(ancestor_data[1], List)
         self.assertTrue(len(ancestor_data[1]) == 25)
+
+        return None
+
+    def test_outputs_ontology_metadata(self):
+        """Tests the outputs_ontology_metadata method."""
+
+        # set-up input data
+        metadata = ['label', 'dbxref', 'synonym', 'synonym_type']
+        ontology_list = ['hp']
+
+        ontology_data = {'hp': {'dbxref': {'umls:c4023552': 'http://purl.obolibrary.org/obo/HP_0011071',
+                                           'umls:c4023164': 'http://purl.obolibrary.org/obo/HP_0011843',
+                                           'umls:c1837087': 'http://purl.obolibrary.org/obo/HP_0008002',
+                                           'umls:c4022709': 'http://purl.obolibrary.org/obo/HP_0012852'},
+                                'label': {'abnormality of skeletal physiology':
+                                          'http://purl.obolibrary.org/obo/HP_0011843',
+                                          'abnormality of permanent molar morphology':
+                                          'http://purl.obolibrary.org/obo/HP_0011071',
+                                          'hepatic bridging fibrosis':
+                                          'http://purl.obolibrary.org/obo/HP_0012852',
+                                          'abnormality of macular pigmentation':
+                                          'http://purl.obolibrary.org/obo/HP_0008002'},
+                                'synonym': {'abnormality of shape of adult molar':
+                                            'http://purl.obolibrary.org/obo/HP_0011071',
+                                            'abnormality of shape of permanent molar':
+                                            'http://purl.obolibrary.org/obo/HP_0011071',
+                                            'macular pigmentary changes': 'http://purl.obolibrary.org/obo/HP_0008002'},
+                                'synonym_type': {'abnormality of shape of adult molar': 'hasExactSynonym',
+                                                 'abnormality of shape of permanent molar': 'hasExactSynonym',
+                                                 'macular pigmentary changes': 'hasRelatedSynonym'}}}
+
+        # test method
+        ont_results = outputs_ontology_metadata(ontology_data, ontology_list, metadata)
+        self.assertIsInstance(ont_results, Dict)
+        self.assertEqual(list(ont_results.keys()), ['hp'])
+        self.assertIn('dbxref', list(ont_results['hp'].keys()))
+        self.assertIn('label', list(ont_results['hp'].keys()))
+        self.assertIn('synonym', list(ont_results['hp'].keys()))
+        self.assertIn('synonym_type', list(ont_results['hp'].keys()))
+        self.assertEqual(ont_results['hp']['label'], 4)
+        self.assertEqual(ont_results['hp']['dbxref'], 4)
+        self.assertEqual(ont_results['hp']['synonym'], 3)
+        self.assertEqual(', '.join(sorted(ont_results['hp']['synonym_type'].split(', '))),
+                         'hasExactSynonym, hasRelatedSynonym')
 
         return None

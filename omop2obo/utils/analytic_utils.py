@@ -4,8 +4,12 @@
 """
 Analytic Utility Functions.
 
-Data Manipulation
+Clinical Data Manipulation
 * reconfigures_dataframe
+* splits_concept_levels
+
+Ontology Data Manipulation
+* outputs_ontology_metadata
 
 """
 
@@ -13,7 +17,7 @@ Data Manipulation
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
-from typing import List
+from typing import Dict, List
 
 
 def reconfigures_dataframe(split_list: List, data_frame: pd.DataFrame) -> pd.DataFrame:
@@ -98,3 +102,39 @@ def splits_concept_levels(data: pd.DataFrame, type_col: str) -> List:
     ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
 
     return [(concept, concept_ont_codes), (ancestor, ancestor_ont_codes)]
+
+
+def outputs_ontology_metadata(ontology_data: Dict, ontology_list: List, metadata: List) -> Dict:
+    """Method takes a nested dictionary of ontology
+
+    Args:
+        ontology_data: A nested dictionary containing metadata for each ontology. The outer keys are strings
+            representing ontology prefixes (e.g. 'hp', 'mondo').
+        ontology_list: A list of ontologies to use when filtering the ontology dictionary (e.g. ['HP', 'MONDO']).
+        metadata: A list of string specifying what ontology metadata to retrieve for each ontology.
+
+    Returns:
+        ontology_subset: A nested dictionary keyed by lower-cased ontology prefix string (e.g. 'hp, 'mondo') with
+            inner dictionaries keyed by items in metadata and having numeric or string values. An example is shown
+            below:
+                {{'hp': {'label': 15247,
+                         'dbxref': 19569,
+                         'synonym': 19860,
+                         'synonym_type': 'hasNarrowSynonym, hasExactSynonym, hasRelatedSynonym, hasBroadSynonym'}
+                }}
+    """
+
+    # lowercase all ontologies in list
+    updated_ontology_list = list(map(lambda x: x.lower(), ontology_list))
+
+    # reduce ont dictionary to relevant ontologies
+    ontology_subset_dictionary = {k: v for k, v in ontology_data.items() if k in updated_ontology_list}
+
+    # obtain specific ontology metadata
+    ontology_subset = {}
+    for ont in updated_ontology_list:
+        ont_sub = ontology_subset_dictionary[ont]
+        ontology_subset[ont] = {x: len(ont_sub[x]) for x in metadata if x != 'synonym_type'}
+        ontology_subset[ont]['synonym_type'] = ', '.join(set(ont_sub['synonym_type'].values()))
+
+    return ontology_subset
