@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import os
 import pandas as pd
 import unittest
 
@@ -13,6 +14,13 @@ class TestAnalyticUtils(unittest.TestCase):
     """Class to test the methods created in the analytic utility script."""
 
     def setUp(self):
+        current_directory = os.path.dirname(__file__)
+        dir_loc = os.path.join(current_directory, 'data')
+        self.dir_loc = os.path.abspath(dir_loc)
+
+        # read in chi-square test data
+        self.chi_square_data = pd.read_csv(self.dir_loc + '/chi_square_test_data.txt', sep=',', index_col='ontology')
+
         # create some test data
         self.dbxref_test = pd.DataFrame({'CONCEPT_ID': [22288, 22426, 23986, 24609, 24966],
                                          'CONCEPT_LABEL': ['Hereditary elliptocytosis', 'Congenital macrostomia',
@@ -227,5 +235,33 @@ class TestAnalyticUtils(unittest.TestCase):
         self.assertEqual(ont_results['hp']['synonym'], 3)
         self.assertEqual(', '.join(sorted(ont_results['hp']['synonym_type'].split(', '))),
                          'hasExactSynonym, hasRelatedSynonym')
+
+        return None
+
+    def test_get_asterisks_for_pvalues(self):
+        """Tests the get_asterisks_for_pvalues method."""
+
+        # p > 0.05
+        p1 = get_asterisks_for_pvalues(0.06)
+        self.assertEqual(p1, 'ns')
+        # p< 0.0001
+        p2 = get_asterisks_for_pvalues(0.0001)
+        self.assertEqual(p2, '****')
+        # p< 0.001
+        p3 = get_asterisks_for_pvalues(0.001)
+        self.assertEqual(p3, '***')
+        # p< 0.01
+        p4 = get_asterisks_for_pvalues(0.01)
+        self.assertEqual(p4, '**')
+        # p< 0.05
+        p5 = get_asterisks_for_pvalues(0.05)
+        self.assertEqual(p5, '*')
+
+        return None
+
+    def test_(self):
+        """Tests the chisq_and_posthoc_corrected method."""
+
+        self.assertEqual(chisq_and_posthoc_corrected(self.chi_square_data), None)
 
         return None

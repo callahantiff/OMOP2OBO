@@ -11,12 +11,19 @@ Clinical Data Manipulation
 Ontology Data Manipulation
 * outputs_ontology_metadata
 
+Statistical Testing
+* get_asterisks_for_pvalues
+* chisq_and_posthoc_corrected
+
 """
 
 # import needed libraries
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
+from itertools import combinations  # type: ignore
+from scipy.stats import chi2_contingency  # type: ignore
+from statsmodels.sandbox.stats.multicomp import multipletests  # type: ignore
 from typing import Dict, List
 
 
@@ -135,6 +142,64 @@ def outputs_ontology_metadata(ontology_data: Dict, ontology_list: List, metadata
     for ont in updated_ontology_list:
         ont_sub = ontology_subset_dictionary[ont]
         ontology_subset[ont] = {x: len(ont_sub[x]) for x in metadata if x != 'synonym_type'}
-        ontology_subset[ont]['synonym_type'] = ', '.join(set(ont_sub['synonym_type'].values()))
+        ontology_subset[ont]['synonym_type'] = ', '.join(set(ont_sub['synonym_type'].values()))  # type: ignore
 
     return ontology_subset
+
+
+def get_asterisks_for_pvalues(p_value: float) -> str:
+    """Receives the p-value and returns asterisks string.
+
+    Args:
+        p_value: A float that represents a p-value.
+
+    Returns:
+        p_text: A string containing an asterisk representation of the p-value significance.
+    """
+    if p_value > 0.05:
+        p_text = 'ns'  # above threshold => not significant
+    elif p_value <= 1e-4:
+        p_text = '****'
+    elif p_value <= 1e-3:
+        p_text = '***'
+    elif p_value <= 1e-2:
+        p_text = '**'
+    else:
+        p_text = '*'
+
+    return p_text
+
+
+def chisq_and_posthoc_corrected(df: pd.DataFrame) -> None:
+    """Receives a dataframe and performs chi2 test and then post hoc. Prints the p-values and corrected p-values (
+    after FDR correction). This method is modified from: https://neuhofmo.github.io/chi-square-and-post-hoc-in-python/.
+
+    Args:
+        df: A Pandas DataFrame containing cross-tabulated results.
+
+    Returns:
+        None
+    """
+
+    # perform chi-square omnibus test on full data
+    chi2, p, dof, ex = chi2_contingency(df, correction=True)
+    print('Chi-Square Omnibus Test Results: Test statistic: {}, df: {}, p-value: {}'.format(chi2, dof, p))
+
+    # post-hoc
+    all_combinations = list(combinations(df.index, 2))  # gathering all combinations for post-hoc chi2
+    p_values = []
+
+    print('\nSignificance results:')
+    for comb in all_combinations:
+        new_df = df[(df.index == comb[0]) | (df.index == comb[1])]
+        chi2, p, dof, ex = chi2_contingency(new_df, correction=True)
+        p_values.append(p)
+
+    # checking significance and application of correction for multiple testing
+    reject_list, corrected_p_vals = multipletests(p_values, method='fdr_bh')[:2]
+
+    for p_val, corr_p_val, reject, comb in zip(p_values, corrected_p_vals, reject_list, all_combinations):
+        print('{}: p-value: {}; corrected: {} ({}) reject: {}'.format(comb, p_val, corr_p_val,
+                                                                      get_asterisks_for_pvalues(p_val), reject))
+
+    return None
