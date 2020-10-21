@@ -24,7 +24,7 @@ import pandas as pd  # type: ignore
 from itertools import combinations  # type: ignore
 from scipy.stats import chi2_contingency  # type: ignore
 from statsmodels.sandbox.stats.multicomp import multipletests  # type: ignore
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 def reconfigures_dataframe(split_list: List, data_frame: pd.DataFrame) -> pd.DataFrame:
@@ -77,7 +77,7 @@ def reconfigures_dataframe(split_list: List, data_frame: pd.DataFrame) -> pd.Dat
     return reconfigured_data
 
 
-def splits_concept_levels(data: pd.DataFrame, type_col: str) -> List:
+def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_strings: List) -> List:
     """Takes a Pandas DataFrame and a string containing a keyword and with the keyword, splits the input DataFrame
     into concept and ancestor-level data. The keyword is used to obtain relevant columns where the data differs for
     concepts and ancestors.
@@ -85,6 +85,8 @@ def splits_concept_levels(data: pd.DataFrame, type_col: str) -> List:
     Args:
         data: A Pandas DataFrame containing stacked mapping results.
         type_col: A string containing the data type to parse (e.g. "DBXREF" or "STRING").
+        concept_strings: A list of strings where the first string is a concept-level identifier and the second item
+            is an ancestor-level identifier.
 
     Returns:
         A list of tuples, each tuple contains a Pandas DataFrame and a list, the first contains a subset of the
@@ -93,20 +95,26 @@ def splits_concept_levels(data: pd.DataFrame, type_col: str) -> List:
             concept level and the second tuple contains data at the ancestor level.
     """
 
+    con_string, anc_string = concept_strings
+
     # extract relevant columns
-    all_cols = [x for x in data.columns if type_col not in x]
-    conc_type = [x for x in data.columns if 'CONCEPT' in x.upper() and type_col.upper() in x.upper()]
-    conc_type_uri = [x for x in conc_type if x.upper().endswith('URI')][0]
-    anc_type = [x for x in data.columns if 'ANCESTOR' in x.upper() and type_col.upper() in x.upper()]
-    anc_type_uri = [x for x in anc_type if x.upper().endswith('URI')][0]
-
-    # extract concept codes from ancestor codes
-    concept = data[all_cols + conc_type].dropna(subset=conc_type, how='all').drop_duplicates()
-    ancestor = data[all_cols + anc_type].dropna(subset=anc_type, how='all').drop_duplicates()
-
-    # get counts of ontology concepts at each concept level
-    concept_ont_codes = [i for j in [x.split(' | ') for x in list(concept[conc_type_uri])] for i in j]
-    ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
+    if type_col is not None:
+        all_cols = [x for x in data.columns if type_col not in x]
+        conc_type = [x for x in data.columns if con_string.upper() in x.upper() and type_col.upper() in x.upper()]
+        conc_type_uri = [x for x in conc_type if x.upper().endswith('URI')][0]
+        anc_type = [x for x in data.columns if anc_string.upper() in x.upper() and type_col.upper() in x.upper()]
+        anc_type_uri = [x for x in anc_type if x.upper().endswith('URI')][0]
+        # extract concept codes from ancestor codes
+        concept = data[all_cols + conc_type].dropna(subset=conc_type, how='all').drop_duplicates()
+        ancestor = data[all_cols + anc_type].dropna(subset=anc_type, how='all').drop_duplicates()
+        # get counts of ontology concepts at each concept level
+        concept_ont_codes = [i for j in [x.split(' | ') for x in list(concept[conc_type_uri])] for i in j]
+        ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
+    else:
+        data = data.replace(r'^\s*$', np.nan, regex=True)
+        concept = data[[x for x in data.columns if x.startswith(con_string)]].dropna(how='all').drop_duplicates()
+        ancestor = data[[x for x in data.columns if x.startswith(anc_string)]].dropna(how='all').drop_duplicates()
+        concept_ont_codes, ancestor_ont_codes = [], []
 
     return [(concept, concept_ont_codes), (ancestor, ancestor_ont_codes)]
 

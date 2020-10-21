@@ -22,6 +22,34 @@ class TestAnalyticUtils(unittest.TestCase):
         self.chi_square_data = pd.read_csv(self.dir_loc + '/chi_square_test_data.txt', sep=',', index_col='ontology')
 
         # create some test data
+
+        self.drug_data = pd.DataFrame({'CONCEPT_ID': [40062881, 40173225, 1354699],
+                                       'CONCEPT_SOURCE_CODE': ['rxnorm:93278', 'rxnorm:899349', 'rxnorm:142113'],
+                                       'CONCEPT_LABEL': ['Mesna Injectable Solution [Mesnex]',
+                                                         'Mesna 100 MG/ML [Mesnex]', 'Mesna 400 MG Oral Tablet'],
+                                       'CONCEPT_VOCAB': ['RxNorm', 'RxNorm', 'RxNorm'],
+                                       'CONCEPT_SYNONYM': ['Mesna Injectable Solution [Mesnex]',
+                                                           'Mesna 100 MG/ML [Mesnex]', 'Mesna 400 MG Oral Tablet'],
+                                       'ANCESTOR_CONCEPT_ID': ['4350600 | 4345980 | 4349997 | 36217210 | 36225392',
+                                                               '4341296 | 4267037 | 4352026 | 1354739 | 4330900',
+                                                               '4265103 | 4264935 | 44786237 | 21605269 | 4350369'],
+                                       'ANCESTOR_SOURCE_CODE': ['ndfrt:N0000008257 | ndfrt:N0000009556',
+                                                                'spl:cd5d24e5-8c35-46d9-9a9c | ndfrt:N0000001481',
+                                                                'va class:AD000 | ndfrt:N0000002872'],
+                                       'ANCESTOR_LABEL': ['Organic Ion Excretion | Mesna 100 MG/ML',
+                                                          'Sulfhydryl Compounds | Acids | Acids, Noncarboxylic',
+                                                          'Hydrocarbons | MESNEX - mesna injection, solution'],
+                                       'ANCESTOR_VOCAB': ['ndfrt | spl', 'RxNorm | VA', 'ndfrt | spl | RxNorm'],
+                                       'INGREDIENT_CONCEPT_ID': [1354698, 1354698, 1354698],
+                                       'INGREDIENT_SOURCE_CODE': ['rxnorm:44', 'rxnorm:44', 'rxnorm:44'],
+                                       'INGREDIENT_LABEL': ['Mesna', 'Mesna', 'Mesna'],
+                                       'INGREDIENT_VOCAB': ['RxNorm', 'RxNorm', 'RxNorm'],
+                                       'INGREDIENT_SYNONYM': ['Mesna', 'Mesna', 'Mesna'],
+                                       'INGRED_ANCESTOR_CONCEPT_ID': ['1354698', '1354698', '1354698'],
+                                       'INGRED_ANCESTOR_SOURCE_CODE': ['rxnorm:44', 'rxnorm:44', 'rxnorm:44'],
+                                       'INGRED_ANCESTOR_LABEL': ['Mesna', 'Mesna', 'Mesna'],
+                                       'INGRED_ANCESTOR_VOCAB': ['RxNorm', 'RxNorm', 'RxNorm']})
+
         self.dbxref_test = pd.DataFrame({'CONCEPT_ID': [22288, 22426, 23986, 24609, 24966],
                                          'CONCEPT_LABEL': ['Hereditary elliptocytosis', 'Congenital macrostomia',
                                                            'Disorder of pituitary gland', 'Hypoglycemia',
@@ -166,10 +194,10 @@ class TestAnalyticUtils(unittest.TestCase):
 
         return None
 
-    def test_splits_concept_levels(self):
-        """Tests the splits concept levels method."""
+    def test_splits_concept_levels_ontologies(self):
+        """Tests the splits concept levels method with ontology data."""
 
-        split_data = splits_concept_levels(self.dbxref_test2, 'DBXREF')
+        split_data = splits_concept_levels(self.dbxref_test2, 'DBXREF', ['CONCEPT', 'ANCESTOR'])
 
         # check output
         self.assertIsInstance(split_data, List)
@@ -191,6 +219,34 @@ class TestAnalyticUtils(unittest.TestCase):
         self.assertTrue(len(ancestor_data[0]) == 5)
         self.assertIsInstance(ancestor_data[1], List)
         self.assertTrue(len(ancestor_data[1]) == 25)
+
+        return None
+
+    def test_splits_concept_levels_other(self):
+        """Tests the splits concept levels method with other data."""
+
+        split_data = splits_concept_levels(self.drug_data, None, ['CONCEPT', 'ANCESTOR'])
+
+        # check output
+        self.assertIsInstance(split_data, List)
+        self.assertTrue(len(split_data) == 2)
+        concept_data, ancestor_data = split_data
+
+        # check concept-level results
+        self.assertIsInstance(concept_data, Tuple)
+        self.assertTrue(len(concept_data) == 2)
+        self.assertIsInstance(concept_data[0], pd.DataFrame)
+        self.assertTrue(len(concept_data[0]) == 3)
+        self.assertIsInstance(concept_data[1], List)
+        self.assertTrue(len(concept_data[1]) == 0)
+
+        # check ancestor-level results
+        self.assertIsInstance(ancestor_data, Tuple)
+        self.assertTrue(len(ancestor_data) == 2)
+        self.assertIsInstance(ancestor_data[0], pd.DataFrame)
+        self.assertTrue(len(ancestor_data[0]) == 3)
+        self.assertIsInstance(ancestor_data[1], List)
+        self.assertTrue(len(ancestor_data[1]) == 0)
 
         return None
 
