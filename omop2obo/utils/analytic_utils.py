@@ -158,11 +158,11 @@ def get_asterisks_for_pvalues(p_value: float) -> str:
     """
     if p_value > 0.05:
         p_text = 'ns'  # above threshold => not significant
-    elif p_value <= 1e-4:
+    elif p_value < 1e-4:
         p_text = '****'
-    elif p_value <= 1e-3:
+    elif p_value < 1e-3:
         p_text = '***'
-    elif p_value <= 1e-2:
+    elif p_value < 1e-2:
         p_text = '**'
     else:
         p_text = '*'
@@ -199,7 +199,7 @@ def chisq_and_posthoc_corrected(df: pd.DataFrame) -> None:
     reject_list, corrected_p_vals = multipletests(p_values, method='fdr_bh')[:2]
 
     for p_val, corr_p_val, reject, comb in zip(p_values, corrected_p_vals, reject_list, all_combinations):
-        print('{}: p-value: {}; corrected: {} ({}) reject: {}'.format(comb, p_val, corr_p_val,
+        print('{}: p-value: {}; corrected: {} ({}) reject: {}'.format('-'.join(comb), p_val, corr_p_val,
                                                                       get_asterisks_for_pvalues(p_val), reject))
 
     return None

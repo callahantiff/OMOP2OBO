@@ -245,16 +245,16 @@ class TestAnalyticUtils(unittest.TestCase):
         p1 = get_asterisks_for_pvalues(0.06)
         self.assertEqual(p1, 'ns')
         # p< 0.0001
-        p2 = get_asterisks_for_pvalues(0.0001)
+        p2 = get_asterisks_for_pvalues(0.00009)
         self.assertEqual(p2, '****')
         # p< 0.001
-        p3 = get_asterisks_for_pvalues(0.001)
+        p3 = get_asterisks_for_pvalues(0.0009)
         self.assertEqual(p3, '***')
         # p< 0.01
-        p4 = get_asterisks_for_pvalues(0.01)
+        p4 = get_asterisks_for_pvalues(0.009)
         self.assertEqual(p4, '**')
         # p< 0.05
-        p5 = get_asterisks_for_pvalues(0.05)
+        p5 = get_asterisks_for_pvalues(0.04)
         self.assertEqual(p5, '*')
 
         return None
