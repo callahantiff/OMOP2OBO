@@ -170,36 +170,49 @@ def get_asterisks_for_pvalues(p_value: float) -> str:
     return p_text
 
 
-def chisq_and_posthoc_corrected(df: pd.DataFrame) -> None:
+def chisq_and_posthoc_corrected(df: pd.DataFrame, correction: str = 'bonferroni') -> pd.DataFrame:
     """Receives a dataframe and performs chi2 test and then post hoc. Prints the p-values and corrected p-values (
     after FDR correction). This method is modified from: https://neuhofmo.github.io/chi-square-and-post-hoc-in-python/.
 
     Args:
         df: A Pandas DataFrame containing cross-tabulated results.
+        correction: A string containing a multiple testing correction method. The full list of correction methods can
+            be found here: https://www.statsmodels.org/dev/_modules/statsmodels/stats/multitest.html#multipletests
 
     Returns:
-        None
+        post_hoc_results: A Pandas DataFrame containing the results from performing post-hoc testing. An example of
+            the output is shown below.
+
+            OUTPUT:
+                                      comparison  original_pvalue  corrected_pvalue  reject_h0
+                0           CHEBI-CL    5.488896e-284     5.911118e-284       True
+                1           CHEBI-HP     0.000000e+00      0.000000e+00       True
+                2        CHEBI-MONDO     0.000000e+00      0.000000e+00       True
+                3    CHEBI-NCBITaxon     0.000000e+00      0.000000e+00       True
+                4           CHEBI-PR     0.000000e+00      0.000000e+00       True
+                5       CHEBI-UBERON     0.000000e+00      0.000000e+00       True
     """
 
     # perform chi-square omnibus test on full data
     chi2, p, dof, ex = chi2_contingency(df, correction=True)
     print('Chi-Square Omnibus Test Results: Test statistic: {}, df: {}, p-value: {}'.format(chi2, dof, p))
 
-    # post-hoc
-    all_combinations = list(combinations(df.index, 2))  # gathering all combinations for post-hoc chi2
-    p_values = []
+    # post-hoc analysis
+    print('Performing post hoc testing using: {} p-value correction method'.format(correction))
+    p_values, all_combinations = [], list(combinations(df.index, 2))  # gathering all combinations for post-hoc chi2
 
-    print('\nSignificance results:')
     for comb in all_combinations:
         new_df = df[(df.index == comb[0]) | (df.index == comb[1])]
         chi2, p, dof, ex = chi2_contingency(new_df, correction=True)
         p_values.append(p)
 
     # checking significance and application of correction for multiple testing
-    reject_list, corrected_p_vals = multipletests(p_values, method='fdr_bh')[:2]
+    reject_list, corrected_p_vals = multipletests(p_values, method=correction)[:2]
 
-    for p_val, corr_p_val, reject, comb in zip(p_values, corrected_p_vals, reject_list, all_combinations):
-        print('{}: p-value: {}; corrected: {} ({}) reject: {}'.format('-'.join(comb), p_val, corr_p_val,
-                                                                      get_asterisks_for_pvalues(p_val), reject))
+    # save results to a pandas df
+    post_hoc_results = pd.DataFrame({'comparison': ['-'.join(x) for x in all_combinations],
+                                     'original_pvalue': p_values,
+                                     'corrected_pvalue': list(corrected_p_vals),
+                                     'reject_h0': list(reject_list)})
 
-    return None
+    return post_hoc_results

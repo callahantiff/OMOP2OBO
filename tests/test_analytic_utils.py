@@ -262,6 +262,20 @@ class TestAnalyticUtils(unittest.TestCase):
     def test_(self):
         """Tests the chisq_and_posthoc_corrected method."""
 
-        self.assertEqual(chisq_and_posthoc_corrected(self.chi_square_data), None)
+        # using default correction method (bonferroni)
+        results = chisq_and_posthoc_corrected(self.chi_square_data)
+
+        # check output
+        self.assertIsInstance(results, pd.DataFrame)
+        self.assertTrue(len(results), 28)
+        self.assertEqual(list(results.columns), ['comparison', 'original_pvalue', 'corrected_pvalue', 'reject_h0'])
+
+        # using different correction method
+        results2 = chisq_and_posthoc_corrected(self.chi_square_data, 'fdr_bh')
+
+        # check output
+        self.assertIsInstance(results2, pd.DataFrame)
+        self.assertTrue(len(results2), 28)
+        self.assertEqual(list(results2.columns), ['comparison', 'original_pvalue', 'corrected_pvalue', 'reject_h0'])
 
         return None
