@@ -74,7 +74,7 @@ def reconfigures_dataframe(split_list: List, data_frame: pd.DataFrame) -> pd.Dat
     # concatenate stacked data into single DataFrame
     reconfigured_data = pd.concat(category_split_data)
 
-    return reconfigured_data
+    return reconfigured_data.fillna('').drop_duplicates()
 
 
 def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_strings: List) -> List:
