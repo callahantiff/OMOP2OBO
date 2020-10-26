@@ -84,7 +84,7 @@ def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_s
 
     Args:
         data: A Pandas DataFrame containing stacked mapping results.
-        type_col: A string containing the data type to parse (e.g. "DBXREF" or "STRING").
+        type_col: A string containing the data type to parse (e.g. "DBXREF" or "STR").
         concept_strings: A list of strings where the first string is a concept-level identifier and the second item
             is an ancestor-level identifier.
 
@@ -96,6 +96,7 @@ def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_s
     """
 
     con_string, anc_string = concept_strings
+    data = data.copy().replace(r'^\s*$', np.nan, regex=True)
 
     # extract relevant columns
     if type_col is not None:
@@ -111,7 +112,6 @@ def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_s
         concept_ont_codes = [i for j in [x.split(' | ') for x in list(concept[conc_type_uri])] for i in j]
         ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
     else:
-        data = data.replace(r'^\s*$', np.nan, regex=True)
         concept = data[[x for x in data.columns if x.startswith(con_string)]].dropna(how='all').drop_duplicates()
         ancestor = data[[x for x in data.columns if x.startswith(anc_string)]].dropna(how='all').drop_duplicates()
         concept_ont_codes, ancestor_ont_codes = [], []
