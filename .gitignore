@@ -8,6 +8,7 @@
 *.pyc
 __pycache__
 .ipynb_checkpoints/*
+resources/analyses/.ipynb*
 
 ## testing resources ##
 #################################
@@ -36,4 +37,3 @@ resources/programming/
 ## scripts ##
 #################################
 scratch.py
-
