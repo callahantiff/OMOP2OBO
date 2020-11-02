@@ -233,7 +233,8 @@ def process_clinical_data(data: pd.DataFrame, grp_var: str) -> Dict:
     Args:
         data: A Pandas DataFrame that contains OMOP data.
         grp_var: A string representing a column to group by.
-    Return:
+
+    Returns:
         results: A dictionary of results where keys are categories of the grp_var and values are lists of concept and
             ancestor-level data.
     """
@@ -262,3 +263,86 @@ def process_clinical_data(data: pd.DataFrame, grp_var: str) -> Dict:
         results[grp]['anc_vocab'] = ', '.join(set([x for y in grp_data['ANCESTOR_VOCAB'] for x in y.split(' | ')]))
 
     return results
+
+
+def gets_data_by_concept_type(grouped_data: pd.DataFrame, data_type: str) -> Dict:
+    """Takes a Pandas DataFrame containing grouped data and processes data for each of the groups. Specifically,
+    the data for each group is processed in order to obtain data at the concept and ancestor level. The function
+    returns a nested list of processed data for each group.
+
+    Args:
+        grouped_data: A grouped Pandas DataFrame containing data that needs to be processed.
+        data_type: String containing the type of data to search for (e.g. "DBXREF").
+
+    Returns:
+        group_data: A dictionary keyed by group in grouped_data with values as a list of lists where the first sub-list
+            contains concept-level data and the second sub-list contains ancestor-level data. Within each specific
+            sub-list is a list. The first item is a Pandas DataFrame and the second list is a list of all identifiers.
+    """
+
+    group_data = {}
+
+    # get groups to process
+    groups = list(grouped_data.groups.keys())
+
+    # split stacked data by concept type
+    for grp in groups:
+        concept_grp = grouped_data.get_group(grp).drop_duplicates()
+
+        # concepts used in practice
+        grp_concepts, grp_ancestors = splits_concept_levels(concept_grp, data_type, ['concept', 'ancestor'])
+
+        # add to list
+        group_data[grp] = [grp_concepts, grp_ancestors]
+
+    return group_data
+
+
+def process_mapping_results(data: pd.DataFrame, ont_list: List, grp_var: str, data_type: str) -> Dict:
+    """Function takes a Pandas DataFrame, a list of ontologies, a grouping variable, and a data type. using this
+    information, the function first groups the data by each ontology type. Then, the function further groups the data
+    by the grp_var to obtain the data stored in the columns noted by data_type. Finally, the data is grouped one last
+    time at the concept and ancestor level. The function returns a nested dictionary keyed by ontology,
+    with the inner dictionary keyed by each level of the grp_var and with values being a third dictionary that is
+    keyed by data level (i.e. "concept" or "ancestor") with values that contain 2 lists. The first item int he list
+    is a Pandas DataFrame and the second item is a list of all identifiers.
+
+    Args:
+        data: A Pandas DataFrame containing mapping data that needs to be processed.
+        ont_list: A list of strings representing ontologies to process (e.g. ["HP", "MONDO"]).
+        grp_var: String containing the type of data to group by (e.g. "CONCEPT-TYPE").
+        data_type: String containing the type of data to search for (e.g. "DBXREF").
+
+    Returns:
+        A dictionary keyed by ontology that contains processed results for the input data_type for each group in the
+            grp_var and further within each group at the concept and ancestor level.
+    """
+
+    # make data long-form with ontologies stacked as a type of category
+    data_stacked = reconfigures_dataframe(ont_list, data)
+
+    # group by ontology
+    data_stacked_category_grp = data_stacked.groupby('CATEGORY')
+
+    # process results by ontology
+    ontology_results = {}
+    for ont in ont_list:
+        print('Processing Ontology: {}'.format(ont))
+
+        # get individual ontology results
+        ontology_results[ont] = {}
+        data_stacked_ont = data_stacked_category_grp.get_group(ont).drop_duplicates().drop('CATEGORY', 1)
+
+        # group ont data by concept type (i.e. concepts used in practice, standard concepts)
+        data_stacked_ont_grp = data_stacked_ont.groupby(grp_var)
+
+        # get concept type group information
+        group_results = gets_data_by_concept_type(data_stacked_ont_grp, data_type)
+
+        # process and organize grouped results
+        for res in group_results.keys():
+            ontology_results[ont][res] = {}
+            ontology_results[ont][res]['concepts'] = group_results[res][0]
+            ontology_results[ont][res]['ancestors'] = group_results[res][1]
+
+    return ontology_results
