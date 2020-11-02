@@ -104,19 +104,29 @@ def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_s
         conc_type = [x for x in data.columns if con_string.upper() in x.upper() and type_col.upper() in x.upper()]
         conc_type_uri = [x for x in conc_type if x.upper().endswith('URI')][0]
         anc_type = [x for x in data.columns if anc_string.upper() in x.upper() and type_col.upper() in x.upper()]
-        anc_type_uri = [x for x in anc_type if x.upper().endswith('URI')][0]
-        # extract concept codes from ancestor codes
-        concept = data[all_cols + conc_type].dropna(subset=conc_type, how='all').drop_duplicates()
-        ancestor = data[all_cols + anc_type].dropna(subset=anc_type, how='all').drop_duplicates()
-        # get counts of ontology concepts at each concept level
-        concept_ont_codes = [i for j in [x.split(' | ') for x in list(concept[conc_type_uri])] for i in j]
-        ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
+        if len(anc_type) > 0:
+            anc_type_uri = [x for x in anc_type if x.upper().endswith('URI')][0]
+            # extract concept codes from ancestor codes
+            concept = data[all_cols + conc_type].dropna(subset=conc_type, how='all').drop_duplicates()
+            ancestor = data[all_cols + anc_type].dropna(subset=anc_type, how='all').drop_duplicates()
+            # get counts of ontology concepts at each concept level
+            concept_ont_codes = [i for j in [x.split(' | ') for x in list(concept[conc_type_uri])] for i in j]
+            ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
+
+            return [(concept, concept_ont_codes), (ancestor, ancestor_ont_codes)]
+        else:
+            # extract concept codes from ancestor codes
+            concept = data[all_cols + conc_type].dropna(subset=conc_type, how='all').drop_duplicates()
+            # get counts of ontology concepts at each concept level
+            concept_ont_codes = [i for j in [x.split(' | ') for x in list(concept[conc_type_uri])] for i in j]
+
+            return [(concept, concept_ont_codes), (None, None)]
     else:
         concept = data[[x for x in data.columns if x.startswith(con_string)]].dropna(how='all').drop_duplicates()
         ancestor = data[[x for x in data.columns if x.startswith(anc_string)]].dropna(how='all').drop_duplicates()
         concept_ont_codes, ancestor_ont_codes = [], []
 
-    return [(concept, concept_ont_codes), (ancestor, ancestor_ont_codes)]
+        return [(concept, concept_ont_codes), (ancestor, ancestor_ont_codes)]
 
 
 def outputs_ontology_metadata(ontology_data: Dict, ontology_list: List, metadata: List) -> Dict:
@@ -290,12 +300,9 @@ def gets_data_by_concept_type(grouped_data: pd.DataFrame, data_type: str) -> Dic
         concept_grp = grouped_data.get_group(grp).drop_duplicates()
 
         # concepts used in practice
-        grp_concepts, grp_ancestors = splits_concept_levels(concept_grp, data_type, ['concept', 'ancestor'])
-
-        # add to list
         group_data[grp] = {}
         group_data[grp]['data'] = concept_grp
-        group_data[grp]['level data'] = [grp_concepts, grp_ancestors]
+        group_data[grp]['level data'] = splits_concept_levels(concept_grp, data_type, ['concept', 'ancestor'])
 
     return group_data
 
