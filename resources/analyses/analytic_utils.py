@@ -332,6 +332,7 @@ def process_mapping_results(data: pd.DataFrame, ont_list: List, grp_var: str, da
         # get individual ontology results
         ontology_results[ont] = {}
         data_stacked_ont = data_stacked_category_grp.get_group(ont).drop_duplicates().drop('CATEGORY', 1)
+        ontology_results[ont]['ont_data'] = data_stacked_ont
 
         # group ont data by concept type (i.e. concepts used in practice, standard concepts)
         data_stacked_ont_grp = data_stacked_ont.groupby(grp_var)
