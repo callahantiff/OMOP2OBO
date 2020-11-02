@@ -293,7 +293,9 @@ def gets_data_by_concept_type(grouped_data: pd.DataFrame, data_type: str) -> Dic
         grp_concepts, grp_ancestors = splits_concept_levels(concept_grp, data_type, ['concept', 'ancestor'])
 
         # add to list
-        group_data[grp] = [grp_concepts, grp_ancestors]
+        group_data[grp] = {}
+        group_data[grp]['data'] = concept_grp
+        group_data[grp]['level data'] = [grp_concepts, grp_ancestors]
 
     return group_data
 
@@ -343,7 +345,8 @@ def process_mapping_results(data: pd.DataFrame, ont_list: List, grp_var: str, da
         # process and organize grouped results
         for res in group_results.keys():
             ontology_results[ont][res] = {}
-            ontology_results[ont][res]['concepts'] = group_results[res][0]
-            ontology_results[ont][res]['ancestors'] = group_results[res][1]
+            ontology_results[ont][res]['data'] = group_results[res]['data']
+            ontology_results[ont][res]['concepts'] = group_results[res]['level data'][0]
+            ontology_results[ont][res]['ancestors'] = group_results[res]['level data'][1]
 
     return ontology_results
