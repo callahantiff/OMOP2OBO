@@ -224,3 +224,41 @@ def chisq_and_posthoc_corrected(df: pd.DataFrame, correction: str = 'bonferroni'
                                      'reject_h0': list(reject_list)})
 
     return post_hoc_results
+
+
+def process_clinical_data(data: pd.DataFrame, grp_var: str) -> Dict:
+    """Method takes a Pandas data frame assumed to have data that will be used for mapping and a string representing
+    a column in that DataFrame that can be used to group the data. The function then groups the data and outputs
+
+    Args:
+        data: A Pandas DataFrame that contains OMOP data.
+        grp_var: A string representing a column to group by.
+    Return:
+        results: A dictionary of results where keys are categories of the grp_var and values are lists of concept and
+            ancestor-level data.
+    """
+
+    # split results by concept type (i.e. concepts used in practice, standard concepts)
+    grouped_data = data.groupby(grp_var)
+
+    # obtain results for groups
+    results = {}
+    for grp in grouped_data.groups.keys():
+        results[grp] = {}
+        print('Processing Group: {}'.format(grp))
+
+        # get group data
+        grp_data = grouped_data.get_group(grp).drop_duplicates()
+        results[grp]['grp_full_data'] = grp_data
+        # get concept data
+        results[grp]['concept_src_code'] = [x for y in grp_data['CONCEPT_SOURCE_CODE'] for x in y.split(' | ')]
+        results[grp]['concept_src_label'] = [x for y in grp_data['CONCEPT_SOURCE_LABEL'] for x in y.split(' | ')]
+        results[grp]['concept_synonym'] = [x for y in grp_data['CONCEPT_SYNONYM'] for x in y.split(' | ')]
+        results[grp]['concept_vocab'] = ', '.join(set([x for y in grp_data['CONCEPT_VOCAB'] for x in y.split(' | ')]))
+        # get ancestor data
+        results[grp]['anc_concept_id'] = [x for y in grp_data['ANCESTOR_CONCEPT_ID'] for x in y.split(' | ')]
+        results[grp]['anc_src_code'] = [x for y in grp_data['ANCESTOR_SOURCE_CODE'] for x in y.split(' | ')]
+        results[grp]['anc_label'] = [x for y in grp_data['ANCESTOR_LABEL'] for x in y.split(' | ')]
+        results[grp]['anc_vocab'] = ', '.join(set([x for y in grp_data['ANCESTOR_VOCAB'] for x in y.split(' | ')]))
+
+    return results
