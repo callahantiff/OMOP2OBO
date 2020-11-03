@@ -20,7 +20,9 @@ Statistical Testing
 # import needed libraries
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
+import statistics
 
+from collections import Counter
 from itertools import combinations  # type: ignore
 from scipy.stats import chi2_contingency  # type: ignore
 from statsmodels.sandbox.stats.multicomp import multipletests  # type: ignore
@@ -263,7 +265,7 @@ def process_clinical_data(data: pd.DataFrame, grp_var: str) -> Dict:
         results[grp]['grp_full_data'] = grp_data
         # get concept data
         results[grp]['concept_src_code'] = [x for y in grp_data['CONCEPT_SOURCE_CODE'] for x in y.split(' | ')]
-        results[grp]['concept_src_label'] = [x for y in grp_data['CONCEPT_SOURCE_LABEL'] for x in y.split(' | ')]
+        results[grp]['concept_src_label'] = [x for y in grp_data['CONCEPT_LABEL'] for x in y.split(' | ')]
         results[grp]['concept_synonym'] = [x for y in grp_data['CONCEPT_SYNONYM'] for x in y.split(' | ')]
         results[grp]['concept_vocab'] = ', '.join(set([x for y in grp_data['CONCEPT_VOCAB'] for x in y.split(' | ')]))
         # get ancestor data
@@ -307,7 +309,7 @@ def gets_data_by_concept_type(grouped_data: pd.DataFrame, data_type: str) -> Dic
     return group_data
 
 
-def process_mapping_results(data: pd.DataFrame, ont_list: List, grp_var: str, data_type: str) -> Dict:
+def process_mapping_results(data: pd.DataFrame, ont_list: List, grp_var: str, data_type: str = None) -> Dict:
     """Function takes a Pandas DataFrame, a list of ontologies, a grouping variable, and a data type. using this
     information, the function first groups the data by each ontology type. Then, the function further groups the data
     by the grp_var to obtain the data stored in the columns noted by data_type. Finally, the data is grouped one last
@@ -357,3 +359,29 @@ def process_mapping_results(data: pd.DataFrame, ont_list: List, grp_var: str, da
             ontology_results[ont][res]['ancestors'] = group_results[res]['level data'][1]
 
     return ontology_results
+
+
+def process_mapping_evidence(evidence_data: List):
+    """Function takes a list of pipe-delimited values and parses the list to extract the different evidence types.
+
+    Args:
+        evidence_data: A list of evidence, where each entry is a pipe-delimited string of evidence.
+
+    Returns:
+        evidence_data: A dictionary containing the mapping evidence, keyed by evidence type.
+    """
+
+    # create evidence dictionary
+    all_results = [j for k in [x.split(':') for y in evidence_data for x in y.split(' | ')] for j in k]
+    dbxref_results = [x.split(':')[1] for y in evidence_data for x in y.split(' | ') if 'dbxref' in x.lower()]
+    synonym_results = [x.split(':')[0] for y in evidence_data for x in y.split(' | ') if 'synonym' in x.lower()]
+    syn_type = Counter([y.split('_')[1] for y in [x.split('-')[0] for x in synonym_results] if 'synonym' in y.lower()])
+    label_results = [x.split(':')[0] for y in evidence_data for x in y.split(' | ') if 'label' in x.lower()]
+    similarity_results = [float(x.split('_')[-1]) for y in evidence_data for x in y.split(' | ')
+                          if 'similarity' in x.lower()]
+
+    # aggregate evidence
+    evidence = {'all': all_results, 'dbxref': dbxref_results, 'synonym': synonym_results,
+                'synonym_type': syn_type, 'label': label_results, 'similarity': similarity_results}
+
+    return evidence
