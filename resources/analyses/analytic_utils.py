@@ -20,7 +20,6 @@ Statistical Testing
 # import needed libraries
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
-import statistics
 
 from collections import Counter
 from itertools import combinations  # type: ignore
@@ -104,9 +103,9 @@ def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_s
     if type_col is not None:
         all_cols = [x for x in data.columns if type_col not in x]
         conc_type = [x for x in data.columns if con_string.upper() in x.upper() and type_col.upper() in x.upper()]
-        conc_type_uri = [x for x in conc_type if x.upper().endswith('URI')][0]
         anc_type = [x for x in data.columns if anc_string.upper() in x.upper() and type_col.upper() in x.upper()]
-        if len(anc_type) > 0:
+        if len(anc_type) > 0 and len(conc_type) > 0:
+            conc_type_uri = [x for x in conc_type if x.upper().endswith('URI')][0]
             anc_type_uri = [x for x in anc_type if x.upper().endswith('URI')][0]
             # extract concept codes from ancestor codes
             concept = data[all_cols + conc_type].dropna(subset=conc_type, how='all').drop_duplicates()
@@ -116,7 +115,16 @@ def splits_concept_levels(data: pd.DataFrame, type_col: Optional[str], concept_s
             ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
 
             return [(concept, concept_ont_codes), (ancestor, ancestor_ont_codes)]
+        elif len(conc_type) == 0 and len(anc_type) > 0:
+            anc_type_uri = [x for x in anc_type if x.upper().endswith('URI')][0]
+            # extract concept codes
+            ancestor = data[all_cols + anc_type].dropna(subset=anc_type, how='all').drop_duplicates()
+            # get counts of ontology concepts at each concept level
+            ancestor_ont_codes = [i for j in [x.split(' | ') for x in list(ancestor[anc_type_uri])] for i in j]
+
+            return [(None, None), (ancestor, ancestor_ont_codes)]
         else:
+            conc_type_uri = [x for x in conc_type if x.upper().endswith('URI')][0]
             # extract concept codes from ancestor codes
             concept = data[all_cols + conc_type].dropna(subset=conc_type, how='all').drop_duplicates()
             # get counts of ontology concepts at each concept level
@@ -338,25 +346,26 @@ def process_mapping_results(data: pd.DataFrame, ont_list: List, grp_var: str, da
     # process results by ontology
     ontology_results = {}
     for ont in ont_list:
-        print('Processing Ontology: {}'.format(ont))
+        if ont in '_'.join(list(data.columns)):
+            print('Processing Ontology: {}'.format(ont))
 
-        # get individual ontology results
-        ontology_results[ont] = {}
-        data_stacked_ont = data_stacked_category_grp.get_group(ont).drop_duplicates().drop('CATEGORY', 1)
-        ontology_results[ont]['ont_data'] = data_stacked_ont
+            # get individual ontology results
+            ontology_results[ont] = {}
+            data_stacked_ont = data_stacked_category_grp.get_group(ont).drop_duplicates().drop('CATEGORY', 1)
+            ontology_results[ont]['ont_data'] = data_stacked_ont
 
-        # group ont data by concept type (i.e. concepts used in practice, standard concepts)
-        data_stacked_ont_grp = data_stacked_ont.groupby(grp_var)
+            # group ont data by concept type (i.e. concepts used in practice, standard concepts)
+            data_stacked_ont_grp = data_stacked_ont.groupby(grp_var)
 
-        # get concept type group information
-        group_results = gets_data_by_concept_type(data_stacked_ont_grp, data_type)
+            # get concept type group information
+            group_results = gets_data_by_concept_type(data_stacked_ont_grp, data_type)
 
-        # process and organize grouped results
-        for res in group_results.keys():
-            ontology_results[ont][res] = {}
-            ontology_results[ont][res]['data'] = group_results[res]['data']
-            ontology_results[ont][res]['concepts'] = group_results[res]['level data'][0]
-            ontology_results[ont][res]['ancestors'] = group_results[res]['level data'][1]
+            # process and organize grouped results
+            for res in group_results.keys():
+                ontology_results[ont][res] = {}
+                ontology_results[ont][res]['data'] = group_results[res]['data']
+                ontology_results[ont][res]['concepts'] = group_results[res]['level data'][0]
+                ontology_results[ont][res]['ancestors'] = group_results[res]['level data'][1]
 
     return ontology_results
 
