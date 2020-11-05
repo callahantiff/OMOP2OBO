@@ -24,7 +24,9 @@ import pandas as pd  # type: ignore
 from collections import Counter
 from itertools import combinations  # type: ignore
 from scipy.stats import chi2_contingency  # type: ignore
+from sklearn.preprocessing import MinMaxScaler
 from statsmodels.sandbox.stats.multicomp import multipletests  # type: ignore
+from tqdm import tqdm
 from typing import Dict, List, Optional
 
 
@@ -394,3 +396,80 @@ def process_mapping_evidence(evidence_data: List):
                 'synonym_type': syn_type, 'label': label_results, 'similarity': similarity_results}
 
     return evidence
+
+
+def min_max_scaler(score_lists: List) -> List:
+    """Method takes a list of lists, where each list contains a list of ints or floats and performs min-max
+    normalization.
+
+    Args:
+        score_lists: A list of lists of ints or floats, where each float represents a score.
+
+    Returns:
+        normalized_scores: A single list of min/max normalized scores.
+    """
+
+    normalized_scores = []
+
+    # instantiate sklearn scaler
+    scaler = MinMaxScaler(feature_range=(0, 1))
+
+    for scores in score_lists:
+        scaled_scores = scaler.fit_transform(np.asarray(scores).reshape(-1, 1))
+        scaled_scores_list = np.concatenate(scaled_scores, axis=0).tolist()
+        normalized_scores += scaled_scores_list
+
+    return normalized_scores
+
+
+def gets_group_stats(prim_data: pd.DataFrame, sec_data: pd.DataFrame, grp_col: str, concept_col: str) -> dict:
+    """
+
+    Args:
+        prim_data: A Pandas DataFrame containing OMOP2OBO OMOP vocabulary concepts.
+        sec_data: A Pandas DataFrame containing OMOP vocabulary concepts from external databases.
+        grp_col: A string representing a column in the prim_data and sec_data sources that stores the OMOP vocabulary
+            concepts.
+        concept_col: A string representing a column that stores grouping variables
+
+    Returns:
+        db_compared_data: A nested dictionary containing keys for each external database being compared and for each
+            of these keys there is a dictionary containing three additional keys, a dictionary of overlapping
+            concepts between the specific secondary data source and the primary data source, a dictionary of concepts
+            that only occurred in the primary data source, and a dictionary of concepts that only occurred in the
+            secondary data source.
+    """
+
+    # preprocess secondary data
+    sec_data.fillna(0, inplace=True)
+    sec_count_col = [x for x in sec_data.columns if 'count' in x.lower()][0]
+    sec_concepts = set(sec_data[concept_col])
+    sec_dict = {x[0]: int(x[1]) for x in list(zip(list(sec_data[concept_col]), list(sec_data[sec_count_col])))}
+    # preprocess primary data
+    prim_count_col = [x for x in prim_data.columns if 'count' in x.lower()][0]
+    prim_data_grps = prim_data.groupby(grp_col)
+    print('Processing {} Database groups'.format(len(prim_data_grps.groups.keys())))
+
+    # loop over each database and compare against secondary data
+    db_compared_data = {}
+    for grp in tqdm(prim_data_grps.groups.keys()):
+        db_compared_data[grp] = {}
+        print('Processing Database: {}'.format(grp))
+
+        # get group data
+        db_df = prim_data_grps.get_group(grp)
+
+        # create dictionary out of concepts and counts
+        prim_dict = {x[0]: x[1] for x in list(zip(list(db_df[concept_col]), list(db_df[prim_count_col])))}
+
+        # get coverage data
+        overlap = set(prim_dict.keys()).intersection(sec_concepts)
+        prim_only = set(prim_dict.keys()).difference(sec_concepts)
+        sec_only = sec_concepts.difference(set(prim_dict.keys()))
+
+        # save output to dict
+        db_compared_data[grp]['overlap'] = {x: prim_dict[x] for x in overlap}
+        db_compared_data[grp]['primary_only'] = {x: prim_dict[x] for x in prim_only}
+        db_compared_data[grp]['secondary_only'] = {x: sec_dict[x] for x in sec_only}
+
+    return db_compared_data
