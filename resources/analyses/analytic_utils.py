@@ -422,12 +422,55 @@ def min_max_scaler(score_lists: List) -> List:
     return normalized_scores
 
 
-def gets_group_stats(prim_data: pd.DataFrame, sec_data: pd.DataFrame, grp_col: str, concept_col: str) -> dict:
-    """
+def output_coverage_set_counts(prim_data: pd.DataFrame, sec_data: pd.DataFrame, coverage_sets: List) -> Dict:
+    """Function takes a primary Pandas DataFrame (assumed to contain concept prevalence data) and a secondary Pandas
+    DataFrame assumed to contain (omop2obo data) and a list of coverage sets. Using this information the concept
+    frequency values are extracted and returned as a dictionary.
 
     Args:
-        prim_data: A Pandas DataFrame containing OMOP2OBO OMOP vocabulary concepts.
-        sec_data: A Pandas DataFrame containing OMOP vocabulary concepts from external databases.
+        prim_data: A Pandas DataFrame containing concept prevalence data.
+        sec_data: A Pandas DataFrame containing OMOP2OBO concept data.
+        coverage_sets: A list of concept sets in the following order: overlap, cp only, omop2obo only.
+
+    Returns:
+         coverage: A dictionary keyed by set type with values representing lists of processed concept data and counts.
+    """
+
+    # coverage sets
+    overlap_concepts, cp_concepts_only, omop2obo_concepts_only = coverage_sets
+
+    coverage = {}
+
+    # get overlap set info
+    overlap = prim_data[prim_data.CONCEPT_ID.isin(list(overlap_concepts))].fillna(0.0)
+    overlap_only = overlap.groupby('CONCEPT_ID')['RECORD_COUNT'].mean().reset_index(name='MEAN_CONCEPT_COUNT')
+
+    # get cp only info
+    cp_df = prim_data[prim_data.CONCEPT_ID.isin(list(cp_concepts_only))][['CONCEPT_ID', 'CONCEPT_NAME', 'RECORD_COUNT']]
+    cp_only = cp_df.drop_duplicates()
+    cp_only = cp_only.groupby('CONCEPT_ID')['RECORD_COUNT'].mean().reset_index(name='MEAN_CONCEPT_COUNT')
+
+    # get omop2obo only info
+    omop2obo = sec_data[sec_data.CONCEPT_ID.isin(list(omop2obo_concepts_only))].fillna('')
+    omop2obo_only = omop2obo[omop2obo['CONCEPT_COUNT_ADJUSTED'] != '']
+
+    # get counts - converting NaN for concepts not used in practice to 0.0
+    coverage['overlap'] = {'data': overlap_only, 'counts': list(np.log10(overlap_only['MEAN_CONCEPT_COUNT']))}
+    coverage['cp_only'] = {'data': cp_only, 'counts': list(np.log10(cp_only['MEAN_CONCEPT_COUNT']))}
+    coverage['omop2obo_only'] = {'data': omop2obo_only,
+                                 'counts': list(np.log10(omop2obo_only['CONCEPT_COUNT_ADJUSTED'].values.astype(float)))}
+
+    return coverage
+
+
+def gets_group_stats(prim_data: pd.DataFrame, sec_data: pd.DataFrame, grp_col: str, concept_col: str) -> dict:
+    """Function takes two Pandas Dataframes, one assumed to contain OMOP2OBO data and the other assumed to contain
+    Concept Prevalence data. These data sets are processed in order to obtain the the concepts that overlap and don't
+    overlap for each database.
+
+    Args:
+        prim_data: A Pandas DataFrame containing OMOP vocabulary concepts from external databases.
+        sec_data: A Pandas DataFrame containing OMOP2OBO OMOP vocabulary concepts.
         grp_col: A string representing a column in the prim_data and sec_data sources that stores the OMOP vocabulary
             concepts.
         concept_col: A string representing a column that stores grouping variables
@@ -442,19 +485,19 @@ def gets_group_stats(prim_data: pd.DataFrame, sec_data: pd.DataFrame, grp_col: s
 
     # preprocess secondary data
     sec_data.fillna(0, inplace=True)
-    sec_count_col = [x for x in sec_data.columns if 'count' in x.lower()][0]
+    sec_count_col = [x for x in sec_data.columns if 'count_adjusted' in x.lower()][0]
     sec_concepts = set(sec_data[concept_col])
     sec_dict = {x[0]: int(x[1]) for x in list(zip(list(sec_data[concept_col]), list(sec_data[sec_count_col])))}
     # preprocess primary data
     prim_count_col = [x for x in prim_data.columns if 'count' in x.lower()][0]
     prim_data_grps = prim_data.groupby(grp_col)
-    print('Processing {} Database groups'.format(len(prim_data_grps.groups.keys())))
+    print('Processing {} Database groups\n'.format(len(prim_data_grps.groups.keys())))
 
     # loop over each database and compare against secondary data
     db_compared_data = {}
     for grp in tqdm(prim_data_grps.groups.keys()):
         db_compared_data[grp] = {}
-        print('Processing Database: {}'.format(grp))
+        # print('Processing Database: {}'.format(grp))
 
         # get group data
         db_df = prim_data_grps.get_group(grp)
