@@ -27,7 +27,7 @@ from scipy.stats import chi2_contingency  # type: ignore
 from sklearn.preprocessing import MinMaxScaler
 from statsmodels.sandbox.stats.multicomp import multipletests  # type: ignore
 from tqdm import tqdm
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 
 def reconfigures_dataframe(split_list: List, data_frame: pd.DataFrame) -> pd.DataFrame:
@@ -516,3 +516,40 @@ def gets_group_stats(prim_data: pd.DataFrame, sec_data: pd.DataFrame, grp_col: s
         db_compared_data[grp]['secondary_only'] = {x: sec_dict[x] for x in sec_only}
 
     return db_compared_data
+
+
+def process_error_analysis_data(error_data: pd.DataFrame, missing_concepts: Set, data1: pd.DataFrame,
+                                data2: pd.DataFrame, data3: pd.DataFrame) -> List:
+    """
+    Function takes several Pandas DataFrames and a set of concepts that were found to be missing from the OMOP2OBO
+    mapping set. The function proceeds to create several Pandas DataFrames which provide a different explanation for
+    the set of missing concepts.
+
+    Args:
+        error_data: A Pandas DataFrame containing OMOP data intended for use in the error analysis.
+        missing_concepts: A set of concepts that were not found in the OMOP2OBO mappings.
+        data1: A Pandas DataFrame containing ineligible OMOP2OBO mapping data.
+        data2: A Pandas DataFrame containing eligible OMOP2OBO mapping data.
+        data3: A Pandas DataFrame containing concept prevalence data.
+
+    Return:
+        A list of 3 Pandas DataFrames, where the first df contains missing concepts found in the error analysis data,
+            the second df contains missing concepts that were contained in the ineligible conditions data, and the
+            third df contains missing concepts that are truly missing.
+    """
+
+    # find not covered concepts in error analysis data
+    error_analysis_concepts = set(error_data['TARGET_CONCEPT_ID']).intersection(missing_concepts)
+    error_analysis_concepts_data = error_data[error_data.TARGET_CONCEPT_ID.isin(error_analysis_concepts)]
+
+    # find not covered concepts in excluded clinical mapping data
+    filtered_cond_maps = set(data1['CONCEPT_ID']).difference(set(data2['CONCEPT_ID']))
+    filtered_cond_maps_not_ea = filtered_cond_maps.difference(error_analysis_concepts)
+    filtered_concepts = filtered_cond_maps_not_ea.intersection(missing_concepts)
+    filtered_concepts_data = data1[data1.CONCEPT_ID.isin(filtered_concepts)]
+
+    # remaining not covered concepts (n=74)
+    true_not_covered = missing_concepts.difference(set(list(error_analysis_concepts) + list(filtered_concepts)))
+    true_not_covered_concepts_data = data3[data3.CONCEPT_ID.isin(true_not_covered)]
+
+    return [error_analysis_concepts_data, filtered_concepts_data, true_not_covered_concepts_data]
