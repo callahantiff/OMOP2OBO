@@ -20,6 +20,7 @@ Statistical Testing
 # import needed libraries
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
+import statistics
 
 from collections import Counter
 from itertools import combinations  # type: ignore
@@ -553,3 +554,66 @@ def process_error_analysis_data(error_data: pd.DataFrame, missing_concepts: Set,
     true_not_covered_concepts_data = data3[data3.CONCEPT_ID.isin(true_not_covered)]
 
     return [error_analysis_concepts_data, filtered_concepts_data, true_not_covered_concepts_data]
+
+
+def classifies_missing_concepts(data: pd.DataFrame, ont_list: List, key: str, db_type: str, dbs: List) -> Dict:
+    """
+    Function takes Pandas DataFrames missing OMOP2OBO data and converts them into a nested dictionary where keys
+    contain different types of information on each missing concept. An example is shown below.
+
+    Args:
+        data: A Pandas DataFrame containing concept data.
+        ont_list: A list of ontology prefixes (e.g. ['HP', 'MONDO']).
+        key: A string containing the name of the primary concept id column.
+        db_type: A string specifying the type of data in the data var.
+        dbs: A list of Panda DataFrames. It is assumed that the first df contains concept prevalence data, the second
+            df contains
+
+    Return:
+        error_analysis_org: A nested dictionary keyed by concept with a sub-dictionary containing information on each
+            concept. For example:
+                {35622917: {'dbs': 1, 'avg_count': 246, 'error_analysis_info': 'Newly Added Concept',
+                            'evidence': ['HP:Manual Constructor', 'MONDO:Automatic Exact - Ancestor']},
+                36716551: {'dbs': 13, 'avg_count': 195.30769230769232, 'error_analysis_info': 'Newly Added Concept',
+                           'evidence': ['HP:INJURY', 'MONDO:INJURY']}
+
+    """
+
+    main_data, excluded_data, mapping_data = dbs
+    concept_ids = set((data[key]))
+    error_analysis_org = {db_type: {}}
+
+    for concept in tqdm(concept_ids):
+        src_ids = []
+        error_analysis_org[db_type][concept] = {}
+
+        # get concept count info from concept prevalence data
+        concept_data = main_data.query('CONCEPT_ID == {}'.format(concept))
+        error_analysis_org[db_type][concept]['dbs'] = len(concept_data)
+        error_analysis_org[db_type][concept]['avg_count'] = statistics.mean(list(concept_data['RECORD_COUNT']))
+
+        if db_type == 'error':
+            relations_type = data.query('TARGET_CONCEPT_ID == {}'.format(concept))
+            if 'Replaced Concept' in list(relations_type['SCENARIO_TYPE']): rel_type = 'Replaced Concept'
+            else: rel_type = 'Newly Added Concept'
+            src_ids = set(relations_type['SOURCE_CONCEPT_ID'])
+            error_analysis_org[db_type][concept]['error_analysis_info'] = rel_type
+        if db_type == 'excluded': src_ids = [concept]
+        # get evidence
+        if len(src_ids) > 0:
+            evidence = []
+            for src in src_ids:
+                if src in list(mapping_data['CONCEPT_ID']):
+                    row_data = mapping_data.query('CONCEPT_ID == {}'.format(src))
+                else:
+                    row_data = excluded_data.query('CONCEPT_ID == {}'.format(src))
+                for ont in ont_list:
+                    ev = row_data[ont + '_MAPPING'].values.tolist()[0]\
+                        if row_data[ont + '_MAPPING'].values.tolist()[0] != 'Unmapped'\
+                        else row_data[ont + '_URI'].values.tolist()[0]
+                    evidence += [ont + ':' + ev]
+        else:
+            evidence = main_data.query('CONCEPT_ID == {}'.format(concept))['CONCEPT_NAME'].values.tolist()[0]
+        error_analysis_org[db_type][concept]['evidence'] = evidence
+
+    return error_analysis_org
