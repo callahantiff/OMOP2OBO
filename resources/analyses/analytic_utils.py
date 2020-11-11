@@ -20,7 +20,6 @@ Statistical Testing
 # import needed libraries
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
-import statistics
 
 from collections import Counter
 from itertools import combinations  # type: ignore
@@ -590,30 +589,56 @@ def classifies_missing_concepts(data: pd.DataFrame, ont_list: List, key: str, db
         # get concept count info from concept prevalence data
         concept_data = main_data.query('CONCEPT_ID == {}'.format(concept))
         error_analysis_org[db_type][concept]['dbs'] = len(concept_data)
-        error_analysis_org[db_type][concept]['avg_count'] = statistics.mean(list(concept_data['RECORD_COUNT']))
+        error_analysis_org[db_type][concept]['counts'] = list(concept_data['RECORD_COUNT'])
+
+        relation_info = {}
 
         if db_type == 'error':
             relations_type = data.query('TARGET_CONCEPT_ID == {}'.format(concept))
-            if 'Replaced Concept' in list(relations_type['SCENARIO_TYPE']): rel_type = 'Replaced Concept'
-            else: rel_type = 'Newly Added Concept'
             src_ids = set(relations_type['SOURCE_CONCEPT_ID'])
-            error_analysis_org[db_type][concept]['error_analysis_info'] = rel_type
         if db_type == 'excluded': src_ids = [concept]
-        # get evidence
+
+        primary_relation = []
         if len(src_ids) > 0:
-            evidence = []
             for src in src_ids:
+                # get relationship id
+                if db_type == 'error':
+                    src_info = data.query('SOURCE_CONCEPT_ID == {} & TARGET_CONCEPT_ID == {}'.format(src, concept))
+                    full_relations = set(src_info['RELATIONSHIP_ID'].values.tolist())
+                    if 'Concept replaced by' in full_relations: relations = 'Concept replaced by'
+                    elif 'Maps to' in full_relations: relations = 'Maps to'
+                    else: relations = 'Is a'
+                    # relations = '-'.join(set(src_info['RELATIONSHIP_ID'].values.tolist())) if len(
+                    #     set(src_info['RELATIONSHIP_ID'].values.tolist())) > 1 else \
+                    #     src_info['RELATIONSHIP_ID'].values.tolist()[0]
+                else:
+                    relations = 'N/A'
+                primary_relation.append(relations)
+
+                # get evidence
+                evidence = []
                 if src in list(mapping_data['CONCEPT_ID']):
                     row_data = mapping_data.query('CONCEPT_ID == {}'.format(src))
                 else:
                     row_data = excluded_data.query('CONCEPT_ID == {}'.format(src))
                 for ont in ont_list:
-                    ev = row_data[ont + '_MAPPING'].values.tolist()[0]\
-                        if row_data[ont + '_MAPPING'].values.tolist()[0] != 'Unmapped'\
+                    ev = row_data[ont + '_MAPPING'].values.tolist()[0] \
+                        if row_data[ont + '_MAPPING'].values.tolist()[0] != 'Unmapped' \
                         else row_data[ont + '_URI'].values.tolist()[0]
                     evidence += [ont + ':' + ev]
+
+                # add to dict
+                relation_info[src] = {'relation': relations, 'evidence': evidence}
         else:
             evidence = main_data.query('CONCEPT_ID == {}'.format(concept))['CONCEPT_NAME'].values.tolist()[0]
-        error_analysis_org[db_type][concept]['evidence'] = evidence
+            relation_info[concept] = {'relation': 'N/A', 'evidence': evidence}
+            primary_relation = ['N/A']
+
+        error_analysis_org[db_type][concept]['evidence'] = relation_info
+
+        # parse master relation information
+        rel_info = [x for x in primary_relation if '-' in x]
+        master_relation = rel_info[0] if len(rel_info) > 0 else '-'.join(set(primary_relation))
+        error_analysis_org[db_type][concept]['evidence']['master_evidence'] = master_relation
 
     return error_analysis_org
