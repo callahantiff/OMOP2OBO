@@ -15,6 +15,15 @@ Pandas DataFrame manipulations
 Dictionary manipulations
 * merge_dictionaries
 
+Mapping Result Aggregation
+* ohdsi_ananke
+* normalizes_clinical_source_codes
+* filters_mapping_content
+* compiles_mapping_content
+* formats_mapping_evidence
+* assigns_mapping_category
+* aggregates_mapping_results
+
 """
 
 # import needed libraries
@@ -528,11 +537,13 @@ def assigns_mapping_category(mapping_result: List, map_evidence: str) -> str:
             mapping_category = 'Automatic Constructor - Concept'
         else:
             mapping_category = 'Automatic Exact - Concept'
-    else:
+    elif any(x for x in ['ANCESTOR_CODE', 'ANCESTOR_SYNONYM', 'ANCESTOR_LABEL'] if x in map_evidence):
         if len(mapping_result[0]) > 1:
             mapping_category = 'Automatic Constructor - Ancestor'
         else:
             mapping_category = 'Automatic Exact - Ancestor'
+    else:
+        mapping_category = ''
 
     return mapping_category
 

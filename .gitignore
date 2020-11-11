@@ -9,6 +9,9 @@
 __pycache__
 .ipynb_checkpoints/*
 
+resources/analyses/.DS_Store
+resources/analyses/.ipynb_checkpoints/*
+
 ## testing resources ##
 #################################
 *.mypy*
@@ -21,8 +24,11 @@ coverage.xml
 ## directories ##
 #################################
 releases/*
+!resources/analyses/*.py
+!resources/analyses/*.ipynb
 resources/clinical_data
 !resources/clinical_data/README.md
+resources/documentation
 resources/mappings/
 !resources/mappings/condition_codes/.gitkeep
 !resources/mappings/laboratory_tests/.gitkeep
