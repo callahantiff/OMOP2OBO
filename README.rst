@@ -16,7 +16,9 @@ This repository stores releases of validated versions of the mappings as well as
 - Creates DbXRef and Exact String Mapping    
 - Performs TF-IDF Cosine Similarity Mapping   
 
-Please see the Project `Wiki`_ for more details!
+A semantic representaiton of the ``omop2obo`` mappings is created and made available as an ``.owl`` file. For additional detail on this process, please see the `Semantic Mapping Representation <https://github.com/callahantiff/PheKnowLator/wiki>`__ wiki page.  
+
+Please see the Project `Wiki`_ for more details on the ``omop2obo`` algorithm, hospital scale mapping set, and information on the experiments we ran to validate the mappings!
 
 |
 
@@ -97,6 +99,8 @@ Dependencies
 - **Ontology Data:** Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
 
 - **Vocabulary Source Code Mapping:** To increase the likelihood of capturing existing database cross-references, ``omop2obo`` provides a file that maps different clinical vocabulary source code prefixes between the UMLS, ontologies, and clinical EHR data (i.e. "SNOMED", "SNOMEDCT", "SNOMEDCT_US")  ``source_code_vocab_map.csv`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/mappings/source_code_vocab_map.csv>`__). Please note this file builds off of `these <https://www.nlm.nih.gov/research/umls/sourcereleasedocs/index.html>`__ UMLS provided abbreviation mappings. Currently, this file is updated for ontologies released ``july 2020``, clinical data normlaized to ``OMOP_v5.0``, and ``UMLS 2020AA``. 
+
+- **Semantic Mapping Representation:**  In order to create a semantic representation of the ``omop2obo`` mappings, an ontological specification for creating classes that span multiple ontologies (``reosurces/mapping_semantics/omop2obo``). This document only needs to be altered if you plan to utilize the semantic mapping transformation algorithm and want to use a different knowledge representation. Please the following `README <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/mapping_semantics/README.md>`__ for additional details on these resources.
 
 |
 
