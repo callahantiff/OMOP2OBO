@@ -31,4 +31,3 @@ drugs, VO, http://purl.obolibrary.org/obo/RO_0002162, NCBITAXON
 drugs, PR, http://purl.obolibrary.org/obo/RO_0002162, NCBITAXON
 measurements, HP, http://purl.obolibrary.org/obo/RO_0002479, UBERON
 ```
-
