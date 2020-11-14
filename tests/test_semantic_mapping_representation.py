@@ -143,14 +143,19 @@ class TestSemanticMappingTransformer(TestCase):
                      'measurement': URIRef('http://purl.obolibrary.org/obo/HP_0000118')}
 
         # check when subclass dict input is None
-        test_method = SemanticMappingTransformer(['so'], self.omop2obo_data_file, self.ontology_directory,
-                                                 self.map_type, self.superclasses)
-        self.assertIsInstance(test_method.superclass_dict, Dict)
-        self.assertEqual(test_method.superclass_dict, test_dict)
+        test_method1 = SemanticMappingTransformer(['so'], self.omop2obo_data_file, self.ontology_directory,
+                                                  'multi', self.superclasses)
+        self.assertIsInstance(test_method1.superclass_dict, Dict)
+        self.assertEqual(test_method1.superclass_dict, test_dict)
 
         # check when subclass dict is not None
         self.assertRaises(TypeError, SemanticMappingTransformer, ['so'], self.omop2obo_data_file,
                           self.ontology_directory, 123, 'not a dict')
+
+        # check when construction type is single that the subclass dict is None
+        test_method2 = SemanticMappingTransformer(['so'], self.omop2obo_data_file, self.ontology_directory,
+                                                  'single')
+        self.assertEqual(test_method2.superclass_dict, None)
 
         return None
 

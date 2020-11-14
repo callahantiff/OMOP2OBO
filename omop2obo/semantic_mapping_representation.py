@@ -8,6 +8,7 @@ import os
 import pandas as pd  # type: ignore
 
 from rdflib import URIRef  # type: ignore
+from tqdm import tqdm  # type: ignore
 from typing import Dict, List, Optional
 
 
@@ -26,7 +27,10 @@ class SemanticMappingTransformer(object):
 
         Arg:
             ontologies: A list of ontology identifiers (i.e. ['HP', 'MONDO']).
-            omop2obo_data: A Pandas DataFrame containing OMOP2OBO mapping data.
+            omop2obo_data: A Pandas DataFrame containing OMOP2OBO mapping data. Assumes that the mapping data is
+                stored in an xlsx file sheet called "Aggregated_Mapping_Results" and that no additional filtering or
+                preprocessing is needed.
+                needed
             ont_directory: A string pointing to a directory that contains OWL ontology files.
             construction_type: A string indicating whether to build single (i.e. 'single') or multi-ontology
                 (i.e. 'multi') classes. The default type is "multi".
@@ -77,17 +81,17 @@ class SemanticMappingTransformer(object):
         # check ontology directory
         onts = 'resources/ontologies' if ontology_directory is None else ontology_directory
         ont_data = glob.glob(onts + '/*.owl')
-        ont_check = [x for x in self.ontologies if x.lower() in [y.split('/')[-1].split('_')[0] for y in ont_data]]
-
-        # check for ontology data
         if not os.path.exists(onts):
             raise OSError("Can't find 'ontologies/' directory, this directory is a required input")
         elif len(ont_data) == 0:
             raise TypeError('The ontologies directory is empty')
-        elif len(ont_check) == 0:
-            raise ValueError('No ontology owl files match provided ontology list')
         else:
-            self.ont_directory = onts
+            # check for ontology data
+            ont_check = [x for x in ont_data if x.split('/')[-1].split('_')[0] in [y.lower() for y in self.ontologies]]
+            if len(ont_check) == 0:
+                raise ValueError('No ontology owl files match provided ontology list')
+            else:
+                self.ont_directory = ont_data
 
         # check mapping approach type
         if not isinstance(map_type, str):
@@ -96,16 +100,20 @@ class SemanticMappingTransformer(object):
             self.construction_type = 'single' if map_type != 'multi' else map_type
 
         # check subclass dict input
-        if superclasses is not None:
-            if not isinstance(superclasses, Dict):
-                self.superclass_dict = superclasses
+        if self.construction_type == 'multi':
+            if superclasses is not None:
+                if not isinstance(superclasses, Dict):
+                    self.superclass_dict: Optional[Dict] = superclasses
+                else:
+                    raise TypeError('superclasses must be type Dict')
             else:
-                raise TypeError('superclasses must be type Dict')
+                self.superclass_dict = {
+                    'condition': {'phenotype': URIRef('http://purl.obolibrary.org/obo/HP_0000118'),
+                                  'disease': URIRef('http://purl.obolibrary.org/obo/MONDO_0000001')},
+                    'drug': URIRef('http://purl.obolibrary.org/obo/CHEBI_24431'),
+                    'measurement': URIRef('http://purl.obolibrary.org/obo/HP_0000118')}
         else:
-            self.superclass_dict = {'condition': {'phenotype': URIRef('http://purl.obolibrary.org/obo/HP_0000118'),
-                                                  'disease': URIRef('http://purl.obolibrary.org/obo/MONDO_0000001')},
-                                    'drug': URIRef('http://purl.obolibrary.org/obo/CHEBI_24431'),
-                                    'measurement': URIRef('http://purl.obolibrary.org/obo/HP_0000118')}
+            self.superclass_dict = None
 
         # read in multi-ontology relations
         if self.construction_type == 'multi':
@@ -117,7 +125,7 @@ class SemanticMappingTransformer(object):
             else:
                 print('Loading Multi-Ontology Class Construction Relations')
                 rel_data = glob.glob('resources/mapping_semantics/omop2obo_class_relations.txt')[0]
-                self.multi_class_relations: Dict = {}
+                self.multi_class_relations: Optional[Dict] = {}
                 with open(rel_data, 'r') as f:
                     for x in f.read().splitlines()[1:]:
                         row = [i.strip() for i in x.split(',')]
@@ -134,3 +142,38 @@ class SemanticMappingTransformer(object):
         # check for existing version of omop2obo
         existing_mappings = glob.glob('resources/mapping_semantics/omop2obo*.owl')
         self.current_omop2obo = None if len(existing_mappings) == 0 else existing_mappings[0]
+
+    # OR classes
+
+    # AND classes
+
+    # NOT classes
+
+    # combination classes
+
+    # gets logic information
+    # def gets_logical_instructions(self):
+
+
+    for s, p, o in graph:
+        if 'HP_0002644' in str(s) or 'HP_0002644' in str(o):
+            print(str(s), str(p), str(o))
+
+
+
+    def transforms_mappings(self):
+
+
+        for idx, row in omop2obo_data.iterrows():
+            logic = row['HP_LOGIC']
+            uri = row['HP_URI']
+            labels = row['HP_LABEL']
+
+            # for each ontology
+
+            # multi or single?
+
+
+        # get
+
+        return None
