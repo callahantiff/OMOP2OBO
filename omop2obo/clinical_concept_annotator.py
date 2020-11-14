@@ -69,7 +69,7 @@ class ConceptAnnotator(object):
         # vocabulary source code mapping -- not tested in testing file
         source_code = 'resources/mappings/source_code_vocab_map.csv' if source_codes is None else source_codes
         if not isinstance(source_code, str):
-            raise TypeError('source_codes must be type str.')
+            raise TypeError('source_codes must be type str')
         elif not os.path.exists(source_code):
             raise OSError('The {} file does not exist!'.format(source_code))
         elif os.stat(source_code).st_size == 0:
