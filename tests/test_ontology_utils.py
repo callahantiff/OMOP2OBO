@@ -5,8 +5,8 @@ import os
 import os.path
 import unittest
 
-from typing import Dict, Set
-from rdflib import Graph
+from typing import Dict, List, Set
+from rdflib import Graph, URIRef
 
 from omop2obo.utils import *
 
@@ -144,5 +144,27 @@ class TestOntologyUtils(unittest.TestCase):
 
         self.assertIsInstance(classes, Set)
         self.assertEqual(239, len(classes))
+
+        return None
+
+    def test_finds_class_ancestors(self):
+        """Tests the finds_class_ancestors method."""
+
+        # load ontology
+        graph = Graph().parse(self.good_ontology_file_location, format='xml')
+        so_class = [URIRef('http://purl.obolibrary.org/obo/SO_0000348')]
+
+        # get ancestors when a valid class is provided
+        ancestors1 = finds_class_ancestors(graph, so_class)
+        # check output
+        self.assertIsInstance(ancestors1, List)
+        self.assertEqual(ancestors1,
+                         ['http://purl.obolibrary.org/obo/SO_0000400', 'http://purl.obolibrary.org/obo/SO_0000443'])
+
+        # get ancestors when no class is provided
+        ancestors2 = finds_class_ancestors(graph, [])
+        # check output
+        self.assertIsInstance(ancestors2, List)
+        self.assertEqual(ancestors2, [])
 
         return None

@@ -5,8 +5,16 @@
 Ontology Utility Functions.
 
 Interacts with OWL Tools API
+* gets_ontology_statistic
+
+Obtains Graph Information
 * gets_ontology_classes
+* gets_ontology_class_labels
+* gets_ontology_class_definitions
+* gets_ontology_class_synonyms
+* gets_ontology_class_dbxrefs
 * gets_deprecated_ontology_classes
+* finds_class_ancestors
 
 """
 
@@ -14,11 +22,11 @@ Interacts with OWL Tools API
 import os
 import os.path
 from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
-from rdflib.namespace import RDF, OWL  # type: ignore
+from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 import subprocess
 
 from tqdm import tqdm  # type: ignore
-from typing import Dict, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -233,3 +241,28 @@ def gets_ontology_statistics(file_location: str, owltools_location: str = './omo
     print(sent.format(cls, axs, op, ind))
 
     return None
+
+
+def finds_class_ancestors(graph: Graph, class_uris: List[URIRef], class_list: Optional[List] = None) -> List:
+    """A method that recursively searches an ontology hierarchy to pull all ancestor concepts for an input class.
+
+    Args:
+        graph: An RDFLib graph object assumed to contain ontology data.
+        class_uris: A list of at least one ontology class RDFLib URIRef object.
+        class_list: A list of URIs representing the ancestor classes found for the input class_uris.
+
+    Returns:
+        A list of ontology class ordered by the ontology hierarchy.
+    """
+
+    # instantiate list object if none passed to function
+    class_list = [] if class_list is None else class_list
+
+    # gets ancestors
+    ancestor_classes = [j for k in [list(graph.objects(x, RDFS.subClassOf)) for x in class_uris] for j in k]
+
+    if len(ancestor_classes) == 0:
+        return [str(x) for x in class_list][::-1]
+    else:
+        class_list += ancestor_classes
+        return finds_class_ancestors(graph, ancestor_classes, class_list)
