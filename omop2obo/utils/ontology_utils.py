@@ -6,6 +6,7 @@ Ontology Utility Functions.
 
 Interacts with OWL Tools API
 * gets_ontology_statistic
+* merges_ontologies
 
 Obtains Graph Information
 * gets_ontology_classes
@@ -19,6 +20,7 @@ Obtains Graph Information
 """
 
 # import needed libraries
+import glob
 import os
 import os.path
 from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
@@ -32,6 +34,78 @@ from typing import Dict, List, Optional, Set, Tuple
 obo = Namespace('http://purl.obolibrary.org/obo/')
 oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
 schema = Namespace('http://www.w3.org/2001/XMLSchema#')
+
+
+def gets_ontology_statistics(file_location: str, owltools_location: str = './omop2obo/libs/owltools') -> None:
+    """Uses the OWL Tools API to generate summary statistics (i.e. counts of axioms, classes, object properties, and
+    individuals).
+
+    Args:
+        file_location: A string that contains the file path and name of an ontology.
+        owltools_location: A string pointing to the location of the owl tools library.
+
+    Returns:
+        A set of all the deprecated ontology classes.
+
+    Raises:
+        TypeError: If the file_location is not type str.
+        OSError: If file_location points to a non-existent file.
+        ValueError: If file_location points to an empty file.
+    """
+
+    if not isinstance(file_location, str):
+        raise TypeError('ERROR: file_location must be a string')
+    elif not os.path.exists(file_location):
+        raise OSError('The {} file does not exist!'.format(file_location))
+    elif os.stat(file_location).st_size == 0:
+        raise ValueError('FILE ERROR: input file: {} is empty'.format(file_location))
+    else:
+        output = subprocess.check_output([os.path.abspath(owltools_location), file_location, '--info'])
+
+    # print stats
+    res = output.decode('utf-8').split('\n')[-5:]
+    cls, axs, op, ind = res[0].split(':')[-1], res[3].split(':')[-1], res[2].split(':')[-1], res[1].split(':')[-1]
+    sent = '\nThe knowledge graph contains {0} classes, {1} axioms, {2} object properties, and {3} individuals\n'
+
+    print(sent.format(cls, axs, op, ind))
+
+    return None
+
+
+def merges_ontologies(ontology_files: List[str], write_location: str, merged_ont_kg: str,
+                      owltools_location: str = './omop2obo/libs/owltools') -> Optional[Graph]:
+    """Using the OWLTools API, each ontology listed in in the ontologies attribute is recursively merged with into a
+    master merged ontology file and saved locally to the provided file path via the merged_ontology attribute. The
+    function assumes that the file is written to the directory specified by the write_location attribute.
+
+    Args:
+        ontology_files: A list of ontology file paths.
+        write_location: A string pointing to a local directory for writing data.
+        merged_ont_kg: A string pointing to the location of the merged ontology file.
+        owltools_location: A string pointing to the location of the owl tools library.
+
+    Returns:
+        None.
+    """
+
+    if not ontology_files:
+        return None
+    else:
+        if write_location + merged_ont_kg in glob.glob(write_location + '/*.owl'):
+            ont1, ont2 = ontology_files.pop(), write_location + merged_ont_kg
+        else:
+            ont1, ont2 = ontology_files.pop(), ontology_files.pop()
+
+        try:
+            print('\nMerging Ontologies: {ont1}, {ont2}'.format(ont1=ont1.split('/')[-1], ont2=ont2.split('/')[-1]))
+            # call to OWL API to merge ontologies
+            subprocess.check_call([os.path.abspath(owltools_location), str(ont1), str(ont2),
+                                   '--merge-support-ontologies',
+                                   '-o', write_location + merged_ont_kg])
+        except subprocess.CalledProcessError as error:
+            print(error.output)
+
+        return merges_ontologies(ontology_files, write_location, merged_ont_kg)
 
 
 def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
@@ -205,42 +279,6 @@ def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
     class_list = set([x for x in dep_classes if ont_id.lower() in str(x).lower()])
 
     return class_list
-
-
-def gets_ontology_statistics(file_location: str, owltools_location: str = './omop2obo/libs/owltools') -> None:
-    """Uses the OWL Tools API to generate summary statistics (i.e. counts of axioms, classes, object properties, and
-    individuals).
-
-    Args:
-        file_location: A string that contains the file path and name of an ontology.
-        owltools_location: A string pointing to the location of the owl tools library.
-
-    Returns:
-        A set of all the deprecated ontology classes.
-
-    Raises:
-        TypeError: If the file_location is not type str.
-        OSError: If file_location points to a non-existent file.
-        ValueError: If file_location points to an empty file.
-    """
-
-    if not isinstance(file_location, str):
-        raise TypeError('ERROR: file_location must be a string')
-    elif not os.path.exists(file_location):
-        raise OSError('The {} file does not exist!'.format(file_location))
-    elif os.stat(file_location).st_size == 0:
-        raise ValueError('FILE ERROR: input file: {} is empty'.format(file_location))
-    else:
-        output = subprocess.check_output([os.path.abspath(owltools_location), file_location, '--info'])
-
-    # print stats
-    res = output.decode('utf-8').split('\n')[-5:]
-    cls, axs, op, ind = res[0].split(':')[-1], res[3].split(':')[-1], res[2].split(':')[-1], res[1].split(':')[-1]
-    sent = '\nThe knowledge graph contains {0} classes, {1} axioms, {2} object properties, and {3} individuals\n'
-
-    print(sent.format(cls, axs, op, ind))
-
-    return None
 
 
 def finds_class_ancestors(graph: Graph, class_uris: List[URIRef], class_list: Optional[List] = None) -> List:
