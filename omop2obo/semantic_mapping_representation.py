@@ -7,12 +7,19 @@ import glob  # type: ignore
 import os
 import pandas as pd  # type: ignore
 
-from rdflib import URIRef  # type: ignore
+from abc import ABCMeta, abstractmethod
+from datetime import date, datetime  # type: ignore
+from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
+from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 from tqdm import tqdm  # type: ignore
 from typing import Dict, List, Optional
 
+from omop2obo.utils import finds_class_ancestors, merges_ontologies
+
 
 class SemanticMappingTransformer(object):
+
+    __metaclass__ = ABCMeta
 
     def __init__(self, ontology_list: List, omop2obo_data_file: str, ontology_directory: str = Optional[None],
                  map_type: str = 'multi', superclasses: Dict = Optional[None]) -> None:
@@ -25,39 +32,37 @@ class SemanticMappingTransformer(object):
         For additional information on this approach please see the dedicated project wiki page:
             https://github.com/callahantiff/OMOP2OBO/wiki/Semantic-Mapping-Representation
 
-        Arg:
-            ontologies: A list of ontology identifiers (i.e. ['HP', 'MONDO']).
-            omop2obo_data: A Pandas DataFrame containing OMOP2OBO mapping data. Assumes that the mapping data is
+        Attributes:
+            ontology_list: A list of ontology identifiers (i.e. ['HP', 'MONDO']).
+            omop2obo_data_file: A Pandas DataFrame containing OMOP2OBO mapping data. Assumes that the mapping data is
                 stored in an xlsx file sheet called "Aggregated_Mapping_Results" and that no additional filtering or
                 preprocessing is needed.
                 needed
-            ont_directory: A string pointing to a directory that contains OWL ontology files.
-            construction_type: A string indicating whether to build single (i.e. 'single') or multi-ontology
-                (i.e. 'multi') classes. The default type is "multi".
-           superclass_dict: A dictionary where keys are clinical domains and values are either a dictionary or a URIRef
+            ontology_directory: A string pointing to a directory that contains OWL ontology files.
+            map_type: A string indicating whether to build single (i.e. 'single') or multi-ontology (i.e. 'multi')
+                classes. The default type is "multi".
+           superclasses: A dictionary where keys are clinical domains and values are either a dictionary or a URIRef
                 object. For example:
                     {'condition': {'phenotype': URIRef('http://purl.obolibrary.org/obo/HP_0000118'),
                                                   'disease': URIRef('http://purl.obolibrary.org/obo/MONDO_0000001')},
                                     'drug': URIRef('http://purl.obolibrary.org/obo/CHEBI_24431'),
                                     'measurement': URIRef('http://purl.obolibrary.org/obo/HP_0000118')}
-           multi_class_relations: A nested dictionary keyed by clinical domain that contains sub-dictionaries of
-                edges and relation URIs.
-                For example: {'conditions': {'relations':
-                                {'MONDO-HP': rdflib.term.URIRef('http://purl.obolibrary.org/obo/RO_0002200')}},
-                              'drugs': {'relations':
-                                {'CHEBI-VO': rdflib.term.URIRef('http://purl.obolibrary.org/obo/RO_0002180'),
-                                'CHEBI-PR': rdflib.term.URIRef('http://purl.obolibrary.org/obo/RO_0002180'),
-                                'VO-NCBITAXON': rdflib.term.URIRef('http://purl.obolibrary.org/obo/RO_0002162')}},
-                              'measurements': {'relations':
-                                {'HP-UBERON': rdflib.term.URIRef('http://purl.obolibrary.org/obo/RO_0002479'),
-                                'HP-CL': rdflib.term.URIRef('http://purl.obolibrary.org/obo/RO_0002180'),
-                                'HP-CHEBI': rdflib.term.URIRef('http://purl.obolibrary.org/obo/RO_0002180')}}}
 
         Returns:
             None.
         """
 
-        # check ontology list to be a list
+        # CREATE CLASS ATTRIBUTES
+        self.graph: Graph = Graph()
+        self.owltools_location = './omop2obo/libs/owltools'
+        self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
+        self.ontology_data_dict: Dict = {}
+
+        # EXISTING OMOP2OBO OWL FILE
+        existing_mappings = glob.glob('resources/mapping_semantics/omop2obo*.owl')
+        self.current_omop2obo = None if len(existing_mappings) == 0 else existing_mappings[0]
+
+        # ONTOLOGY LIST
         if not isinstance(ontology_list, List):
             raise TypeError('ontology_list must be type str')
         elif len(ontology_list) == 0:
@@ -65,7 +70,7 @@ class SemanticMappingTransformer(object):
         else:
             self.ontologies = ontology_list
 
-        # check mapping data input
+        # OMOP2OBO MAPPING DATA
         if not isinstance(omop2obo_data_file, str):
             raise TypeError('omop2obo_data_file must be type str.')
         elif not os.path.exists(omop2obo_data_file):
@@ -78,7 +83,7 @@ class SemanticMappingTransformer(object):
                                                sep=',', header=0)
             self.omop2obo_data.fillna('', inplace=True)
 
-        # check ontology directory
+        # ONTOLOGY DIRECTORY
         onts = 'resources/ontologies' if ontology_directory is None else ontology_directory
         ont_data = glob.glob(onts + '/*.owl')
         if not os.path.exists(onts):
@@ -93,7 +98,7 @@ class SemanticMappingTransformer(object):
             else:
                 self.ont_directory = ont_data
 
-        # check mapping approach type
+        # CLASS CONSTRUCTION TYPE
         if not isinstance(map_type, str):
             raise TypeError('map_type must be type string')
         else:
@@ -115,7 +120,7 @@ class SemanticMappingTransformer(object):
         else:
             self.superclass_dict = None
 
-        # read in multi-ontology relations
+        # RO RELATIONS FOR MULTI-ONTOLOGY CLASSES
         if self.construction_type == 'multi':
             rel_data_loc = 'resources/mapping_semantics/omop2obo_class_relations.txt'
             if not os.path.exists(rel_data_loc):
@@ -139,10 +144,6 @@ class SemanticMappingTransformer(object):
         else:
             self.multi_class_relations = None
 
-        # check for existing version of omop2obo
-        existing_mappings = glob.glob('resources/mapping_semantics/omop2obo*.owl')
-        self.current_omop2obo = None if len(existing_mappings) == 0 else existing_mappings[0]
-
     # OR classes
 
     # AND classes
@@ -154,26 +155,100 @@ class SemanticMappingTransformer(object):
     # gets logic information
     # def gets_logical_instructions(self):
 
+    def loads_ontology_data(self) -> Dict:
+        """Method iterates over each ontology in the ontologies attribute and loads them as RDFLib Graph objects. For
+        both "single" and "multi" class construction_types the ontology prefixes are used as dictionary keys and the
+        RDFLib Graph objects are the values. If the construction_type is "multi" then an additional key is added to
+        the dictionary where the value contains all of the ontologies merged together.
 
-    for s, p, o in graph:
-        if 'HP_0002644' in str(s) or 'HP_0002644' in str(o):
-            print(str(s), str(p), str(o))
+        Returns:
+            ontology_data_dict:A dictionary containing ontology data. If construction_type is "single" or "multi" then
+                the keys correspond to the entries in ontology_list and values are RDFLib Graph objects. If the
+                construction_type is "multi" then an additional key is added to store the merged ontology data.
+        """
+
+        ontology_data, ontology_files = {}, []
+        write_loc = os.path.relpath('/'.join(self.ont_directory[0].split('/')[:-1]))
+
+        for ont in self.ontologies:
+            print('Loading: {}'.format(ont.upper()))
+            # get ontology file path
+            ont_file = [x for x in self.ont_directory if ont in x][0]
+            ontology_files.append(ont_file)
+            ontology_data[ont] = Graph().parse(ont_file, format='xml')
+        if self.construction_type == 'multi':
+            omop2obo_merged_filepath = '/OMOP2OBO_MergedOntologies' + self.timestamp + '.owl'
+            # merge all relevant ontologies
+            merges_ontologies(ontology_files, write_loc, omop2obo_merged_filepath, self.owltools_location)
+            # load merged ontologies and add to ontology_data dictionary
+            print('Loading merged ontology data: {}'.format(write_loc + omop2obo_merged_filepath))
+            ontology_data['merged'] = Graph().parse(write_loc + omop2obo_merged_filepath, format='xml')
+
+        return ontology_data
+
+    def transforms_mappings(self) -> None:
+        """Method parses a Pandas DataFrame containing OMOP2OBO mappings and builds semantic representations of the
+        mappings for single ontology or for a collection of ontologies. If the OMOP2OBO mapping file contains
+        multiple ontologies, but the class construction type is "single" then an owl file is serialized for each
+
+        Returns:
+            None.
+        """
+
+        pass
+
+    @abstractmethod
+    def gets_class_construction_type(self) -> str:
+        """"A string detailing whether or not the classes are constructed using a single or multiple ontologies."""
+
+        pass
 
 
+class SingleOntologyConstruction(SemanticMappingTransformer):
 
-    def transforms_mappings(self):
+    def gets_class_construction_type(self) -> str:
+        """"A string representing the type of knowledge graph being built."""
+
+        return 'Single Ontology Class Construction'
+
+    # def transforms_mappings(self):
+    #
+    #
+    #     for idx, row in omop2obo_data.iterrows():
+    #         logic = row['HP_LOGIC']
+    #         uri = row['HP_URI']
+    #         labels = row['HP_LABEL']
+    #
+    #         # for each ontology
+    #
+    #         # multi or single?
+    #
+    #
+    #     # get
+    #
+    #     return None
 
 
-        for idx, row in omop2obo_data.iterrows():
-            logic = row['HP_LOGIC']
-            uri = row['HP_URI']
-            labels = row['HP_LABEL']
+class MultipleOntologyConstruction(SemanticMappingTransformer):
 
-            # for each ontology
+    def gets_class_construction_type(self) -> str:
+        """"A string representing the type of knowledge graph being built."""
 
-            # multi or single?
+        return 'Multiple Ontology Class Construction'
 
-
-        # get
-
-        return None
+    # def transforms_mappings(self):
+    #
+    #
+    #     for idx, row in omop2obo_data.iterrows():
+    #         logic = row['HP_LOGIC']
+    #         uri = row['HP_URI']
+    #         labels = row['HP_LABEL']
+    #
+    #         # for each ontology
+    #
+    #         # multi or single?
+    #
+    #
+    #     # get
+    #
+    #     return None

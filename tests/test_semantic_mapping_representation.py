@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import glob
 import os
 import os.path
 import shutil
 
-from rdflib import URIRef
+from rdflib import Graph, URIRef
 from typing import Dict
 from unittest import TestCase
 
@@ -17,17 +18,20 @@ class TestSemanticMappingTransformer(TestCase):
 
     def setUp(self):
         # initialize data directories
-        current_directory1 = os.path.dirname(__file__)
-        dir_loc1 = os.path.join(current_directory1, 'data')
+        current_directory = os.path.dirname(__file__)
+        dir_loc1 = os.path.join(current_directory, 'data')
         self.dir_loc1 = os.path.abspath(dir_loc1)
         self.ontology_directory = self.dir_loc1 + '/ontologies'
         self.mapping_directory = self.dir_loc1 + '/mappings'
 
         # create a second location
-        current_directory2 = os.path.dirname(__file__)
-        dir_loc2 = os.path.join(current_directory2, 'resources')
+        dir_loc2 = os.path.join(current_directory, 'resources')
         self.dir_loc2 = os.path.abspath(dir_loc2)
         self.resources_directory = self.dir_loc2 + '/mapping_semantics'
+
+        # create pointer to testing utilities
+        dir_loc3 = os.path.join(current_directory, 'utils/owltools')
+        self.owltools_location = os.path.abspath(dir_loc3)
 
         # create input parameters
         self.ontology_list = ['HP', 'MONDO']
@@ -60,9 +64,12 @@ class TestSemanticMappingTransformer(TestCase):
                                                'http://purl.obolibrary.org/obo/RO_0002162')}}}
 
         # instantiate semantic transformation class
-        self.map_transformer = SemanticMappingTransformer(['so'], self.omop2obo_data_file,
+        self.map_transformer = SemanticMappingTransformer(['so', 'vo'], self.omop2obo_data_file,
                                                           self.ontology_directory,
                                                           self.map_type)
+
+        # make sure that instantiated class points to testing data location of the OWLTools API
+        self.map_transformer.owltools_location = self.owltools_location
 
         return None
 
@@ -215,5 +222,40 @@ class TestSemanticMappingTransformer(TestCase):
 
         # clean up environment
         os.remove('resources/mapping_semantics/omop2obo_v0.owl')
+
+        return None
+
+    def test_loads_ontology_data_single_construction(self):
+        """Tests the loads_ontology_data method for a single class construction type."""
+
+        # run the method to load ontology data
+        ont_dictionary = self.map_transformer.loads_ontology_data()
+
+        # check output
+        self.assertIsInstance(ont_dictionary, Dict)
+
+        return None
+
+    def test_loads_ontology_data_multi_construction(self):
+        """Tests the loads_ontology_data method for a multi class construction type."""
+
+        # instantiate method
+        self.map_transformer2 = SemanticMappingTransformer(['so', 'vo'], self.omop2obo_data_file,
+                                                           self.ontology_directory, 'multi')
+        self.map_transformer2.owltools_location = self.owltools_location
+
+        # run the method to load ontology data
+        ont_dictionary = self.map_transformer2.loads_ontology_data()
+        print(len(ont_dictionary['merged']))
+
+        # check output
+        self.assertIsInstance(ont_dictionary, Dict)
+        self.assertIn('merged', ont_dictionary.keys())
+        self.assertIsInstance(ont_dictionary['merged'], Graph)
+        self.assertEqual(len(ont_dictionary['merged']), 127283)
+
+        # remove file
+        merged_ontology_file = glob.glob(self.ontology_directory + '/OMOP2OBO_MergedOntologies_*.owl')[0]
+        os.remove(merged_ontology_file)
 
         return None
