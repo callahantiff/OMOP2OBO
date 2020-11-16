@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import glob
 import os
 import os.path
 import unittest
@@ -166,5 +167,25 @@ class TestOntologyUtils(unittest.TestCase):
         # check output
         self.assertIsInstance(ancestors2, List)
         self.assertEqual(ancestors2, [])
+
+        return None
+
+    def test_merges_ontologies(self):
+        """Tests the merges_ontologies method."""
+
+        # set up input parameters
+        ontology_repository = [x for x in glob.glob(self.dir_loc + '/*.owl') if 'empty' not in x]
+        merged_ontology_file = '/OMOP2OBO_MergedOntologies.owl'
+
+        # make sure that there is no merged ontology file in write location
+        self.assertFalse(os.path.exists(self.dir_loc + merged_ontology_file))
+
+        # run merge function and check that file was generated
+        merges_ontologies(ontology_files=ontology_repository, write_location=self.dir_loc,
+                          merged_ont_kg=merged_ontology_file, owltools_location=self.owltools_location)
+        self.assertTrue(os.path.exists(self.dir_loc + merged_ontology_file))
+
+        # remove file
+        os.remove(self.dir_loc + merged_ontology_file)
 
         return None
