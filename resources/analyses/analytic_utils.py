@@ -444,25 +444,20 @@ def output_coverage_set_counts(prim_data: pd.DataFrame, sec_data: pd.DataFrame, 
     # get overlap set info
     overlap = prim_data[prim_data.CONCEPT_ID.isin(list(overlap_concepts))].fillna(0.0)
     overlap_only = overlap.groupby('CONCEPT_ID')['RECORD_COUNT'].mean().reset_index(name='MEAN_CONCEPT_COUNT')
-    overlap_sum = overlap['RECORD_COUNT'].sum()
 
     # get cp only info
     cp_df = prim_data[prim_data.CONCEPT_ID.isin(list(cp_concepts_only))][['CONCEPT_ID', 'CONCEPT_NAME', 'RECORD_COUNT']]
     cp_only = cp_df.drop_duplicates()
     cp_only = cp_only.groupby('CONCEPT_ID')['RECORD_COUNT'].mean().reset_index(name='MEAN_CONCEPT_COUNT')
-    cp_only_sum = cp_only['RECORD_COUNT'].sum()
 
     # get omop2obo only info
     omop2obo = sec_data[sec_data.CONCEPT_ID.isin(list(omop2obo_concepts_only))].fillna('')
     omop2obo_only = omop2obo[omop2obo['CONCEPT_COUNT_ADJUSTED'] != '']
-    omop2obo_only_sum = omop2obo_only['CONCEPT_COUNT_ADJUSTED'].sum()
 
     # get counts - converting NaN for concepts not used in practice to 0.0
-    coverage['overlap'] = {'data': overlap_only, 'total_concepts': overlap_sum,
-                           'counts': list(np.log10(overlap_only['MEAN_CONCEPT_COUNT']))}
-    coverage['cp_only'] = {'data': cp_only, 'total_concepts': cp_only_sum,
-                           'counts': list(np.log10(cp_only['MEAN_CONCEPT_COUNT']))}
-    coverage['omop2obo_only'] = {'data': omop2obo_only, 'total_concepts': omop2obo_only_sum,
+    coverage['overlap'] = {'data': overlap_only, 'counts': list(np.log10(overlap_only['MEAN_CONCEPT_COUNT']))}
+    coverage['cp_only'] = {'data': cp_only, 'counts': list(np.log10(cp_only['MEAN_CONCEPT_COUNT']))}
+    coverage['omop2obo_only'] = {'data': omop2obo_only,
                                  'counts': list(np.log10(omop2obo_only['CONCEPT_COUNT_ADJUSTED'].values.astype(float)))}
 
     return coverage
