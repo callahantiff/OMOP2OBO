@@ -1,5 +1,6 @@
+*****
 omop2obo
-=========================================================================================
+*****
 |travis| |sonar_quality| |sonar_maintainability| |codacy| 
 
 |coveralls| |sonar_coverage| |code_climate_coverage|  
@@ -8,43 +9,58 @@ omop2obo
 
 .. |pip| |downloads|
 
-``omop2obo`` is a health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBO`_) foundry ontologies.
+|
 
-This repository stores releases of validated versions of the mappings as well as provides code to enable automatic mapping between OMOP clinical concepts and OBO concepts using the following steps:
+What is OMOP2OBO?  
+########
 
-- Aligns UMLS CUI and Semantic Types       
-- Creates DbXRef and Exact String Mapping    
-- Performs TF-IDF Cosine Similarity Mapping   
+``omop2obo`` is a collection of health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBOs`_) foundry ontologies.
 
-A semantic representaiton of the ``omop2obo`` mappings is created and made available as an ``.owl`` file. For additional detail on this process, please see the `Semantic Mapping Representation <https://github.com/callahantiff/PheKnowLator/wiki>`__ wiki page.  
+*Motivation*  
 
-Please see the Project `Wiki`_ for more details on the ``omop2obo`` algorithm, hospital scale mapping set, and information on the experiments we ran to validate the mappings!
+Common data models have solved many challenges of utilizing electronic health records, but have not yet meaningfully integrated clinical and molecular data. Aligning clinical data to open biological ontologies (`OBOs`_), which provide semantically computable representations of biological knowledge, requires extensive manual curation and expertise.
+
+*Objective*
+
+To address these limitations, we have developed ``OMOP2OBO``, the first health system-wide integration and alignment between the Observational Health Data Sciences and Informatics' Observational Medical Outcomes Partnership (`OMOP`_) standardized clinical terminologies and eight OBO biomedical ontologies spanning diseases, phenotypes, anatomical entities, cell types, organisms, chemicals, metabolites, hormones, vaccines, and proteins. To verify that the mappings are both clinically and biologically meaningful, we have performed extensive experiments to verify the `accuracy <https://github.com/callahantiff/OMOP2OBO/wiki/Accuracy>`__, `generalizability <https://github.com/callahantiff/OMOP2OBO/wiki/Generalizability>`_, and `logical consistency <https://github.com/callahantiff/OMOP2OBO/wiki/Consistency>`_ of each released mapping set.  
+
+What Does This Repository Provide?
+**********************
+
+Through this repository we provide the following:  
+
+1. **Mappings:** A free set of ``omop2obo`` mappings that can be used out of the box (requires no coding) covering OMOP Conditions, Drug Exposures, and Measurements. These mappings are available in several formats including: ``.txt``, ``.xlsx``, and ``.dump``. We also provide a semantic representation of the mappings, integrated with the OBO biomedical ontologies, available as an edge list (``.txt``) and as an ``.owl`` file. See current release for more details.  
+
+
+2. **A Mapping Framework:** An algorithm and mapping pipeline that enables one to construct their set of `omop2obo` mappings. The figure below provides a high-level overview of the algorithm workflow. The code provided in this repository facilitates all of the automatic steps shown in this figure except for the manual mapping (for now, although we are `currently <https://github.com/callahantiff/OMOP2OBO/issues/19>`__ working on a deep learning model to address this).
+
+.. image:: https://user-images.githubusercontent.com/8030363/99837291-972c1e00-2b24-11eb-826b-8141c6b7d1f0.png
+    :align: center
+    :alt: alternate text
+
+How do I Learn More?
+**********************
+
+Please see the Project `Wiki`_ for more details on the ``omop2obo`` mappings, algorithm, and information on the experiments we ran to ensure each mapping set released is accurate, generalizable, and consistent!
 
 |
 
 Releases
-----------------------------------------------
+########
 
-Coming soon!
-
-.. All code and output for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__ for full release .. archive.
-.. 
-.. **Current Release:**  
-.. This release extends v1.0.0 by incorporating several more OBOs and 
-.. - ``v2.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/PheKnowLator/wiki/v2.0.0>`__.
-.. - 
-.. 
-.. **Prior Releases:**  (UPDATE ME)
-.. 
-.. - ``v1.0.0`` ➞ data and code can be directly downloaded (PUT DOID MAP HERE) `here <https://github.com/callahantiff/PheKnowLator/wiki/v1.0.0>`__.
-.. 
+All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__
+ 
+**Current Release:**  
+ Release currently in preparation and planned for ***December 2020***!
+ - ``v1.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/OMOP2OBO/wiki/V1.0>`__.
 
 |
 
 Getting Started
-------------------------------------------
+########
 
-**Install Library**   
+Install Library  
+**********************
 
 This program requires Python version 3.6. To install the library from PyPI, run:
 
@@ -63,7 +79,7 @@ You can also clone the repository directly from GitHub by running:
 |
 
 Set-Up Environment     
-^^^^^^^^^^^^
+**********************
 
 The ``omop2obo`` library requires a specific project directory structure. Please make sure that your project directory includes the following sub-directories:  
 
@@ -105,7 +121,7 @@ Dependencies
 |
 
 Running the omop2obo Library
-^^^^^^^^^^^^
+**********************
 
 There are a few ways to run ``omop2obo``. An example workflow is provided below.
 
@@ -234,20 +250,21 @@ If you follow the instructions for how to format clinical data (`here <https://g
 |
 
 Contributing
-------------------------------------------
+########
 
 Please read `CONTRIBUTING.md <https://github.com/callahantiff/biolater/blob/master/CONTRIBUTING.md>`__ for details on our code of conduct, and the process for submitting pull requests to us.
 
 |
 
 License
-------------------------------------------
+########
+
 This project is licensed under MIT - see the `LICENSE.md <https://github.com/callahantiff/OMOP2OBO/blob/master/LICENSE>`__ file for details.
 
 |
 
 Citing this Work
---------------
+########
 
 .. code:: shell
 
@@ -265,7 +282,7 @@ Citing this Work
 |
 
 Contact
---------------
+########
 
 We’d love to hear from you! To get in touch with us, please `create an issue`_ or `send us an email`_ 💌
 
@@ -315,7 +332,7 @@ We’d love to hear from you! To get in touch with us, please `create an issue`_
     
 .. _OMOP: https://www.ohdsi.org/data-standardization/the-common-data-model/
 
-.. _OBO: http://www.obofoundry.org/
+.. _OBOs: http://www.obofoundry.org/
 
 .. _Wiki: https://github.com/callahantiff/BioLater/wiki
 
