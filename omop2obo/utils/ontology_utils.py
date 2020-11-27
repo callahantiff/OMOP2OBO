@@ -28,7 +28,7 @@ from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 import subprocess
 
 from tqdm import tqdm  # type: ignore
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -281,7 +281,7 @@ def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
     return class_list
 
 
-def finds_class_ancestors(graph: Graph, class_uris: List[URIRef], class_list: Optional[List] = None) -> List:
+def gets_class_ancestors(graph: Graph, class_uris: List[Union[URIRef, str]], class_list: Optional[List] = None) -> List:
     """A method that recursively searches an ontology hierarchy to pull all ancestor concepts for an input class.
 
     Args:
@@ -296,6 +296,9 @@ def finds_class_ancestors(graph: Graph, class_uris: List[URIRef], class_list: Op
     # instantiate list object if none passed to function
     class_list = [] if class_list is None else class_list
 
+    # check class uris are formatted correctly
+    class_uris = [x if isinstance(x, URIRef) else URIRef('http://purl.obolibrary.org/obo/' + x) for x in class_uris]
+
     # gets ancestors
     ancestor_classes = [j for k in [list(graph.objects(x, RDFS.subClassOf)) for x in class_uris] for j in k]
 
@@ -303,4 +306,4 @@ def finds_class_ancestors(graph: Graph, class_uris: List[URIRef], class_list: Op
         return [str(x) for x in class_list][::-1]
     else:
         class_list += ancestor_classes
-        return finds_class_ancestors(graph, ancestor_classes, class_list)
+        return gets_class_ancestors(graph, ancestor_classes, class_list)

@@ -155,15 +155,22 @@ class TestOntologyUtils(unittest.TestCase):
         graph = Graph().parse(self.good_ontology_file_location, format='xml')
         so_class = [URIRef('http://purl.obolibrary.org/obo/SO_0000348')]
 
-        # get ancestors when a valid class is provided
-        ancestors1 = finds_class_ancestors(graph, so_class)
+        # get ancestors when a valid class is provided -- class is URIRef
+        ancestors1 = gets_class_ancestors(graph, so_class)
+        # check output
+        self.assertIsInstance(ancestors1, List)
+        self.assertEqual(ancestors1,
+                         ['http://purl.obolibrary.org/obo/SO_0000400', 'http://purl.obolibrary.org/obo/SO_0000443'])
+
+        # get ancestors when a valid class is provided -- class is not URIRef
+        ancestors1 = gets_class_ancestors(graph, [str(x).split('/')[-1] for x in so_class])
         # check output
         self.assertIsInstance(ancestors1, List)
         self.assertEqual(ancestors1,
                          ['http://purl.obolibrary.org/obo/SO_0000400', 'http://purl.obolibrary.org/obo/SO_0000443'])
 
         # get ancestors when no class is provided
-        ancestors2 = finds_class_ancestors(graph, [])
+        ancestors2 = gets_class_ancestors(graph, [])
         # check output
         self.assertIsInstance(ancestors2, List)
         self.assertEqual(ancestors2, [])
