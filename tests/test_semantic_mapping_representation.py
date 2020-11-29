@@ -4,6 +4,7 @@
 import glob
 import os
 import os.path
+import pandas as pd
 import shutil
 
 from rdflib import Graph, URIRef
@@ -395,7 +396,6 @@ class TestSemanticMappingTransformer(TestCase):
 
         # run the method to load ontology data
         ont_dictionary = self.map_transformer2.loads_ontology_data()
-        print(len(ont_dictionary['merged']))
 
         # check output
         self.assertIsInstance(ont_dictionary, Dict)
@@ -485,5 +485,29 @@ class TestSemanticMappingTransformer(TestCase):
         expected_output = [['NOT', '1'], ['OR', '0, 1'], ['AND', '0, NOT, OR']]
         self.assertIsInstance(complex_test2, List)
         self.assertEqual(complex_test2, expected_output)
+
+        return None
+
+    def test_gets_concept_id_data_(self):
+        """Tests the gets_concept_id_data method."""
+
+        # initialize a row of data
+        row_data = pd.Series({'CONCEPT_ID': 27526, 'CONCEPT_LABEL': "Nezelof's syndrome",
+                              'CONCEPT_SYNONYMS': "Nezelof syndrome | Congenital thymic dysplasia syndrome",
+                              'CONCEPT_VOCAB': 'SNOMED', 'CONCEPT_VOCAB_VERSION': 'SnomedCT Release 20180131',
+                              'CONCEPT_SOURCE_CODE': 55602000, 'CONCEPT_CUI': 'C0152094',
+                              'CONCEPT_SEMANTIC_TYPE': 'Disease or Syndrome'})
+
+        # test method
+        test_output = self.map_transformer.gets_concept_id_data(row_data)
+        self.assertIsInstance(test_output, Dict)
+        self.assertIn('primary_data', test_output[27526].keys())
+        self.assertIn('secondary_data', test_output[27526].keys())
+
+        # check primary key dict
+        self.assertEqual(len(test_output[27526]['primary_data']), 7)
+
+        # check secondary key dict
+        self.assertEqual(test_output[27526]['secondary_data'], None)
 
         return None
