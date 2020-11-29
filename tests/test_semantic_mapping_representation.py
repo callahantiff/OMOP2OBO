@@ -64,8 +64,12 @@ class TestSemanticMappingTransformer(TestCase):
                                                'http://purl.obolibrary.org/obo/RO_0002162')}}}
 
         # instantiate semantic transformation class
-        self.map_transformer = SemanticMappingTransformer(['so', 'vo'], self.omop2obo_data_file, 'condition',
-                                                          self.map_type, self.ontology_directory)
+        self.map_transformer = SemanticMappingTransformer(ontology_list=['so', 'vo'],
+                                                          omop2obo_data_file=self.omop2obo_data_file,
+                                                          domain='condition',
+                                                          map_type=self.map_type,
+                                                          ontology_directory=self.ontology_directory,
+                                                          primary_column='CONCEPT')
 
         # make sure that instantiated class points to testing data location of the OWLTools API
         self.map_transformer.owltools_location = self.owltools_location
@@ -76,8 +80,10 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the ontology list input parameter when input is a list."""
 
         # catch when ontology list is a list
-        self.assertRaises(TypeError, SemanticMappingTransformer, 1234, self.omop2obo_data_file, 'condition',
-                          self.map_type, self.ontology_directory, self.superclasses)
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=1234,
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition',
+                          map_type=self.map_type, ontology_directory=self.ontology_directory,
+                          superclasses=self.superclasses, primary_column='CONCEPT')
 
         return None
 
@@ -85,8 +91,10 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the ontology list input parameter when input is empty."""
 
         # catch when ontology list is empty
-        self.assertRaises(ValueError, SemanticMappingTransformer, [], self.omop2obo_data_file, 'condition',
-                          self.map_type, self.ontology_directory, self.superclasses)
+        self.assertRaises(ValueError, SemanticMappingTransformer, ontology_list=[],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition',
+                          map_type=self.map_type, ontology_directory=self.ontology_directory,
+                          superclasses=self.superclasses, primary_column='CONCEPT')
 
         return None
 
@@ -94,8 +102,10 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the omop2obo mapping data file input parameter when input is not a string."""
 
         # catch when omo2obo data file input is not a string
-        self.assertRaises(TypeError, SemanticMappingTransformer, ['so'], 1234, 'condition', self.map_type,
-                          self.ontology_directory, self.superclasses)
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=1234, domain='condition', map_type=self.map_type,
+                          ontology_directory=self.ontology_directory, superclasses=self.superclasses,
+                          primary_column='CONCEPT')
 
         return None
 
@@ -103,8 +113,10 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the omop2obo mapping data file input parameter when file path does not exist."""
 
         # catch when omo2obo data file points to a path that does not exist
-        self.assertRaises(OSError, SemanticMappingTransformer, ['so'], self.mapping_directory + '/fake+data_path.csv',
-                          'condition', self.map_type, self.ontology_directory, self.superclasses)
+        self.assertRaises(OSError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=self.mapping_directory + '/fake+data_path.csv',
+                          domain='condition', map_type=self.map_type, ontology_directory=self.ontology_directory,
+                          superclasses=self.superclasses, primary_column='CONCEPT')
 
         return None
 
@@ -113,8 +125,10 @@ class TestSemanticMappingTransformer(TestCase):
 
         # catch when omo2obo data file input points to an empty file
         empty_data_file = self.ontology_directory + '/empty_hp_without_imports.owl'
-        self.assertRaises(TypeError, SemanticMappingTransformer, ['so'], empty_data_file, 'condition', self.map_type,
-                          self.ontology_directory, self.superclasses)
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=empty_data_file, domain='condition', map_type=self.map_type,
+                          ontology_directory=self.ontology_directory, superclasses=self.superclasses,
+                          primary_column='CONCEPT')
 
         return None
 
@@ -123,8 +137,10 @@ class TestSemanticMappingTransformer(TestCase):
 
         # catch when ontology_directory does not exist
         ontology_directory = self.dir_loc1 + '/ontologie'
-        self.assertRaises(OSError, SemanticMappingTransformer, ['so'], self.omop2obo_data_file,
-                          'condition', self.map_type, ontology_directory, self.superclasses)
+        self.assertRaises(OSError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition',
+                          map_type=self.map_type, ontology_directory=ontology_directory,
+                          superclasses=self.superclasses, primary_column='CONCEPT')
 
         return None
 
@@ -134,8 +150,10 @@ class TestSemanticMappingTransformer(TestCase):
         # catch when ontology_directory is empty b/c there are no ontology data files
         os.mkdir(self.dir_loc1 + '/temp_ontologies')
         ontology_directory = self.dir_loc1 + '/temp_ontologies'
-        self.assertRaises(TypeError, SemanticMappingTransformer, ['so'], self.omop2obo_data_file, 'condition',
-                          self.map_type, ontology_directory, self.superclasses)
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition',
+                          map_type=self.map_type, ontology_directory=ontology_directory,
+                          superclasses=self.superclasses, primary_column='CONCEPT')
         os.rmdir(self.dir_loc1 + '/temp_ontologies')
 
         return None
@@ -144,8 +162,10 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the ontology directory input parameter when directory is empty."""
 
         # catch when ontology_directory is empty b/c there are no ontology data files from
-        self.assertRaises(ValueError, SemanticMappingTransformer, ['cl'], self.omop2obo_data_file, 'condition',
-                          self.map_type, self.ontology_directory, self.superclasses)
+        self.assertRaises(ValueError, SemanticMappingTransformer, ontology_list=['cl'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition',
+                          map_type=self.map_type, ontology_directory=self.ontology_directory,
+                          superclasses=self.superclasses, primary_column='CONCEPT')
 
         return None
 
@@ -153,8 +173,9 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the domain input parameter is type string."""
 
         # test that input is string
-        self.assertRaises(TypeError, SemanticMappingTransformer, ['so', 'vo'], self.omop2obo_data_file, 1234,
-                          self.map_type, self.ontology_directory)
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so', 'vo'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain=1234,
+                          map_type=self.map_type, ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
         return None
 
@@ -162,8 +183,9 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the domain input parameter is one of the three possible input types."""
 
         # test that input is in list of expected domains
-        self.assertRaises(ValueError, SemanticMappingTransformer, ['so', 'vo'], self.omop2obo_data_file, 'conditions',
-                          self.map_type, self.ontology_directory)
+        self.assertRaises(ValueError, SemanticMappingTransformer, ontology_list=['so', 'vo'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='conditions',
+                          map_type=self.map_type, ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
         return None
 
@@ -171,12 +193,14 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the mapping approach type input parameter."""
 
         # when mapping type is not None
-        self.assertRaises(TypeError, SemanticMappingTransformer, ['so'], self.omop2obo_data_file, 'condition', 123,
-                          self.ontology_directory, self.superclasses)
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type=123,
+                          ontology_directory=self.ontology_directory, superclasses=self.superclasses,
+                          primary_column='CONCEPT')
 
         test_method = SemanticMappingTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                                  domain='condition', ontology_directory=self.ontology_directory,
-                                                 superclasses=self.superclasses)
+                                                 superclasses=self.superclasses, primary_column='CONCEPT')
 
         self.assertEqual(test_method.construction_type, 'multi')
 
@@ -192,18 +216,32 @@ class TestSemanticMappingTransformer(TestCase):
                      'measurement': URIRef('http://purl.obolibrary.org/obo/HP_0000118')}
 
         # check when subclass dict input is None
-        test_method1 = SemanticMappingTransformer(['so'], self.omop2obo_data_file, 'condition', 'multi',
-                                                  self.ontology_directory, self.superclasses)
+        test_method1 = SemanticMappingTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
+                                                  domain='condition', map_type='multi',
+                                                  ontology_directory=self.ontology_directory,
+                                                  superclasses=self.superclasses, primary_column='CONCEPT')
         self.assertIsInstance(test_method1.superclass_dict, Dict)
         self.assertEqual(test_method1.superclass_dict, test_dict)
 
+        return None
+
+    def test_input_subclass_dict_not_dictionary(self):
+        """Tests the subclass_dict input parameter when the input is not type dictionary."""
+
         # check when subclass dict is not None
-        self.assertRaises(TypeError, SemanticMappingTransformer, ['so'], self.omop2obo_data_file, 'condition', 'multi',
-                          self.ontology_directory, 123, 'not a dict')
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
+                          ontology_directory=self.ontology_directory, superclasses=123, primary_column='CONCEPT')
+
+        return None
+
+    def test_input_subclass_dict_single_construction_no_superclasses(self):
+        """Tests that the subclass_dict input parameter is None when the construction type is single."""
 
         # check when construction type is single that the subclass dict is None
-        test_method2 = SemanticMappingTransformer(['so'], self.omop2obo_data_file, 'condition', 'single',
-                                                  self.ontology_directory)
+        test_method2 = SemanticMappingTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
+                                                  domain='condition', map_type='single',
+                                                  ontology_directory=self.ontology_directory, primary_column='CONCEPT')
         self.assertEqual(test_method2.superclass_dict, None)
 
         return None
@@ -224,8 +262,9 @@ class TestSemanticMappingTransformer(TestCase):
 
         # test when relations file does not exist
         os.remove(self.resources_directory + '/omop2obo_class_relations.txt')
-        self.assertRaises(OSError, SemanticMappingTransformer, ['so'], self.omop2obo_data_file, 'condition', 'multi',
-                          self.ontology_directory)
+        self.assertRaises(OSError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
         return None
 
@@ -235,8 +274,9 @@ class TestSemanticMappingTransformer(TestCase):
         # move and rename empty file into repo
         shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations_empty.txt',
                         self.resources_directory + '/omop2obo_class_relations.txt')
-        self.assertRaises(TypeError, SemanticMappingTransformer, ['so'], self.omop2obo_data_file, 'condition', 'multi',
-                          self.ontology_directory)
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
         # clean up environment
         os.remove('resources/mapping_semantics/omop2obo_class_relations.txt')
@@ -251,11 +291,58 @@ class TestSemanticMappingTransformer(TestCase):
                         self.resources_directory + '/omop2obo_class_relations.txt')
         test_method2 = SemanticMappingTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                                   ontology_directory=self.ontology_directory,
-                                                  domain='condition', map_type='multi', superclasses=self.superclasses)
+                                                  domain='condition', map_type='multi', superclasses=self.superclasses,
+                                                  primary_column='CONCEPT')
         self.assertEqual(test_method2.multi_class_relations, self.test_relations_dict)
 
         # clean up environment
         os.remove('resources/mapping_semantics/omop2obo_class_relations.txt')
+
+        return None
+
+    def test_input_primary_column_string(self):
+        """Tests the primary_column input when not a string."""
+
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so', 'vo'],
+                          omop2obo_data_file=self.omop2obo_data_file,
+                          domain='condition',
+                          map_type=self.map_type,
+                          ontology_directory=self.ontology_directory,
+                          primary_column=1234)
+
+        return None
+
+    def test_input_primary_column_none(self):
+        """Tests the primary_column input when no input is provided."""
+
+        test_method = SemanticMappingTransformer(ontology_list=['so', 'vo'],
+                                                 omop2obo_data_file=self.omop2obo_data_file, domain='condition',
+                                                 map_type=self.map_type, ontology_directory=self.ontology_directory)
+        self.assertEqual(test_method.primary_column, 'CONCEPT')
+
+        return None
+
+    def test_input_secondary_column_string(self):
+        """Tests the secondary_column input when not a string."""
+
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so', 'vo'],
+                          omop2obo_data_file=self.omop2obo_data_file,
+                          domain='condition',
+                          map_type=self.map_type,
+                          ontology_directory=self.ontology_directory,
+                          primary_column='CONCEPT',
+                          secondary_column=1234)
+
+        return None
+
+    def test_input_secondary_column_none(self):
+        """Tests the secondary_column input when no input is provided."""
+
+        test_method = SemanticMappingTransformer(ontology_list=['so', 'vo'],
+                                                 omop2obo_data_file=self.omop2obo_data_file, domain='condition',
+                                                 map_type=self.map_type, ontology_directory=self.ontology_directory,
+                                                 primary_column='CONCEPT')
+        self.assertEqual(test_method.secondary_column, None)
 
         return None
 
@@ -265,7 +352,8 @@ class TestSemanticMappingTransformer(TestCase):
         # test when there is not an existing omop2obo mapping file present
         test_method1 = SemanticMappingTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                                   ontology_directory=self.ontology_directory,
-                                                  domain='condition', map_type='multi', superclasses=self.superclasses)
+                                                  domain='condition', map_type='multi', superclasses=self.superclasses,
+                                                  primary_column='CONCEPT')
         self.assertEqual(test_method1.current_omop2obo, None)
 
         # test when there is not an existing omop2obo mapping file present
@@ -273,7 +361,8 @@ class TestSemanticMappingTransformer(TestCase):
                         self.resources_directory + '/omop2obo_v0.owl')
         test_method2 = SemanticMappingTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                                   ontology_directory=self.ontology_directory,
-                                                  domain='condition', map_type='multi', superclasses=self.superclasses)
+                                                  domain='condition', map_type='multi', superclasses=self.superclasses,
+                                                  primary_column='CONCEPT')
 
         self.assertEqual(test_method2.current_omop2obo, 'resources/mapping_semantics/omop2obo_v0.owl')
 
@@ -297,8 +386,11 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the loads_ontology_data method for a multi class construction type."""
 
         # instantiate method
-        self.map_transformer2 = SemanticMappingTransformer(['so', 'vo'], self.omop2obo_data_file, 'condition', 'multi',
-                                                           self.ontology_directory)
+        self.map_transformer2 = SemanticMappingTransformer(ontology_list=['so', 'vo'],
+                                                           omop2obo_data_file=self.omop2obo_data_file,
+                                                           domain='condition', map_type='multi',
+                                                           ontology_directory=self.ontology_directory,
+                                                           primary_column='CONCEPT')
         self.map_transformer2.owltools_location = self.owltools_location
 
         # run the method to load ontology data
