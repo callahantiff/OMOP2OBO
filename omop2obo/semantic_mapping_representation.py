@@ -16,7 +16,7 @@ from tqdm import tqdm  # type: ignore
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
-from omop2obo.utils import gets_class_ancestors, merges_ontologies
+from omop2obo.utils import gets_class_ancestors, merges_ontologies, ontology_file_formatter
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -432,13 +432,30 @@ class SemanticMappingTransformer(object):
 
         return None
 
-    def serializes_rdf_data(self):
-        """
-        - serializes and saves an ontology
-        - calls the formatting fixer function that's stored in the ontology class
+    def serializes_semantic_representation(self, mapping_graph: Graph, ont: str, write_location: str) -> None:
+        """method serializes the semantic representation of the OMOP2OBO clinical mappings.
 
-        :return:
+        Args:
+            mapping_graph: An RDFLib Graph object that contains the results of converting the clinical mappings into
+                a semantic representation.
+            ont: A string containing a single ontology prefix (e.g. "hp") or the keyword "merged", which is used in
+                the serialized file name.
+            write_location: A string containing the file path for where to write the serialized data.
+
+        Returns:
+            None.
         """
+
+        # set inputs
+        ont = ont.upper() if ont != 'merged' else 'Full'
+        file_name = '/OMOP2OBO_' + self.domain.title() + '_SemanticRepresentation_' + ont + self.timestamp + '.owl'
+
+        # serialize and save ontology
+        print('\nSerializing Knowledge Graph')
+        mapping_graph.serialize(destination=write_location + file_name, format='xml')
+
+        # re-format ontology output to match OWL API standard
+        ontology_file_formatter(write_location, file_name, self.owltools_location)
 
         return None
 
@@ -516,11 +533,11 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
             # STEP 5 - Add Secondary Data Metadata
             self.adds_class_metadata()
 
-        # STEP 6 - Add Classes to Ontology Data
-        self.adds_triples_to_ontology()
+            # STEP 6 - Add Classes to Ontology Data
+            self.adds_triples_to_ontology()
 
-        # STEP 7 - Serialize Updated Ontologies
-        self.serializes_rdf_data()
+            # STEP 7 - Serialize Updated Ontologies
+            # self.serializes_semantic_representation(mapping_graph, ont, 'resources/mapping_semantics')
 
         return None
 

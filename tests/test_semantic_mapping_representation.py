@@ -629,3 +629,39 @@ class TestSemanticMappingTransformer(TestCase):
         self.assertEqual(len(test_output[1]), 16)
 
         return None
+
+    def test_serializes_semantic_representation_ont(self):
+        """Tests the serializes_semantic_representation method for a single ontology."""
+
+        # Set up inputs
+        test_graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+
+        # test method
+        self.map_transformer.serializes_semantic_representation(test_graph, 'hp', self.ontology_directory)
+        # make sure method runs on legitimate file
+        serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
+        file_name = '/OMOP2OBO_Condition_SemanticRepresentation_HP_30NOV2020.owl'
+        self.assertEqual(serialized_file[0], self.ontology_directory + file_name)
+
+        # remove file
+        os.remove(serialized_file[0])
+
+        return None
+
+    def test_serializes_semantic_representation_full(self):
+        """Tests the serializes_semantic_representation method for all ontologies."""
+
+        # Set up inputs
+        test_graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+
+        # test method
+        self.map_transformer.serializes_semantic_representation(test_graph, 'merged', self.ontology_directory)
+        # make sure method runs on legitimate file
+        serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
+        file_name = '/OMOP2OBO_Condition_SemanticRepresentation_Full_30NOV2020.owl'
+        self.assertEqual(serialized_file[0], self.ontology_directory + file_name)
+
+        # remove file
+        os.remove(serialized_file[0])
+
+        return None
