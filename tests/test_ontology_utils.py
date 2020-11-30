@@ -196,3 +196,26 @@ class TestOntologyUtils(unittest.TestCase):
         os.remove(self.dir_loc + merged_ontology_file)
 
         return None
+
+    def test_ontology_file_formatter(self):
+        """Tests the ontology_file_formatter method."""
+
+        # set-up input methods
+        owltools = self.owltools_location
+
+        # test method handling of bad file types
+        # not an owl file
+        self.assertRaises(TypeError, ontology_file_formatter, self.dir_loc, '/so_with_imports.txt', owltools)
+
+        # a file that does not exist
+        self.assertRaises(IOError, ontology_file_formatter, self.dir_loc, '/sop_without_imports.owl', owltools)
+
+        # an empty file
+        self.assertRaises(TypeError, ontology_file_formatter, self.dir_loc, '/empty_hp_without_imports.txt', owltools)
+
+        # make sure method runs on legitimate file
+        self.assertTrue(ontology_file_formatter(write_location=self.dir_loc,
+                                                full_kg='/so_without_imports.owl',
+                                                owltools_location=owltools) is None)
+
+        return None
