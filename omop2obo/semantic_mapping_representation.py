@@ -300,39 +300,59 @@ class SemanticMappingTransformer(object):
                 second item in the tuple, to other types of important metadata.
         """
 
-        # create needed BNodes
-        uuid_key = BNode('N' + str(uuid4().hex))
-        uuid_not = BNode('N' + str(uuid4().hex))
+        if not isinstance(uri, str):
+            raise TypeError('OWL:complementOf constructors requires a single URI string as input (i.e. "HP_0000021").')
+        else:
+            # initialize needed BNode
+            uuid_not = BNode('N' + str(uuid4().hex))
 
-        # create triples
-        triples = [(uuid_key, RDF.type, OWL.Restriction),
-                   (uuid_key, OWL.onProperty, URIRef(obo + 'BFO_0000051')),
-                   (uuid_key, OWL.someValuesFrom, uuid_not),
-                   (uuid_not, RDF.type, OWL.Class),
-                   (uuid_not, OWL.complementOf, URIRef(obo + uri))]
+            # assemble class triples
+            triples = [(uuid_not, OWL.complementOf, uri)]
 
-        return uuid_key, triples
+            return uuid_not, triples
 
-    def union_of_constructor(self) -> List:
+    @staticmethod
+    def other_owl_constructor(uris: List, constructor: URIRef) -> Tuple:
+        """Method takes a list of ontology identifiers and returns a nested list of triples needed to create an
+        OWL:unionOf or OWL:intersectionOf semantic definition using the input URIs.
 
-        triples = []
-        uid = URIRef(omop2obo + 'N' + uuid4().hex)
+        Args:
+            uris: A comma-separated list of ontology identifiers (e.g. ['HP_0004430', 'HP_0000007']).
+            constructor: A URIRef object containing with the OWL:intersectionOf or OWL:unionOf constructors.
 
-        return triples
+        Returns:
+            triples: A tuple, where the first item is a BNode that is needed to link the list of tuples,
+                stored as the second item in the tuple, to other types of important metadata.
+        """
 
-    def intersection_of_constructor(self) -> List:
+        # make sure that the input contains at least 2 items
+        if len(uris) < 2:
+            raise ValueError('OWL:unionOf and OWL:intersectionOf constructors require at least 2 ontology identifiers.')
+        else:
+            uuid_constructor = BNode('N' + str(uuid4().hex))
+            member_nodes = [BNode('N' + str(uuid4().hex)) for x in range(len(uris))]
+            triples = []
 
-        triples = []
-        uid = URIRef(omop2obo + 'N' + uuid4().hex)
+            # assemble class triples
+            uuid_list = [uuid_constructor] + member_nodes
+            for uri in uris:
+                prior, current = uuid_list.pop(0), uuid_list[0]
+                if uri == uris[0]:
+                    triples += [(prior, constructor, current), (current, RDF.first, uri)]
+                elif uri != uris[-1]:
+                    triples += [(prior, RDF.rest, current), (current, RDF.first, uri)]
+                else:
+                    triples += [(prior, RDF.rest, current), (current, RDF.first, uri), (current, RDF.rest, RDF.nil)]
 
-        return triples
+            return uuid_constructor, triples
 
-    def class_constructor(self, logic: List, uris: List, triples: Optional[List] = None) -> List:
+    @staticmethod
+    def class_constructor(logic_info: List, uris: List, triples: Optional[Dict] = None) -> Tuple:
         """Method is the primary directive which guides the transformation of each mapping into a semantic
         definition. This is done in the following four steps:
 
         Args:
-            logic: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
+            logic_info: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
                 the first item contains a string representing an OWL constructor and the second item contains a
                 comma-delimited string of URI indexes.
             uris: A list of URIs needed to construct semantic definitions for a given mapping.
@@ -340,29 +360,45 @@ class SemanticMappingTransformer(object):
                 a set of triples to important class metadata (e.g. OMOP2OBO namespace identifier and label).
 
         Returns:
-            triples:
+            triples: A tuple, where the first item is a BNode that is needed to link the list of tuples, stored as the
+                second item in the tuple, to other types of important metadata.
         """
 
-        triples = [] if triples is None else triples
+        triples = {'full_set': [], 'bridge_node': None} if triples is None else triples
 
-        if len(logic) == 0:
-            return
-
+        if len(logic_info) == 0:
+            uuid_key = BNode('N' + str(uuid4().hex))
+            triples = [(uuid_key, RDF.type, OWL.Restriction), (uuid_key, OWL.onProperty, URIRef(obo + 'BFO_0000051')),
+                       (uuid_key, OWL.someValuesFrom, triples['bridge_node']),
+                       (triples['bridge_node'], RDF.type, OWL.Class)] + triples['full_set']
+            return uuid_key, triples
         else:
-            ''
+            constructor, uri_idx = logic_info.pop(0)
+            if uri_idx == '':
+                uri_info = uris
+            else:
+                uri_info = [URIRef(obo + uris[int(x)]) if x not in ['AND', 'OR', 'NOT']
+                            else triples[[i for i in triples.keys() if x in i][0]] for x in uri_idx.split(', ')]
+            # obtain constructor triples
+            if constructor == 'AND':
+                triple_info = SemanticMappingTransformer.other_owl_constructor(uri_info, OWL.intersectionOf)
+                triples['bridge_node'], triples[constructor + '-' + uri_idx] = triple_info[0], triple_info[0]
+                triples['full_set'] = triple_info[1] + triples['full_set']
+            elif constructor == 'OR':
+                triple_info = SemanticMappingTransformer.other_owl_constructor(uri_info, OWL.unionOf)
+                triples['bridge_node'], triples[constructor + '-' + uri_idx] = triple_info[0], triple_info[0]
+                triples['full_set'] = triple_info[1] + triples['full_set']
+            else:
+                triple_info = SemanticMappingTransformer.complement_of_constructor(uri_info[0])
+                triples['bridge_node'], triples[constructor + '-' + uri_idx] = triple_info[0], triple_info[0]
+                triples['full_set'] = triple_info[1] + triples['full_set']
 
-        return triples
+        return SemanticMappingTransformer.class_constructor(logic_info, uris, triples)
 
-    def process_secondary_data(self):
-        """
-        - if ingredient and drug are the same then set them as equivalent classes
+    # for x in triples:
+    #     print(str(x[0]), str(x[1]), str(x[2]))
 
-        :return:
-        """
-
-        return None
-
-    def adds_class_metadata(self):
+    def adds_class_metadata(self, triples: Tuple):
         """
         - Adds formal identifier, label, and defines namespace
         - Adds clinical domain-specific parent nodes to
@@ -370,8 +406,20 @@ class SemanticMappingTransformer(object):
         :return:
         """
 
+        # add the following triple to connect identifiers to class information
+        triple_list = [(URIRef('id'), OWL.equivalentClass, triples[0])] + triples[1]
+
         # STEP 3: Obtain domain-specific ontology root
         self.superclass_dict[self.domain]
+
+        return None
+
+    def process_secondary_data(self):
+        """
+        - if ingredient and drug are the same then set them as equivalent classes
+
+        :return:
+        """
 
         return None
 
@@ -443,20 +491,20 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
             class_data_dict[primary_key]['triples'] = []
 
             for ont in self.ontologies:
-                # STEP 2B - get ontology information to needed to build classes
-                logic, uri, label = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'], row[ont.upper() + '_LABEL']
-                class_info = [logic, uri, label]
+                if row[ont.upper() + '_MAPPING'] != 'Unmapped':
+                    # STEP 2B - get ontology information to needed to build classes
+                    logic, uri = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'].split(' | ')
 
-                # STEP 2C - Extract OWL constructors and order inside out (inner constructors appear first)
-                constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-                logic_info = SemanticMappingTransformer.extracts_logic_information(logic, constructors.copy())
+                    # STEP 2C - Extract OWL constructors and order inside out (inner constructors appear first)
+                    constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
+                    logic_info = SemanticMappingTransformer.extracts_logic_information(logic, constructors.copy())
 
-                # STEP 2D - Handle
-                if logic == 'N/A':
-                    eq_triple = [URIRef(omop2obo + 'N' + uuid4().hex), OWL.equivalentClass, URIRef(obo + 'uri')]
-                    class_data_dict[primary_key]['triples'].append(eq_triple)
-                else:
-                    class_data_dict[primary_key]['triples'].append(self.class_constructor(row_data, class_info, ont))
+                    # STEP 2D - Handle Equivalent Classes
+                    if logic == 'N/A':
+                        eq_triple = [URIRef(omop2obo + 'N' + uuid4().hex), OWL.equivalentClass, URIRef(obo + uri)]
+                        class_data_dict[primary_key]['triples'].append(eq_triple)
+                    else:
+                        class_data_dict[primary_key]['triples'].append(self.class_constructor(logic_info, uri))
 
             # STEP 3 - Add Primary Data Metadata
             self.adds_class_metadata()

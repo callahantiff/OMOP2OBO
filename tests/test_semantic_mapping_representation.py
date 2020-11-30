@@ -8,6 +8,7 @@ import pandas as pd
 import shutil
 
 from rdflib import BNode, Graph, URIRef
+from rdflib.namespace import OWL
 from typing import Dict, List, Tuple
 from unittest import TestCase
 
@@ -512,6 +513,14 @@ class TestSemanticMappingTransformer(TestCase):
 
         return None
 
+    def test_complement_of_constructor_list_input(self):
+        """Tests the complement_of_constructor method when the wrong type of input structure is passed."""
+
+        # test method
+        self.assertRaises(TypeError, self.map_transformer.complement_of_constructor, ['HP_0005359'])
+
+        return None
+
     def test_complement_of_constructor(self):
         """Tests the complement_of_constructor method."""
 
@@ -520,6 +529,103 @@ class TestSemanticMappingTransformer(TestCase):
         self.assertIsInstance(test_output, Tuple)
         self.assertIsInstance(test_output[0], BNode)
         self.assertIsInstance(test_output[1], List)
+        self.assertEqual(len(test_output[1]), 1)
+
+        return None
+
+    def test_other_owl_constructor_too_few_uris(self):
+        """Tests the other_owl_constructor method when too few URIs are passed."""
+
+        # test method
+        self.assertRaises(ValueError, self.map_transformer.other_owl_constructor, ['HP_0005359'], OWL.unionOf)
+        self.assertRaises(ValueError, self.map_transformer.other_owl_constructor, ['HP_0005359'], OWL.intersectionOf)
+
+        return None
+
+    def test_other_owl_constructor_unionof(self):
+        """Tests the other_owl_constructor method for type OWL:unionOf."""
+
+        # test method
+        test_output = self.map_transformer.other_owl_constructor(['HP_0004430', 'HP_0000007'], OWL.unionOf)
+        self.assertIsInstance(test_output, Tuple)
+        self.assertIsInstance(test_output[0], BNode)
+        self.assertIsInstance(test_output[1], List)
         self.assertEqual(len(test_output[1]), 5)
+
+        return None
+
+    def test_other_owl_constructor_intersectionof(self):
+        """Tests the other_owl_constructor method for type OWL:intersectionOf."""
+
+        # test method
+        test_output = self.map_transformer.other_owl_constructor(['HP_0004430', 'HP_0000007'], OWL.intersectionOf)
+        self.assertIsInstance(test_output, Tuple)
+        self.assertIsInstance(test_output[0], BNode)
+        self.assertIsInstance(test_output[1], List)
+        self.assertEqual(len(test_output[1]), 5)
+
+        return None
+
+    def test_class_constructor_intersection(self):
+        """Tests the class_constructor method for a simple intersection."""
+
+        # create method inputs
+        logic_info = [['OR', '0, 1']]
+        uris = ['HP_0004430', 'HP_0000007']
+
+        # test method
+        test_output = self.map_transformer.class_constructor(logic_info, uris)
+        self.assertIsInstance(test_output, Tuple)
+        self.assertIsInstance(test_output[0], BNode)
+        self.assertIsInstance(test_output[1], List)
+        self.assertEqual(len(test_output[1]), 9)
+
+        return None
+
+    def test_class_constructor_union(self):
+        """Tests the class_constructor method for a simple union."""
+
+        # create method inputs
+        logic_info = [['AND', '0, 1']]
+        uris = ['HP_0004430', 'HP_0000007']
+
+        # test method
+        test_output = self.map_transformer.class_constructor(logic_info, uris)
+        self.assertIsInstance(test_output, Tuple)
+        self.assertIsInstance(test_output[0], BNode)
+        self.assertIsInstance(test_output[1], List)
+        self.assertEqual(len(test_output[1]), 9)
+
+        return None
+
+    def test_class_constructor_complement(self):
+        """Tests the class_constructor method for a simple complement."""
+
+        # create method inputs
+        logic_info = [['NOT', '0']]
+        uris = ['HP_0004430']
+
+        # test method
+        test_output = self.map_transformer.class_constructor(logic_info, uris)
+        self.assertIsInstance(test_output, Tuple)
+        self.assertIsInstance(test_output[0], BNode)
+        self.assertIsInstance(test_output[1], List)
+        self.assertEqual(len(test_output[1]), 5)
+
+        return None
+
+    def test_class_constructor_complex(self):
+        """Tests the class_constructor method for a complex set of log."""
+
+        # create method inputs
+        logic_info = [['OR', '1, 2'], ['AND', '0, 3, OR']]
+        uris = ['HP_0004430', 'HP_0000007', 'HP_0001419', 'HP_0005359']
+
+        # test method
+        test_output = self.map_transformer.class_constructor(logic_info, uris)
+        self.assertIsInstance(test_output, Tuple)
+        self.assertIsInstance(test_output[0], BNode)
+        self.assertIsInstance(test_output[1], List)
+        self.assertEqual(len(test_output[1]), 16)
 
         return None
