@@ -10,10 +10,10 @@ import re
 
 from abc import ABCMeta, abstractmethod
 from datetime import date, datetime  # type: ignore
-from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
+from rdflib import BNode, Graph, Literal, Namespace, URIRef  # type: ignore
 from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 from tqdm import tqdm  # type: ignore
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from omop2obo.utils import gets_class_ancestors, merges_ontologies
@@ -21,11 +21,11 @@ from omop2obo.utils import gets_class_ancestors, merges_ontologies
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
 oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
-omo2obo = Namespace(' https://github.com/callahantiff/omop2obo/obo/ext/')
+omop2obo = Namespace('https://github.com/callahantiff/omop2obo/')
+skos = Namespace('http://www.w3.org/2004/02/skos/core#')
 
 
 class SemanticMappingTransformer(object):
-
     __metaclass__ = ABCMeta
 
     def __init__(self, ontology_list: List, omop2obo_data_file: str, domain: str, map_type: str = 'multi',
@@ -213,6 +213,41 @@ class SemanticMappingTransformer(object):
 
         return ontology_data
 
+    def gets_concept_id_data(self, row: pd.Series) -> Dict:
+        """Takes a row of data from the omop2obo_data object and from that row creates a dictionary which contains
+        data from columns that correspond to the primary_column and secondary_column class attributes. An example is
+        shown under the Returns section below.
+
+        Args:
+            row: A Pandas Series containing a row of data from the omop2obo_data object.
+
+        Returns:
+            row_dict_data: A nested dictionary of data for a row from the omop2obo_data object. The outer dictionary
+                is an omop concept id and the inner keys are 'primary_column' and 'secondary_column', where the values
+                are dictionaries containing values for each data type. An example is shown below:
+                    {27526:
+                        'primary_key':
+                            {'CONCEPT_LABEL': "Nezelof's syndrome", 'CONCEPT_SYNONYMS': "Nezelof's syndrome (disorder)",
+                             'CONCEPT_VOCAB': 'SNOMED', 'CONCEPT_VOCAB_VERSION': 'SnomedCT Release 20180131',
+                             'CONCEPT_SOURCE_CODE': 55602000, 'CONCEPT_CUI': 'C0152094',
+                             'CONCEPT_SEMANTIC_TYPE': 'Disease or Syndrome'}
+                        'secondary_data': None}
+        """
+
+        # initialize dictionary
+        row_dict_data = {row[self.primary_column + '_ID']: {'primary_data': None, 'secondary_data': None}}
+
+        # extract primary data as a dictionary
+        primary_data = row[[x for x in row.keys() if x.startswith(self.primary_column)][1:]].to_dict()
+        row_dict_data[row[self.primary_column + '_ID']]['primary_data'] = primary_data
+
+        # extract secondary data
+        if self.secondary_column is not None:
+            secondary_data = row[[x for x in row.keys() if x.startswith(self.primary_column)]].to_dict()
+            row_dict_data[row[self.primary_column + '_ID']]['secondary_data'] = secondary_data
+
+        return row_dict_data
+
     @staticmethod
     def extracts_logic_information(logic: str, constructors: List, uri_info: Optional[List] = None) -> List:
         """Recursively parses a string containing logical constructor information (e.g. "AND(0,OR(1, 2))") with the
@@ -252,75 +287,112 @@ class SemanticMappingTransformer(object):
             uri_info.append([const, extracted_info])
             return SemanticMappingTransformer.extracts_logic_information(updated_logic, constructors, uri_info)
 
-    # def complement_of_constructor(self, namespace: URIRef, class_info: List) -> List:
-    #     """
-    #
-    #     Args:
-    #         namespace:
-    #         class_info:
-    #
-    #     Returns:
-    #         complement_constructor: A list of triples needed to create a complement of constructor a given
-    #     """
-    #
-    #     complement_constructor = []
-    #     uri, label = class_info
-    #
-    #     # create triples
-    #
-    #
-    #
-    #     return complement_constructor
+    @staticmethod
+    def complement_of_constructor(uri: str) -> Tuple:
+        """Method takes a string containing an ontology identifier and returns a nested list of triples needed to
+        create a OWL:complementOf semantic definition.
 
-    # def union_of_constructor(self, namespace: URIRef, class_information) -> List:
-    #
-    #     union_constructor = []
-    #     uid = URIRef(namespace + 'N' + uuid4().hex)
-    #
-    #     #
+        Args:
+            uri: A string containing an ontology identifier (e.g. 'MONDO_0001933').
 
-    # def intersection_of_constructor(self, namespace: URIRef, class_information) -> List:
-    #
-    #     union_constructor = []
-    #     uid = URIRef(namespace + 'N' + uuid4().hex)
-    #
-    #     #
+        Returns:
+            triples: A tuple, where the first item is a BNode that is needed to link the list of tuples, stored as the
+                second item in the tuple, to other types of important metadata.
+        """
 
-    def class_constructor(self, class_info: List, ont: str) -> List:
+        # create needed BNodes
+        uuid_key = BNode('N' + str(uuid4().hex))
+        uuid_not = BNode('N' + str(uuid4().hex))
+
+        # create triples
+        triples = [(uuid_key, RDF.type, OWL.Restriction),
+                   (uuid_key, OWL.onProperty, URIRef(obo + 'BFO_0000051')),
+                   (uuid_key, OWL.someValuesFrom, uuid_not),
+                   (uuid_not, RDF.type, OWL.Class),
+                   (uuid_not, OWL.complementOf, URIRef(obo + uri))]
+
+        return uuid_key, triples
+
+    def union_of_constructor(self) -> List:
+
+        triples = []
+        uid = URIRef(omop2obo + 'N' + uuid4().hex)
+
+        return triples
+
+    def intersection_of_constructor(self) -> List:
+
+        triples = []
+        uid = URIRef(omop2obo + 'N' + uuid4().hex)
+
+        return triples
+
+    def class_constructor(self, logic: List, uris: List, triples: Optional[List] = None) -> List:
         """Method is the primary directive which guides the transformation of each mapping into a semantic
         definition. This is done in the following four steps:
 
         Args:
-            class_info: A list of 3 items that are needed for constructing a semantic representation of a class: (1)
-                a logic string (e.g. 'AND(0, OR(1, 2), 3)'); (2) a string of pipe-delimited URIs (e.g. "HP_0004430 |
-                HP_0000007"); (3) a string of pipe-delimited URI labels (e.g. "severe combined immunodeficiency |
-                autosomal recessive inheritance").
-            ont: A string containing an ontology prefix (e.g. "hp", "chebi").
+            logic: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
+                the first item contains a string representing an OWL constructor and the second item contains a
+                comma-delimited string of URI indexes.
+            uris: A list of URIs needed to construct semantic definitions for a given mapping.
+            triples: A nested list of constructed triples. The first item in the list is the RDFLib BNode used to link
+                a set of triples to important class metadata (e.g. OMOP2OBO namespace identifier and label).
 
         Returns:
             triples:
         """
 
-        triples: List = []
-        logic, uri, label = class_info
+        triples = [] if triples is None else triples
 
-        # STEP 1: Set identifier and labels
-        # SEE TODO LIST
+        if len(logic) == 0:
+            return
 
-        # STEP 2: Extract OWL constructors and order inside out (inner constructors appear first)
-        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-        logic_info = SemanticMappingTransformer.extracts_logic_information(logic, constructors.copy())
-
-        # STEP 3: Obtain domain-specific ontology root
-        # self.superclass_dict[self.domain]
-
-        # STEP 4: Obtain ontology ancestors -- only done for CHEBI
-        if ont.upper() == 'CHEBI':
-            roots = {x: gets_class_ancestors(self.ontology_data_dict[ont], [x]) for x in uri.split(' | ')}
         else:
-            root_nodes = None
+            ''
 
         return triples
+
+    def process_secondary_data(self):
+        """
+        - if ingredient and drug are the same then set them as equivalent classes
+
+        :return:
+        """
+
+        return None
+
+    def adds_class_metadata(self):
+        """
+        - Adds formal identifier, label, and defines namespace
+        - Adds clinical domain-specific parent nodes to
+
+        :return:
+        """
+
+        # STEP 3: Obtain domain-specific ontology root
+        self.superclass_dict[self.domain]
+
+        return None
+
+    def adds_triples_to_ontology(self):
+        """
+        - function that adds triples to an existing ontology
+
+        :return:
+        """
+
+        return None
+
+    def serializes_rdf_data(self):
+        """
+        - serializes and saves an ontology
+        - calls the formatting fixer function that's stored in the ontology class
+
+        :return:
+        """
+
+        return None
 
     def transforms_mappings(self) -> None:
         """Method parses a Pandas DataFrame containing OMOP2OBO mappings and builds semantic representations of the
@@ -341,6 +413,9 @@ class SemanticMappingTransformer(object):
 
 
 class SingleOntologyConstruction(SemanticMappingTransformer):
+    """The Single Ontology Construction workflow is designed to create ontology-specific semantic definitions for
+    each mapping rather than creating semantic definitions that span multiple ontologies. This approach is primarily
+    used to determine the logical consistency of the mappings for each ontology."""
 
     def gets_class_construction_type(self) -> str:
         """"A string representing the type of knowledge graph being built."""
@@ -354,61 +429,98 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
              None.
         """
 
-        # STEP 1 - Load Ontologies
+        class_data_dict = {}
+
+        # STEP 1 - Load Ontology Data
         self.ontology_data_dict = self.loads_ontology_data()
 
-        # # STEP 2 - Process mapping data
-        # for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
-        #     clin_id, label, cui, sem_typ = row['CONCEPT_ID'], row['CONCEPT_LABEL'], row['CUI'], row['SEMANTIC_TYPE']
-        #     class_data_dict[clin_id] = {'label': label, 'cui': cui, 'semantic_type': sem_typ}
-        #
-        #     for ont in ontologies:
-        #         # get information to needed to build classes
-        #         logic, uri, label = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'], row[ont.upper() + '_LABEL']
-        #         # mapping, evidence = row[ont.upper() + '_MAPPING'], row[ont.upper() + '_EVIDENCE']
-        #         # class_info = [logic, uri, label, mapping, evidence]
-        #         class_info = [logic, uri, label]
-        #
-        #         # single ontology construction - only done for mappings that contain multiple URIs (single ont only)
-        #         if logic != 'N/A':
-        #             class_constructor(class_info, ont)
-        #
-        # # multiple ontology construction (multiple ontology method only)
-        # # calls evidence adding and mapping information
-        #
-        # # STEP 3 - Add Classes to Ontology Data
-        #
-        # # STEP 4 - Serialize Updated Ontologies
+        # STEP 2 - Create Semantic Definitions of Mappings
+        for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
+            # STEP 2A - Get Primary and Secondary Data
+            row_data = self.gets_concept_id_data(row)
+            class_data_dict.update(row_data)
+            primary_key = list(row_data.keys())[0]
+            class_data_dict[primary_key]['triples'] = []
+
+            for ont in self.ontologies:
+                # STEP 2B - get ontology information to needed to build classes
+                logic, uri, label = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'], row[ont.upper() + '_LABEL']
+                class_info = [logic, uri, label]
+
+                # STEP 2C - Extract OWL constructors and order inside out (inner constructors appear first)
+                constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
+                logic_info = SemanticMappingTransformer.extracts_logic_information(logic, constructors.copy())
+
+                # STEP 2D - Handle
+                if logic == 'N/A':
+                    eq_triple = [URIRef(omop2obo + 'N' + uuid4().hex), OWL.equivalentClass, URIRef(obo + 'uri')]
+                    class_data_dict[primary_key]['triples'].append(eq_triple)
+                else:
+                    class_data_dict[primary_key]['triples'].append(self.class_constructor(row_data, class_info, ont))
+
+            # STEP 3 - Add Primary Data Metadata
+            self.adds_class_metadata()
+
+            # STEP 4 - Add Secondary Data
+            if self.domain != 'condition':
+                self.process_secondary_data()
+
+            # STEP 5 - Add Secondary Data Metadata
+            self.adds_class_metadata()
+
+        # STEP 6 - Add Classes to Ontology Data
+        self.adds_triples_to_ontology()
+
+        # STEP 7 - Serialize Updated Ontologies
+        self.serializes_rdf_data()
 
         return None
 
 
 class MultipleOntologyConstruction(SemanticMappingTransformer):
+    """The Multiple Ontology Construction workflow is designed to create semantic definitions that span multiple
+    ontologies. This approach is the default method for creating semantic definitions within the OMOP2OBO framework."""
 
     def gets_class_construction_type(self) -> str:
         """"A string representing the type of knowledge graph being built."""
 
         return 'Multiple Ontology Class Construction'
 
-    # function here to assemble multiple ontology mappings --> only done for this child class
+    def constructs_multi_ontology_definitions(self, ont, uri):
+        """
+        - creates multiple ontology definitions
+        - checks for CHEBI role vs entity
+        - checks for lab test allergen vs. antigen vs. neither
+        - adds domain subclass
+        - if hpo == mondo then use equivalence class
 
-    # def constructs multiple ontology classes
+        :return:
+        """
 
-    # def adds class evidence and mapping types
+        # obtain ontology ancestors -- only done for CHEBI
+        if ont.upper() == 'CHEBI':
+            roots = {x: gets_class_ancestors(self.ontology_data_dict[ont], [x]) for x in uri.split(' | ')}
+        else:
+            root_nodes = None
 
-    # def transforms_mappings(self):
-    #
-    #
-    #     for idx, row in omop2obo_data.iterrows():
-    #         logic = row['HP_LOGIC']
-    #         uri = row['HP_URI']
-    #         labels = row['HP_LABEL']
-    #
-    #         # for each ontology
-    #
-    #         # multi or single?
-    #
-    #
-    #     # get
-    #
-    #     return None
+        # CHEBI allergen vs. antigen
+
+        return None
+
+    def adds_mapping_annotations(self):
+        """
+        - adds mapping categories, evidence
+        - adds synonyms (should work for primary and secondary data)
+
+        :return:
+        """
+
+        return None
+
+    def transforms_mappings(self):
+        """
+
+        :return:
+        """
+
+        return None

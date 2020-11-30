@@ -7,8 +7,8 @@ import os.path
 import pandas as pd
 import shutil
 
-from rdflib import Graph, URIRef
-from typing import Dict, List
+from rdflib import BNode, Graph, URIRef
+from typing import Dict, List, Tuple
 from unittest import TestCase
 
 from omop2obo.semantic_mapping_representation import SemanticMappingTransformer
@@ -509,5 +509,17 @@ class TestSemanticMappingTransformer(TestCase):
 
         # check secondary key dict
         self.assertEqual(test_output[27526]['secondary_data'], None)
+
+        return None
+
+    def test_complement_of_constructor(self):
+        """Tests the complement_of_constructor method."""
+
+        # test method
+        test_output = self.map_transformer.complement_of_constructor('HP_0005359')
+        self.assertIsInstance(test_output, Tuple)
+        self.assertIsInstance(test_output[0], BNode)
+        self.assertIsInstance(test_output[1], List)
+        self.assertEqual(len(test_output[1]), 5)
 
         return None
