@@ -7,6 +7,7 @@ import os.path
 import pandas as pd
 import shutil
 
+from datetime import date, datetime
 from rdflib import BNode, Graph, URIRef
 from rdflib.namespace import OWL
 from typing import Dict, List, Tuple
@@ -64,6 +65,9 @@ class TestSemanticMappingTransformer(TestCase):
                                            'PR-NCBITAXON': URIRef('http://purl.obolibrary.org/obo/RO_0002162'),
                                            'UBERON-NCBITAXON': URIRef(
                                                'http://purl.obolibrary.org/obo/RO_0002162')}}}
+
+        # create timestamp
+        self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticMappingTransformer(ontology_list=['so', 'vo'],
@@ -385,9 +389,12 @@ class TestSemanticMappingTransformer(TestCase):
 
         # run the method to load ontology data
         ont_dictionary = self.map_transformer.loads_ontology_data()
+        print(ont_dictionary)
 
         # check output
         self.assertIsInstance(ont_dictionary, Dict)
+        self.assertIn('vo', ont_dictionary.keys())
+        self.assertIn('so', ont_dictionary.keys())
 
         return None
 
@@ -404,16 +411,17 @@ class TestSemanticMappingTransformer(TestCase):
 
         # run the method to load ontology data
         ont_dictionary = self.map_transformer2.loads_ontology_data()
+        merged_file = glob.glob(self.ontology_directory + '/OMOP2OBO_MergedOntologies_*.owl')[0]
 
         # check output
         self.assertIsInstance(ont_dictionary, Dict)
-        self.assertIn('merged', ont_dictionary.keys())
+        self.assertIn('merged', list(ont_dictionary.keys())[0])
         self.assertIsInstance(ont_dictionary['merged'], Graph)
         self.assertEqual(len(ont_dictionary['merged']), 127283)
+        self.assertEqual(merged_file, self.ontology_directory + '/OMOP2OBO_MergedOntologies' + self.timestamp + '.owl')
 
         # remove file
-        merged_ontology_file = glob.glob(self.ontology_directory + '/OMOP2OBO_MergedOntologies_*.owl')[0]
-        os.remove(merged_ontology_file)
+        os.remove(merged_file)
 
         return None
 
@@ -665,7 +673,7 @@ class TestSemanticMappingTransformer(TestCase):
         self.map_transformer.serializes_semantic_representation(test_graph, 'merged', self.ontology_directory)
         # make sure method runs on legitimate file
         serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
-        file_name = '/OMOP2OBO_Condition_SemanticRepresentation_Full_30NOV2020.owl'
+        file_name = '/OMOP2OBO_Condition_SemanticRepresentation_Full' + self.timestamp + '.owl'
         self.assertEqual(serialized_file[0], self.ontology_directory + file_name)
 
         # remove file

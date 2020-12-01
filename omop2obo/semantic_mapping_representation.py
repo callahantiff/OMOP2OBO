@@ -114,12 +114,14 @@ class SemanticMappingTransformer(object):
         elif len(ont_data) == 0:
             raise TypeError('The ontologies directory is empty')
         else:
-            # check for ontology data
-            ont_check = [x for x in ont_data if x.split('/')[-1].split('_')[0] in [y.lower() for y in self.ontologies]]
+            # check for ontology data -- adds check for 'ext' to handle the fact that the uberon file is called 'ext'
+            ont_check = [x for x in ont_data
+                         if x.split('/')[-1].split('_')[0] in [y.lower() for y in self.ontologies] or
+                         x.split('/')[-1].split('_')[0] == 'ext']
             if len(ont_check) == 0:
                 raise ValueError('No ontology owl files match provided ontology list')
             else:
-                self.ont_directory = ont_data
+                self.ont_directory = ont_check
 
         # CLASS CONSTRUCTION TYPE
         if not isinstance(map_type, str):
@@ -199,15 +201,17 @@ class SemanticMappingTransformer(object):
         ontology_data, ontology_files = {}, []
         write_loc = os.path.relpath('/'.join(self.ont_directory[0].split('/')[:-1]))
 
-        for ont in self.ontologies:
-            print('Loading: {}'.format(ont.upper()))
-            # store ontology prefix as key and RDFLib graph objects as values
-            ont_file = [x for x in self.ont_directory if ont in x][0]
-            ontology_files.append(ont_file)
-            ontology_data[ont] = Graph().parse(ont_file, format='xml')
-        if self.construction_type == 'multi':  # merge all relevant ontologies and add to ontology_data dictionary
+        if self.construction_type == 'single':
+            for ont in self.ontologies:
+                print('Loading: {}'.format(ont.upper()))
+                # store ontology prefix as key and RDFLib graph objects as values
+                ont_data = 'ext' if ont == 'uberon' else ont
+                ont_file = [x for x in self.ont_directory if ont_data][0]
+                ontology_files.append(ont_file)
+                ontology_data[ont] = Graph().parse(ont_file, format='xml')
+        else:  # merge all relevant ontologies and add to ontology_data dictionary
             omop2obo_merged_filepath = '/OMOP2OBO_MergedOntologies' + self.timestamp + '.owl'
-            merges_ontologies(ontology_files, write_loc, omop2obo_merged_filepath, self.owltools_location)
+            merges_ontologies(self.ont_directory, write_loc, omop2obo_merged_filepath, self.owltools_location)
             print('Loading merged ontology data: {}'.format(write_loc + omop2obo_merged_filepath))
             ontology_data['merged'] = Graph().parse(write_loc + omop2obo_merged_filepath, format='xml')
 
@@ -391,9 +395,6 @@ class SemanticMappingTransformer(object):
                 triples['full_set'] = triple_info[1] + triples['full_set']
 
         return SemanticMappingTransformer.class_constructor(logic_info, uris, triples)
-
-    # for x in triples:
-    #     print(str(x[0]), str(x[1]), str(x[2]))
 
     def adds_class_metadata(self, class_info: Dict, data_level: str) -> List:
         """Adds important metadata to triples output after running the class_constructor method. The method adds class
