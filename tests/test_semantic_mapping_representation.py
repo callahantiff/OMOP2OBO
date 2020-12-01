@@ -73,6 +73,13 @@ class TestSemanticMappingTransformer(TestCase):
                                                           ontology_directory=self.ontology_directory,
                                                           primary_column='CONCEPT')
 
+        self.map_transformer_multi = SemanticMappingTransformer(ontology_list=['so', 'vo'],
+                                                                omop2obo_data_file=self.omop2obo_data_file,
+                                                                domain='condition',
+                                                                map_type='multi',
+                                                                ontology_directory=self.ontology_directory,
+                                                                primary_column='CONCEPT')
+
         # make sure that instantiated class points to testing data location of the OWLTools API
         self.map_transformer.owltools_location = self.owltools_location
 
@@ -663,5 +670,44 @@ class TestSemanticMappingTransformer(TestCase):
 
         # remove file
         os.remove(serialized_file[0])
+
+        return None
+
+    def test_adds_class_metadata_multi(self):
+        """Tests the adds_class_metadata method when the construction_type is 'multi'."""
+
+        # set-up input
+        class_data = {'primary_data': {'CONCEPT_ID': 27526, 'CONCEPT_LABEL': "Nezelof's syndrome"},
+                      'secondary_data': None,
+                      'triples': (BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                  [(BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                    URIRef('http://www.w3.org/2002/07/owl#complementOf'),
+                                    URIRef('http://purl.obolibrary.org/obo/HP_0004430'))])}
+
+        # test method
+        triples = self.map_transformer_multi.adds_class_metadata(class_data, 'primary_data')
+        self.assertIsInstance(triples, List)
+        self.assertEqual(len(triples), 7)
+        self.assertIn((URIRef('https://github.com/callahantiff/omop2obo/OMOP_27526'),
+                       URIRef('http://www.w3.org/2000/01/rdf-schema#subClassOf'),
+                       URIRef('http://purl.obolibrary.org/obo/HP_0000118')), triples)
+
+        return None
+
+    def test_adds_class_metadata_single(self):
+        """Tests the adds_class_metadata method when the construction_type is 'single'."""
+
+        # set-up input
+        class_data = {'primary_data': {'CONCEPT_ID': 27526, 'CONCEPT_LABEL': "Nezelof's syndrome"},
+                      'secondary_data': None,
+                      'triples': (BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                  [(BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                    URIRef('http://www.w3.org/2002/07/owl#complementOf'),
+                                    URIRef('http://purl.obolibrary.org/obo/HP_0004430'))])}
+
+        # test method
+        triples = self.map_transformer.adds_class_metadata(class_data, 'primary_data')
+        self.assertIsInstance(triples, List)
+        self.assertEqual(len(triples), 6)
 
         return None

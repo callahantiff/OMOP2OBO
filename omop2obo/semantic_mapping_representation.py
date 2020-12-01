@@ -238,7 +238,7 @@ class SemanticMappingTransformer(object):
         row_dict_data = {row[self.primary_column + '_ID']: {'primary_data': None, 'secondary_data': None}}
 
         # extract primary data as a dictionary
-        primary_data = row[[x for x in row.keys() if x.startswith(self.primary_column)][1:]].to_dict()
+        primary_data = row[[x for x in row.keys() if x.startswith(self.primary_column)]].to_dict()
         row_dict_data[row[self.primary_column + '_ID']]['primary_data'] = primary_data
 
         # extract secondary data
@@ -303,13 +303,9 @@ class SemanticMappingTransformer(object):
         if not isinstance(uri, str):
             raise TypeError('OWL:complementOf constructors requires a single URI string as input (i.e. "HP_0000021").')
         else:
-            # initialize needed BNode
-            uuid_not = BNode('N' + str(uuid4().hex))
+            triples = [(BNode('N' + str(uuid4().hex)), OWL.complementOf, uri)]
 
-            # assemble class triples
-            triples = [(uuid_not, OWL.complementOf, uri)]
-
-            return uuid_not, triples
+            return triples[0][0], triples
 
     @staticmethod
     def other_owl_constructor(uris: List, constructor: URIRef) -> Tuple:
@@ -378,7 +374,8 @@ class SemanticMappingTransformer(object):
                 uri_info = uris
             else:
                 uri_info = [URIRef(obo + uris[int(x)]) if x not in ['AND', 'OR', 'NOT']
-                            else triples[[i for i in triples.keys() if x in i][0]] for x in uri_idx.split(', ')]
+                            else triples[[i for i in triples.keys() if x in i][0]]
+                            for x in uri_idx.split(', ')]
             # obtain constructor triples
             if constructor == 'AND':
                 triple_info = SemanticMappingTransformer.other_owl_constructor(uri_info, OWL.intersectionOf)
@@ -398,21 +395,50 @@ class SemanticMappingTransformer(object):
     # for x in triples:
     #     print(str(x[0]), str(x[1]), str(x[2]))
 
-    def adds_class_metadata(self, triples: Tuple):
-        """
-        - Adds formal identifier, label, and defines namespace
-        - Adds clinical domain-specific parent nodes to
+    def adds_class_metadata(self, class_info: Dict, data_level: str) -> List:
+        """Adds important metadata to triples output after running the class_constructor method. The method adds class
+        identifier information (i.e. namespace, type, and label) and a domain-specific triple (only for multi
+        construction types).
 
-        :return:
+        Args:
+            class_info: A nested dictionary with three primary keys (i.e. "primary_data", "secondary_data", and
+                ontologies (e.g. "hp", "mondo"). The primary_data and secondary_data contains clinical data and the
+                ontology dictionary contains the triples information for the class.
+            data_level: A string, either "primary_data" or "secondary_data", indicating what level of data to process
+
+        Returns:
+            A list of modified triples for the input dictionary that has been extended to include identifier,
+                namespace, and label information in addition to domain superclass content.
         """
+
+        # preprocess data for use
+        triples = class_info['triples']
+        keys = list(class_info[data_level].keys())
+        primary_id = 'OMOP_' + str(class_info[data_level][[x for x in keys if 'ID' in x][0]])
+        primary_label = class_info[data_level][[x for x in keys if 'LABEL' in x][0]]
+
+        # add identifier information
+        identifiers = [(URIRef(omop2obo + primary_id), URIRef(oboinowl + 'hasOBONamespace'), Literal('OMOP2OBO')),
+                       (URIRef(omop2obo + primary_id), URIRef(oboinowl + 'id'), Literal(primary_id.replace('_', ':'))),
+                       (URIRef(omop2obo + primary_id), RDF.type, OWL.Class),
+                       (URIRef(omop2obo + primary_id), RDFS.label, Literal(primary_label))]
+
+        # add domain-specific ontology root
+        if self.construction_type != 'single':
+            if self.domain == 'condition':
+                ont = [k for k, v in self.superclass_dict[self.domain].items()
+                       if any([x for y in triples[1] for x in y if v.split('/')[-1].split('_')[0] in str(x)])][0]
+                domain_root = self.superclass_dict[self.domain][ont]
+            else:
+                domain_root = self.superclass_dict[self.domain]
+            superclass = [(URIRef(omop2obo + primary_id), RDFS.subClassOf, domain_root)]
+        else:
+            superclass = []
 
         # add the following triple to connect identifiers to class information
-        triple_list = [(URIRef('id'), OWL.equivalentClass, triples[0])] + triples[1]
+        triple_list = [(URIRef(omop2obo + primary_id), OWL.equivalentClass, triples[0])] + triples[1]
 
-        # STEP 3: Obtain domain-specific ontology root
-        self.superclass_dict[self.domain]
-
-        return None
+        return identifiers + superclass + triple_list
 
     def process_secondary_data(self):
         """
@@ -494,44 +520,49 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
              None.
         """
 
-        class_data_dict = {}
+        class_data = {}
 
         # STEP 1 - Load Ontology Data
         self.ontology_data_dict = self.loads_ontology_data()
 
         # STEP 2 - Create Semantic Definitions of Mappings
         for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
-            # STEP 2A - Get Primary and Secondary Data
-            row_data = self.gets_concept_id_data(row)
-            class_data_dict.update(row_data)
-            primary_key = list(row_data.keys())[0]
-            class_data_dict[primary_key]['triples'] = []
-
             for ont in self.ontologies:
                 if row[ont.upper() + '_MAPPING'] != 'Unmapped':
+                    # STEP 2A - Get Primary and Secondary Data
+                    row_data = self.gets_concept_id_data(row)
+                    primary_key = list(row_data.keys())[0]
+                    class_data[primary_key] = {ont: row_data[primary_key]}
+
                     # STEP 2B - get ontology information to needed to build classes
                     logic, uri = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'].split(' | ')
 
-                    # STEP 2C - Extract OWL constructors and order inside out (inner constructors appear first)
-                    constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-                    logic_info = SemanticMappingTransformer.extracts_logic_information(logic, constructors.copy())
-
-                    # STEP 2D - Handle Equivalent Classes
+                    # STEP 3 - Construct Classes
                     if logic == 'N/A':
-                        eq_triple = [URIRef(omop2obo + 'N' + uuid4().hex), OWL.equivalentClass, URIRef(obo + uri)]
-                        class_data_dict[primary_key]['triples'].append(eq_triple)
+                        class_data[primary_key][ont]['triples'] = (BNode('N' + str(uuid4().hex)), [])
                     else:
-                        class_data_dict[primary_key]['triples'].append(self.class_constructor(logic_info, uri))
+                        if '(' not in logic:
+                            logic = '{}({})'.format(logic, ', '.join([str(x) for x in range(len(uri))]))
 
-            # STEP 3 - Add Primary Data Metadata
-            self.adds_class_metadata()
+                        # STEP 3A - Extract OWL constructors and order inside out (inner constructors appear first)
+                        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
+                        logic_info = SemanticMappingTransformer.extracts_logic_information(logic, constructors.copy())
+                        # logic_info = extracts_logic_information(logic, constructors.copy())
 
-            # STEP 4 - Add Secondary Data
-            if self.domain != 'condition':
-                self.process_secondary_data()
+                        # STEP 3B - Construct Classes
+                        triples = SemanticMappingTransformer.class_constructor(logic_info, uri)
+                        class_data[primary_key][ont]['triples'] = triples
+                        # class_data[primary_key][ont]['triples'] = class_constructor(logic_info, uri)
 
-            # STEP 5 - Add Secondary Data Metadata
-            self.adds_class_metadata()
+                    # STEP 4 - Add Primary Data Metadata
+                    updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                    class_data[primary_key][ont]['triples'] = updated_triples
+
+                    # STEP 5A - Add Secondary Data
+                    if self.domain != 'condition':
+                        self.process_secondary_data(class_data[primary_key][ont], 'secondary_data')
+                        # STEP 3B - Add Secondary Data Metadata
+                        self.adds_class_metadata()
 
             # STEP 6 - Add Classes to Ontology Data
             self.adds_triples_to_ontology()
