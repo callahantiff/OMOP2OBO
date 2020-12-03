@@ -456,15 +456,6 @@ class SemanticMappingTransformer(object):
 
         return identifiers + superclass + triple_list
 
-    def process_secondary_data(self):
-        """
-        - if ingredient and drug are the same then set them as equivalent classes
-
-        :return:
-        """
-
-        return None
-
     def adds_triples_to_ontology(self):
         """
         - function that adds triples to an existing ontology
@@ -474,12 +465,10 @@ class SemanticMappingTransformer(object):
 
         return None
 
-    def serializes_semantic_representation(self, mapping_graph: Graph, ont: str, write_location: str) -> None:
+    def serializes_semantic_representation(self, ont: str, write_location: str) -> None:
         """method serializes the semantic representation of the OMOP2OBO clinical mappings.
 
         Args:
-            mapping_graph: An RDFLib Graph object that contains the results of converting the clinical mappings into
-                a semantic representation.
             ont: A string containing a single ontology prefix (e.g. "hp") or the keyword "merged", which is used in
                 the serialized file name.
             write_location: A string containing the file path for where to write the serialized data.
@@ -494,7 +483,7 @@ class SemanticMappingTransformer(object):
 
         # serialize and save ontology
         print('\nSerializing Knowledge Graph')
-        mapping_graph.serialize(destination=write_location + file_name, format='xml')
+        self.graph.serialize(destination=write_location + file_name, format='xml')
 
         # re-format ontology output to match OWL API standard
         ontology_file_formatter(write_location, file_name, self.owltools_location)
@@ -574,17 +563,11 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
                     updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
                     class_data[primary_key][ont]['triples'] = updated_triples
 
-                    # STEP 5A - Add Secondary Data
-                    # if self.domain != 'condition':
-                        # self.process_secondary_data(class_data[primary_key][ont], 'secondary_data')
-                        # STEP 3B - Add Secondary Data Metadata
-                        # self.adds_class_metadata()
-
-            # STEP 6 - Add Classes to Ontology Data
+            # STEP 5 - Add Classes to Ontology Data
             self.adds_triples_to_ontology()
 
-            # STEP 7 - Serialize Updated Ontologies
-            # self.serializes_semantic_representation(mapping_graph, ont, 'resources/mapping_semantics')
+            # STEP 6 - Serialize Updated Ontologies
+            self.serializes_semantic_representation(ont, 'resources/mapping_semantics')
 
         return None
 
@@ -620,6 +603,15 @@ class MultipleOntologyConstruction(SemanticMappingTransformer):
             root_nodes = None
 
         # CHEBI allergen vs. antigen
+
+        return None
+
+    def process_secondary_data(self):
+        """
+        - if ingredient and drug are the same then set them as equivalent classes
+
+        :return:
+        """
 
         return None
 

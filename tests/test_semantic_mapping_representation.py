@@ -705,10 +705,10 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the serializes_semantic_representation method for a single ontology."""
 
         # Set up inputs
-        test_graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+        self.map_transformer.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
 
         # test method
-        self.map_transformer.serializes_semantic_representation(test_graph, 'hp', self.ontology_directory)
+        self.map_transformer.serializes_semantic_representation('hp', self.ontology_directory)
         # make sure method runs on legitimate file
         serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
         file_name = '/OMOP2OBO_Condition_SemanticRepresentation_HP' + self.timestamp + '.owl'
@@ -723,10 +723,10 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the serializes_semantic_representation method for all ontologies."""
 
         # Set up inputs
-        test_graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+        self.map_transformer.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
 
         # test method
-        self.map_transformer.serializes_semantic_representation(test_graph, 'merged', self.ontology_directory)
+        self.map_transformer.serializes_semantic_representation('merged', self.ontology_directory)
         # make sure method runs on legitimate file
         serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
         file_name = '/OMOP2OBO_Condition_SemanticRepresentation_Full' + self.timestamp + '.owl'
