@@ -89,6 +89,62 @@ class TestSemanticMappingTransformer(TestCase):
 
         return None
 
+    def test_ont_dictionary_single(self):
+        """Tests the ont_dictionary when the construction type is single"""
+
+        # test method
+        ont_dict = self.map_transformer.ontology_metadata
+        self.assertEqual(ont_dict, None)
+
+        return None
+
+    def test_ont_dictionary_not_exist(self):
+        """Tests the ont_dictionary when the file does not exist"""
+
+        # move file out of directory
+        shutil.copyfile(self.ontology_directory + '/master_ontology_dictionary.pickle',
+                        self.ontology_directory + '/master_ontology.pickle')
+        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
+
+        # catch when ontology_dictionary file does not exist
+        self.assertRaises(OSError, SemanticMappingTransformer, ontology_list=['so', 'vo'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+
+        # move file back and clean-up directory
+        shutil.copyfile(self.ontology_directory + '/master_ontology.pickle',
+                        self.ontology_directory + '/master_ontology_dictionary.pickle')
+        os.remove(self.ontology_directory + '/master_ontology.pickle')
+
+        return None
+
+    def test_ont_dictionary_empty_file(self):
+        """Tests the ont_dictionary when the file is empty"""
+
+        # rename original file
+        shutil.copyfile(self.ontology_directory + '/master_ontology_dictionary.pickle',
+                        self.ontology_directory + '/master_ontology.pickle')
+        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
+
+        # create fake empty file
+        shutil.copyfile(self.ontology_directory + '/empty_hp_without_imports.owl',
+                        self.ontology_directory + '/master_ontology_dictionary.pickle')
+
+        # catch when ontology_dictionary file is empty
+        self.assertRaises(TypeError, SemanticMappingTransformer, ontology_list=['so', 'vo'],
+                          omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+
+        # remove bad file
+        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
+
+        # move file back and clean-up directory
+        shutil.copyfile(self.ontology_directory + '/master_ontology.pickle',
+                        self.ontology_directory + '/master_ontology_dictionary.pickle')
+        os.remove(self.ontology_directory + '/master_ontology.pickle')
+
+        return None
+
     def test_input_ontology_list_list(self):
         """Tests the ontology list input parameter when input is a list."""
 
@@ -521,7 +577,7 @@ class TestSemanticMappingTransformer(TestCase):
         self.assertIn('secondary_data', test_output[27526].keys())
 
         # check primary key dict
-        self.assertEqual(len(test_output[27526]['primary_data']), 7)
+        self.assertEqual(len(test_output[27526]['primary_data']), 8)
 
         # check secondary key dict
         self.assertEqual(test_output[27526]['secondary_data'], None)
@@ -655,7 +711,7 @@ class TestSemanticMappingTransformer(TestCase):
         self.map_transformer.serializes_semantic_representation(test_graph, 'hp', self.ontology_directory)
         # make sure method runs on legitimate file
         serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
-        file_name = '/OMOP2OBO_Condition_SemanticRepresentation_HP_30NOV2020.owl'
+        file_name = '/OMOP2OBO_Condition_SemanticRepresentation_HP' + self.timestamp + '.owl'
         self.assertEqual(serialized_file[0], self.ontology_directory + file_name)
 
         # remove file

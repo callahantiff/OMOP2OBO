@@ -6,6 +6,7 @@
 import glob  # type: ignore
 import os
 import pandas as pd  # type: ignore
+import pickle  # type: ignore
 import re
 
 from abc import ABCMeta, abstractmethod
@@ -54,7 +55,7 @@ class SemanticMappingTransformer(object):
            superclasses: A dictionary where keys are clinical domains and values are either a dictionary or a URIRef
                 object. For example:
                     {'condition': {'phenotype': URIRef('http://purl.obolibrary.org/obo/HP_0000118'),
-                                                  'disease': URIRef('http://purl.obolibrary.org/obo/MONDO_0000001')},
+                                    'disease': URIRef('http://purl.obolibrary.org/obo/MONDO_0000001')},
                                     'drug': URIRef('http://purl.obolibrary.org/obo/CHEBI_24431'),
                                     'measurement': URIRef('http://purl.obolibrary.org/obo/HP_0000118')}}
            primary_column: A string containing a keyword used to retrieve relevant columns (default="CONCEPT").
@@ -168,6 +169,20 @@ class SemanticMappingTransformer(object):
                 f.close()
         else:
             self.multi_class_relations = None
+
+        # ONTOLOGY DICTIONARY
+        if self.construction_type == 'multi':
+            ont_dictionary = glob.glob(os.getcwd() + '/*/*/master_ontology_dictionary.pickle')
+            if len(ont_dictionary) == 0:
+                raise OSError("Can't find master_ontology_dictionary.pickle please re-run the process ontology steps.")
+            elif os.stat(ont_dictionary[0]).st_size == 0:
+                raise TypeError('Input file: {} is empty'.format(ont_dictionary[0]))
+            else:
+                with open(ont_dictionary[0], 'rb') as handle:
+                    self.ontology_metadata: Optional[Dict] = pickle.load(handle)
+                handle.close()
+        else:
+            self.ontology_metadata = None
 
         # MAPPING COLUMNS
         if primary_column != 'CONCEPT':
@@ -331,7 +346,7 @@ class SemanticMappingTransformer(object):
         else:
             uuid_constructor = BNode('N' + str(uuid4().hex))
             member_nodes = [BNode('N' + str(uuid4().hex)) for x in range(len(uris))]
-            triples = []
+            triples: List = []
 
             # assemble class triples
             uuid_list = [uuid_constructor] + member_nodes
@@ -425,7 +440,7 @@ class SemanticMappingTransformer(object):
                        (URIRef(omop2obo + primary_id), RDFS.label, Literal(primary_label))]
 
         # add domain-specific ontology root
-        if self.construction_type != 'single':
+        if self.construction_type != 'single' and self.superclass_dict is not None:
             if self.domain == 'condition':
                 ont = [k for k, v in self.superclass_dict[self.domain].items()
                        if any([x for y in triples[1] for x in y if v.split('/')[-1].split('_')[0] in str(x)])][0]
@@ -560,10 +575,10 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
                     class_data[primary_key][ont]['triples'] = updated_triples
 
                     # STEP 5A - Add Secondary Data
-                    if self.domain != 'condition':
-                        self.process_secondary_data(class_data[primary_key][ont], 'secondary_data')
+                    # if self.domain != 'condition':
+                        # self.process_secondary_data(class_data[primary_key][ont], 'secondary_data')
                         # STEP 3B - Add Secondary Data Metadata
-                        self.adds_class_metadata()
+                        # self.adds_class_metadata()
 
             # STEP 6 - Add Classes to Ontology Data
             self.adds_triples_to_ontology()
@@ -593,6 +608,10 @@ class MultipleOntologyConstruction(SemanticMappingTransformer):
 
         :return:
         """
+
+        # pull dbxrefs from the ont dictionary to check for equiv or exact matches to other ontologies. This is
+        # particularly important for HP-MONDO mappings
+        # self.ontology_metadata
 
         # obtain ontology ancestors -- only done for CHEBI
         if ont.upper() == 'CHEBI':
