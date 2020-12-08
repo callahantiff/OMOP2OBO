@@ -308,9 +308,6 @@ def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
 
     Returns:
         class_list: A list of all of the deprecated OWL classes in the graph.
-
-    Raises:
-        ValueError: If the query returns zero nodes with type owl:Class.
     """
 
     print('Querying Knowledge Graph to Obtain all Deprecated OWL:Class Nodes')
