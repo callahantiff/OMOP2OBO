@@ -5,6 +5,8 @@ import glob
 import os
 import os.path
 import pandas as pd
+import re
+import regex
 import shutil
 
 from datetime import date, datetime
@@ -486,8 +488,9 @@ class TestSemanticMappingTransformer(TestCase):
 
         # test simple logic - N/A
         logic = 'N/A'
-        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-        na_test = self.map_transformer.extracts_logic_information(logic, constructors.copy())
+        construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
+        result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE)
+        na_test = self.map_transformer.extracts_logic(logic, result, construct.copy())
 
         # test results
         self.assertIsInstance(na_test, List)
@@ -500,8 +503,9 @@ class TestSemanticMappingTransformer(TestCase):
 
         # test simple logic - AND
         logic = 'AND(0, 1)'
-        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-        and_test = self.map_transformer.extracts_logic_information(logic, constructors.copy())
+        construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
+        result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE).captures('rec')
+        and_test = self.map_transformer.extracts_logic(logic, result, construct.copy())
 
         # test results
         self.assertIsInstance(and_test, List)
@@ -514,8 +518,9 @@ class TestSemanticMappingTransformer(TestCase):
 
         # test simple logic - OR
         logic = 'OR(0, 1)'
-        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-        or_test = self.map_transformer.extracts_logic_information(logic, constructors.copy())
+        construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
+        result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE).captures('rec')
+        or_test = self.map_transformer.extracts_logic(logic, result, construct.copy())
 
         # test results
         self.assertIsInstance(or_test, List)
@@ -528,8 +533,9 @@ class TestSemanticMappingTransformer(TestCase):
 
         # test simple logic - NOT
         logic = 'NOT(1)'
-        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-        not_test = self.map_transformer.extracts_logic_information(logic, constructors.copy())
+        construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
+        result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE).captures('rec')
+        not_test = self.map_transformer.extracts_logic(logic, result, construct.copy())
 
         # test results
         self.assertIsInstance(not_test, List)
@@ -542,8 +548,9 @@ class TestSemanticMappingTransformer(TestCase):
 
         # test complex logic - constructor wrapped around two inner constructors
         logic = 'AND(OR(0, 1), NOT(1))'
-        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-        complex_test1 = self.map_transformer.extracts_logic_information(logic, constructors.copy())
+        construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
+        result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE).captures('rec')
+        complex_test1 = self.map_transformer.extracts_logic(logic, result, construct.copy())
         # test results
         expected_output = [['NOT', '1'], ['OR', '0, 1'], ['AND', 'NOT, OR']]
         self.assertIsInstance(complex_test1, List)
@@ -551,8 +558,9 @@ class TestSemanticMappingTransformer(TestCase):
 
         # test complex logic - 2
         logic = 'AND(0, OR(0, 1), NOT(1))'
-        constructors = [x for x in ['AND', 'OR', 'NOT'] if x in logic][::-1]
-        complex_test2 = self.map_transformer.extracts_logic_information(logic, constructors.copy())
+        construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
+        result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE).captures('rec')
+        complex_test2 = self.map_transformer.extracts_logic(logic, result, construct.copy())
         # test results
         expected_output = [['NOT', '1'], ['OR', '0, 1'], ['AND', '0, NOT, OR']]
         self.assertIsInstance(complex_test2, List)
