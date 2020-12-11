@@ -624,24 +624,22 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
     return data
 
 
-def finds_nonoverlapping_span_indexes(logic: str, constructors: List) -> List:
-    """Method takes a logic string and parses it to obtain a list of lists, where each inner list contains
-    two integers representing a start and stop position for each unit of the processed logic string. Each
-    span is compared to all other spans and only those spans that don't overlap any other span are kept.
-    The non-overlapping spans are then used to obtain the index of the correct OWL constructors and
-    returns them as a list.
+def finds_nonoverlapping_span_indexes(logic: str) -> List:
+    """Method takes a logic string and parses it to obtain a list of lists, where each inner list contains two integers
+    representing a start and stop position for each unit of the processed logic string. Each span is compared to all
+    other spans and only those spans that don't overlap any other span are kept. The non-overlapping spans are then
+    used to obtain the index of the correct OWL constructors and returns them as a list.
 
     Method was adapted from: https://codereview.stackexchange.com/questions/21309
 
     Args:
         logic: A string of logical statements (e.g. 'OR(AND(0, NOT(1)), OR(0, NOT(1)))').
-        constructors: A list of ordered OWL constructors (e.g. ['NOT', 'NOT', 'AND', 'OR', 'OR']).
 
     Returns:
-        A list of non-overlapping span indexes.
+        A list of corresponding OWL constructors for span indexes.
     """
 
-    result, current_start, current_stop = [], -1, -1
+    result, current_start, current_stop, const_types = [], -1, -1, ['OR', 'AND', 'NOT']
     spans = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).spans('grp')[:-1]
 
     for start, stop in sorted(spans):
@@ -651,4 +649,7 @@ def finds_nonoverlapping_span_indexes(logic: str, constructors: List) -> List:
         else:
             result[-1], current_stop = (current_start, stop + 1), max(current_stop, stop)
 
-    return [constructors[spans.index(x)] for x in result]
+    # find constructors
+    constructors = [[logic[z[0] - x:z[0]] for x in range(4) if logic[z[0] - x:z[0]] in const_types][0] for z in result]
+
+    return constructors

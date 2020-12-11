@@ -603,10 +603,9 @@ class TestDataUtils(unittest.TestCase):
 
         # set-up method inputs
         logic = 'OR(AND(0, NOT(1)), OR(0, NOT(1)))'
-        constructors = ['NOT', 'NOT', 'AND', 'OR', 'OR']
 
         # test method
-        output = finds_nonoverlapping_span_indexes(logic, constructors)
+        output = finds_nonoverlapping_span_indexes(logic)
         self.assertIsInstance(output, List)
         self.assertEqual(output, ['AND', 'OR'])
 
