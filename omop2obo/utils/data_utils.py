@@ -624,7 +624,7 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
     return data
 
 
-def finds_nonoverlapping_span_indexes(logic: str) -> List:
+def finds_nonoverlapping_span_indexes(logic: str, constructors: List) -> List:
     """Method takes a logic string and parses it to obtain a list of lists, where each inner list contains
     two integers representing a start and stop position for each unit of the processed logic string. Each
     span is compared to all other spans and only those spans that don't overlap any other span are kept.
@@ -635,13 +635,13 @@ def finds_nonoverlapping_span_indexes(logic: str) -> List:
 
     Args:
         logic: A string of logical statements (e.g. 'OR(AND(0, NOT(1)), OR(0, NOT(1)))').
+        constructors: A list of ordered OWL constructors (e.g. ['NOT', 'NOT', 'AND', 'OR', 'OR']).
 
     Returns:
         A list of non-overlapping span indexes.
     """
 
     result, current_start, current_stop = [], -1, -1
-    constructors = re.sub(r'[^A-z]', ' ', logic).split()
     spans = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).spans('grp')[:-1]
 
     for start, stop in sorted(spans):
