@@ -4,7 +4,7 @@
 import pandas as pd
 import unittest
 
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from omop2obo.utils import *
 
 
@@ -595,5 +595,18 @@ class TestDataUtils(unittest.TestCase):
         self.assertEqual(results.at[0, 'SIMILARITY_HP_LABEL'], None)
         self.assertEqual(results.at[0, 'SIMILARITY_HP_MAPPING'], None)
         self.assertEqual(results.at[0, 'SIMILARITY_HP_EVIDENCE'], None)
+
+        return None
+
+    def tests_finds_nonoverlapping_span_indexes(self):
+        """Tests the finds_nonoverlapping_span_indexes method."""
+
+        # set-up method inputs
+        logic = 'OR(AND(0, NOT(1)), OR(0, NOT(1)))'
+
+        # test method
+        output = finds_nonoverlapping_span_indexes(logic)
+        self.assertIsInstance(output, List)
+        self.assertEqual(output, ['AND', 'OR'])
 
         return None
