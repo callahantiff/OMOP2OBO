@@ -21,7 +21,7 @@ __all__ = [
 
     'OntologyInfoExtractor',
 
-    'SemanticMappingTransformer',
+    'SemanticTransformer',
 
     'SimilarStringFinder'
 ]
@@ -29,5 +29,5 @@ __all__ = [
 from omop2obo.clinical_concept_annotator import ConceptAnnotator
 from omop2obo.ontology_downloader import OntologyDownloader
 from omop2obo.ontology_explorer import OntologyInfoExtractor
-from omop2obo.semantic_mapping_representation import SemanticMappingTransformer
+from omop2obo.semantic_mapping_representation import SemanticTransformer
 from omop2obo.string_similarity import SimilarStringFinder

@@ -15,7 +15,7 @@ Pandas DataFrame manipulations
 Dictionary manipulations
 * merge_dictionaries
 
-Mapping Result Aggregation
+Mapping Result Aggregation/Manuipulation
 * ohdsi_ananke
 * normalizes_clinical_source_codes
 * filters_mapping_content
@@ -23,12 +23,14 @@ Mapping Result Aggregation
 * formats_mapping_evidence
 * assigns_mapping_category
 * aggregates_mapping_results
+* finds_nonoverlapping_span_indexes
 
 """
 
 # import needed libraries
 import pandas as pd  # type: ignore
 import re
+import regex
 
 from functools import reduce
 from more_itertools import unique_everseen
@@ -620,3 +622,33 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
         data[x] = data[x].apply(lambda i: i[0:size_limit] if not isinstance(i, int) and i is not None else i)
 
     return data
+
+
+def finds_nonoverlapping_span_indexes(logic: str) -> List:
+    """Method takes a logic string and parses it to obtain a list of lists, where each inner list contains
+    two integers representing a start and stop position for each unit of the processed logic string. Each
+    span is compared to all other spans and only those spans that don't overlap any other span are kept.
+    The non-overlapping spans are then used to obtain the index of the correct OWL constructors and
+    returns them as a list.
+
+    Method was adapted from: https://codereview.stackexchange.com/questions/21309
+
+    Args:
+        logic: A string of logical statements (e.g. 'OR(AND(0, NOT(1)), OR(0, NOT(1)))').
+
+    Returns:
+        A list of non-overlapping span indexes.
+    """
+
+    result, current_start, current_stop = [], -1, -1
+    constructors = re.sub(r'[^A-z]', ' ', logic).split()
+    spans = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).spans('grp')[:-1]
+
+    for start, stop in sorted(spans):
+        if start > current_stop:
+            result.append((start, stop))
+            current_start, current_stop = start, stop
+        else:
+            result[-1], current_stop = (current_start, stop + 1), max(current_stop, stop)
+
+    return [constructors[spans.index(x)] for x in result]
