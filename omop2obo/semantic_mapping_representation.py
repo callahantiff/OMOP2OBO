@@ -18,7 +18,7 @@ from tqdm import tqdm  # type: ignore
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
-from omop2obo.utils import gets_class_ancestors, merges_ontologies, ontology_file_formatter
+from omop2obo.utils import *
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -27,7 +27,7 @@ omop2obo = Namespace('https://github.com/callahantiff/omop2obo/')
 skos = Namespace('http://www.w3.org/2004/02/skos/core#')
 
 
-class SemanticMappingTransformer(object):
+class SemanticTransformer(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, ontology_list: List, omop2obo_data_file: str, domain: str, map_type: str = 'multi',
@@ -267,52 +267,39 @@ class SemanticMappingTransformer(object):
 
         return row_dict_data
 
-    # @staticmethod
-    # def extracts_logic(full_logic: str, logic: str, construct: List, uri_info: Optional[List] = None) -> List:
-    #     """Recursively parses a string containing logical constructor information (e.g. "AND(0,OR(1, 2))") with the
-    #     goal of extracting each OWL constructor and the URI indexes it points to. The method returns a list of lists,
-    #     where each inner list contains an OWL constructor and it's indexes or other OWL constructors if the logic
-    #     string contains several chained constructors (e.g. "AND(OR(0, 1) ,OR(2, 3))").
-    #
-    #     Args:
-    #         full_logic: A string containing the original logic statement (e.g. "AND(0, OR(1, 2), 3)").
-    #         logic: A string containing a logic statement that is updated on each run of the method.
-    #         construct: A list of OWL constructors (e.g. ['AND', 'OR']).
-    #         uri_info: A nested list of OWL constructors and URI indexes (details on item under Returns). This is an
-    #             optional parameter.
-    #
-    #     Returns:
-    #         uri_info: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
-    #             the first item contains a string representing an OWL constructor and the second item contains a
-    #             comma-delimited string of URI indexes.
-    #     """
-    #
-    #     # instantiate list object if none passed to function
-    #     uri_info = [] if uri_info is None else uri_info
-    #
-    #     if len(construct) == 0 or logic == 'N/A':
-    #         return uri_info
-    #     elif ('()' in logic or ',' not in logic) or len(construct) == 1:
-    #         const, inner_constructors = construct.pop(0), [x[0] for x in uri_info]
-    #         if '()' in logic:
-    #             uri_info.append([const, ', '.join(inner_constructors)])
-    #         else:
-    #             # extract = [re.search(r'(?<={}\().*?(?=\))'.format(const), logic).group(0)]  # type: ignore
-    #             extract = sorted(re.findall(r'(?<={}\().*?(?=\))'.format(const), logic))[-1]  # type: ignore
-    #             uri_info.append([const, ', '.join([extract] + inner_constructors)])
-    #         return SemanticMappingTransformer.extracts_logic(logic, '', construct, uri_info)
-    #     else:
-    #         const = construct.pop(0)
-    #         # extract = re.search(r'(?<={}\().*?(?=\))'.format(const), logic).group(0)  # type: ignore
-    #         # idx = re.findall(r'(?<={}\().*?(?=\))'.format(const), logic)[-1]  # type: ignore
-    #         idx =
-    #         extract = idx + ')' if '(' in idx and ')' not in idx else idx
-    #         logic = re.sub(r'\s,|,\s(?=\))|(?<=\(),\s', '', full_logic.replace('{}({})'.format(const, extract), ''))
-    #         uri_info.append([const, extract])
-    #         return SemanticMappingTransformer.extracts_logic(full_logic, logic, construct, uri_info)
+    @staticmethod
+    def orders_constructors(logic: str, result: List) -> List:
+        """Method takes a logic string and a set of preprocessed logic lists and returns a list of the OWL constructors
+        used in the logic string ordered by most inner to outer parentheses. An example is provided below:
+
+        Example:
+            input: 'OR(AND(0, 1, 2, 3), OR(AND(0, 1, 2), 3))'
+            output: ['AND', 'AND', 'OR', 'OR']
+
+        Args:
+            logic: A string containing the OWL constructor logic and indexes (e.g. 'AND(0, OR(1, 2))').
+            result: A list of pre-processed logical stubs representing the information extracted from logic string.
+
+        Returns:
+            constructors: A list of ordered OWL constructors.
+        """
+
+        constructors = []
+
+        while len(result) != 0:
+            res = result.pop(0)
+            # find result in logic string
+            formatted_stub = res.replace('(', '\\(').replace(')', '\\)').replace(',', '\\,').replace(' ', '\\s')
+            matches = re.findall(r'[A-Z]{2,3}(?=' + formatted_stub + ')', logic)
+            # update hits for all matches and decrements result list
+            for match in matches:
+                constructors += [match]
+                if res in result: result.remove(res)
+
+        return constructors
 
     @staticmethod
-    def extracts_logic(logic: str, result: List, construct: List, uri_info: Optional[List] = None) -> List:
+    def extracts_logic(logic: str, result: List, constructors: List, uri_info: Optional[List] = None) -> List:
         """Recursively parses a string containing logical constructor information (e.g. "AND(0,OR(1, 2))") with the
         goal of extracting each OWL constructor and the URI indexes it points to. The method returns a list of
         lists, where each inner list contains an OWL constructor and it's indexes or other OWL constructors if the logic
@@ -321,7 +308,7 @@ class SemanticMappingTransformer(object):
         Args:
             logic: A string containing a logic statement that is updated on each run of the method.
             result: A list of all logic chunks extracted from the logic string.
-            construct: A list of OWL constructors (e.g. ['AND', 'OR']).
+            constructors: A list of OWL constructors (e.g. ['AND', 'OR']).
             uri_info: A nested list of OWL constructors and URI indexes (details on item under Returns). This is an
                 optional parameter.
 
@@ -332,23 +319,22 @@ class SemanticMappingTransformer(object):
                 comma-delimited string of URI indexes.
         """
 
-        # instantiate list object if none passed to function
         uri_info = [] if uri_info is None else uri_info
 
-        if (construct is None or len(construct) == 0) or (result is None or len(result) == 0) or logic == 'N/A':
+        if (constructors is None or len(constructors) == 0) and (result is None or len(result) == 0) or logic == 'N/A':
             return uri_info
-        elif len(result) == 1 and len(construct) == 1:
-            const, inner_constructors = construct.pop(0), [x[0] for x in uri_info]
-            # check if statement is just indexes (i.e. '(0, 2)') or if it contains OWL constructors
+        elif len(result) == 1 and len(constructors) == 1:  # processes most outer logic parentheses
+            const, inner = constructors.pop(0), finds_nonoverlapping_span_indexes(logic)
+            # check if statement only contains indexes (i.e. '(0, 2)') or a mix of indexes and OWL constructors
             if not any(x for x in ['AND', 'OR', 'NOT'] if x in result[0]): pattern = r'\d,\s.+(?=\)$)|\d'
-            else: pattern = r'(?<=^\()\d.*?(?=\,\s[A-z])|(?<=\),\s)\d.*?(?=\)$)'
-            extract = re.findall(pattern, result[0])
-            if len(extract) == 0: uri_info.append([const, ', '.join(inner_constructors)])
-            else: uri_info.append([const, ', '.join(extract + inner_constructors)])
+            else: pattern = r'(?<=^\()\d.*?(?=\,\s[A-z])|(?<=\),\s)\d.*?(?=\,\s[A-z])|(?<=\,\s)[^\).]+(?=\)$)'
+            extract = re.findall(pattern, result[0])  # returns empty list if no indexes in outer (), str if there is
+            if len(extract) == 0: uri_info.append([const, ', '.join(inner)])  # when no index in outer ()s
+            else: uri_info.append([const, ', '.join(extract + inner)])  # when outer () contains mixed data
 
-            return SemanticMappingTransformer.extracts_logic(logic, result, construct, uri_info)
+            return SemanticTransformer.extracts_logic(logic, [], constructors, uri_info)
         else:
-            const = construct.pop(0)
+            const = constructors.pop(0)
             # find constructor's statement
             match = [(x, re.findall(const + re.sub(r'[\\(]', '\\(', x).replace(r')', '\\)'), logic)) for x in result]
             substr, filtered_match = [(x[0], x[1][0]) for x in match if len(x[1]) > 0][0]
@@ -359,7 +345,7 @@ class SemanticMappingTransformer(object):
             result.remove(substr)
             uri_info.append([const, extract])
 
-            return SemanticMappingTransformer.extracts_logic(logic, result, construct, uri_info)
+            return SemanticTransformer.extracts_logic(logic, result, constructors, uri_info)
 
     @staticmethod
     def complement_of_constructor(uri: str) -> Tuple:
@@ -417,14 +403,17 @@ class SemanticMappingTransformer(object):
             return uuid_constructor, triples
 
     @staticmethod
-    def class_constructor(logic_info: List, uris: List, triples: Optional[Dict] = None) -> Tuple:
+    def class_constructor(all_logic: List, logic_info: List, uris: List, triples: Optional[Dict] = None) -> Tuple:
         """Method is the primary directive which guides the transformation of each mapping into a semantic
         definition. This is done in the following four steps:
 
         Args:
+            all_logic: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
+                the first item contains a string representing an OWL constructor and the second item contains a
+                comma-delimited string of URI indexes. This list stays full.
             logic_info: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
                 the first item contains a string representing an OWL constructor and the second item contains a
-                comma-delimited string of URI indexes.
+                comma-delimited string of URI indexes. This list is decremented with each loop.
             uris: A list of URIs needed to construct semantic definitions for a given mapping.
             triples: A nested list of constructed triples. The first item in the list is the RDFLib BNode used to link
                 a set of triples to important class metadata (e.g. OMOP2OBO namespace identifier and label).
@@ -444,27 +433,27 @@ class SemanticMappingTransformer(object):
             return uuid_key, triples
         else:
             constructor, uri_idx = logic_info.pop(0)
-            if uri_idx == '':
-                uri_info = uris
+            if all_logic[-1] == [constructor, uri_idx]:
+                uri_info =
             else:
                 uri_info = [URIRef(obo + uris[int(x)]) if x.split('(')[0] not in ['AND', 'OR', 'NOT']
-                            else triples[[i for i in triples.keys() if x.split('(')[0] in i][0]]
+                            else triples['('.join(all_logic[all_logic.index([constructor, uri_idx]) - 1]) + ')']
                             for x in uri_idx.split(', ')]
+
             # obtain constructor triples
             if constructor == 'AND':
-                triple_info = SemanticMappingTransformer.other_owl_constructor(uri_info, OWL.intersectionOf)
-                triples['bridge_node'], triples[constructor + '-' + uri_idx] = triple_info[0], triple_info[0]
-                triples['full_set'] = triple_info[1] + triples['full_set']
+                triple_info = other_owl_constructor(uri_info, OWL.intersectionOf)
             elif constructor == 'OR':
-                triple_info = SemanticMappingTransformer.other_owl_constructor(uri_info, OWL.unionOf)
-                triples['bridge_node'], triples[constructor + '-' + uri_idx] = triple_info[0], triple_info[0]
-                triples['full_set'] = triple_info[1] + triples['full_set']
+                triple_info = other_owl_constructor(uri_info, OWL.unionOf)
             else:
-                triple_info = SemanticMappingTransformer.complement_of_constructor(uri_info[0])
-                triples['bridge_node'], triples[constructor + '-' + uri_idx] = triple_info[0], triple_info[0]
-                triples['full_set'] = triple_info[1] + triples['full_set']
+                triple_info = complement_of_constructor(uri_info[0])
+            triples['bridge_node'], triples[constructor + '(' + uri_idx + ')'] = triple_info[0], triple_info[0]
+            triples['full_set'] = triple_info[1] + triples['full_set']
 
-        return SemanticMappingTransformer.class_constructor(logic_info, uris, triples)
+        for x in triple_info[1]:
+            print(str(x[0]), str(x[1]), str(x[2]))
+
+        return SemanticTransformer.class_constructor(all_logic, logic_info, uris, triples)
 
     def adds_class_metadata(self, class_info: Dict, data_level: str) -> List:
         """Adds important metadata to triples output after running the class_constructor method. The method adds class
@@ -563,7 +552,7 @@ class SemanticMappingTransformer(object):
         pass
 
 
-class SingleOntologyConstruction(SemanticMappingTransformer):
+class SingleOntologyConstruction(SemanticTransformer):
     """The Single Ontology Construction workflow is designed to create ontology-specific semantic definitions for
     each mapping rather than creating semantic definitions that span multiple ontologies. This approach is primarily
     used to determine the logical consistency of the mappings for each ontology."""
@@ -587,11 +576,13 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
         self.ontology_data_dict = self.loads_ontology_data()
 
         # STEP 2 - Create Semantic Definitions of Mappings
-        for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
-            # for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
+        # for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
+        for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
+            if row['HP_LOGIC'] == 'OR(AND(0, 1), OR(0, 1))':
+                break
             # STEP 2A - Get Primary and Secondary Data
-            row_data = self.gets_concept_id_data(row)
-            # row_data = gets_concept_id_data(row)
+            # row_data = self.gets_concept_id_data(row)
+            row_data = gets_concept_id_data(row)
             primary_key = list(row_data.keys())[0]
             class_data[primary_key] = {}
 
@@ -601,6 +592,7 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
                     # STEP 2B - get ontology information to needed to build classes
                     class_data[primary_key][ont] = row_data[primary_key]
                     logic, uri = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'].split(' | ')
+                    logic
 
                     # STEP 3 - Construct Classes
                     if logic == 'N/A':
@@ -610,23 +602,30 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
                             logic = '{}({})'.format(logic, ', '.join([str(x) for x in range(len(uri))]))
 
                         # STEP 3A - Extract OWL constructors and order inside out (inner constructors appear first)
-                        construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
-                        result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE)
-                        # logic_info = extracts_logic(logic, result.captures('rec'), construct)
-                        logic_info = SemanticMappingTransformer.extracts_logic(logic,
-                                                                               result.captures('rec'),
-                                                                               construct)
+                        # construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
+                        result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
+                        constructors = orders_constructors(logic, result.copy())
+                        logic_info = extracts_logic(logic, result.copy(), constructors)
+                        logic_info
+
+                        # logic_info = SemanticTransformer.extracts_logic(logic, result.captures('rec'), construct)
                         # print(logic_info)
 
                         # STEP 3B - Construct Classes
-                        triples = SemanticMappingTransformer.class_constructor(logic_info, uri)
-                        class_data[primary_key][ont]['triples'] = triples
-                        # class_data[primary_key][ont]['triples'] = class_constructor(logic_info, uri)
+                        # triples = SemanticTransformer.class_constructor(logic_info.copy(), logic_info, uri)
+                        # class_data[primary_key][ont]['triples'] = triples
+                        class_data[primary_key][ont]['triples'] = class_constructor(logic_info.copy(), logic_info, uri)
 
                     # STEP 4 - Add Primary Data Metadata
-                    updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
-                    # updated_triples = adds_class_metadata(class_data[primary_key][ont], 'primary_data')
-                    class_data[primary_key][ont]['triples'] = updated_triples
+                    # updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                    updated_triples = adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                    # class_data[primary_key][ont]['triples'] = updated_triples
+
+                    'OR(AND(0, 1, 2, 3), OR(AND(0, 1, 2), 3))'
+                    ['HP_0002381', 'HP_0010524', 'HP_0010522', 'HP_0002186']
+                    for triple in updated_triples:
+                        print(str(triple[0]).split('/')[-1], str(triple[1]).split('#')[-1],
+                              str(triple[2]).split('/')[-1].split('#')[-1])
 
         # STEP 5 - Add Classes to Ontology Data
         self.adds_triples_to_ontology()
@@ -636,26 +635,23 @@ class SingleOntologyConstruction(SemanticMappingTransformer):
 
         return None
 
+    #
     # omop2obo_data = pd.read_excel(omop2obo_data_file, sep=',', header=0)
     # omop2obo_data.fillna('N/A', inplace=True)
-    #
-    # # logic = 'OR(AND(0, 1, 2, 3), OR(AND(0, 1, 2), 3))'
-    # # logic = 'AND(OR(0, 1), NOT(2), 3)'
-    # # construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
-    # # result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', logic, flags=regex.VERBOSE).captures('rec')
-    # # extracts_logic(logic, result, construct)
-    #
-    # for x in set(list(omop2obo_data['HP_LOGIC']) + list(omop2obo_data['MONDO_LOGIC'])):
-    #     if x != 'N/A' and '(' in x:
-    #         constructors = re.sub(r'[^A-z]', ' ', x).split()[::-1]
-    #         result = regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))', x, flags=regex.VERBOSE).captures('rec')
-    #         logic_info = extracts_logic(x, result, constructors)
-    #         print(x)
-    #         print(logic_info)
-    #         print('\n')
+
+    for x in set(list(omop2obo_data['HP_LOGIC']) + list(omop2obo_data['MONDO_LOGIC'])):
+        if x == 'N/A' or '(' not in x:
+            pass
+        else:
+            result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', x).captures('grp')
+            constructors = orders_constructors(x, result.copy())
+            logic_info = extracts_logic(x, result.copy(), constructors)
+            print(x)
+            print(logic_info)
+            print('\n')
 
 
-class MultipleOntologyConstruction(SemanticMappingTransformer):
+class MultipleOntologyConstruction(SemanticTransformer):
     """The Multiple Ontology Construction workflow is designed to create semantic definitions that span multiple
     ontologies. This approach is the default method for creating semantic definitions within the OMOP2OBO framework."""
 
