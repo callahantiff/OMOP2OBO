@@ -12,6 +12,7 @@ import regex
 
 from abc import ABCMeta, abstractmethod
 from datetime import date, datetime  # type: ignore
+from more_itertools import unique_everseen  # type: ignore
 from rdflib import BNode, Graph, Literal, Namespace, URIRef  # type: ignore
 from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 from tqdm import tqdm  # type: ignore
@@ -322,7 +323,7 @@ class SemanticTransformer(object):
         uri_info = [] if uri_info is None else uri_info
 
         if (constructors is None or len(constructors) == 0) and (result is None or len(result) == 0) or logic == 'N/A':
-            return uri_info
+            return list(unique_everseen(uri_info))
         elif len(result) == 1 and len(constructors) == 1:  # processes most outer logic parentheses
             const, inner = constructors.pop(0), finds_nonoverlapping_span_indexes(logic)
             # check if statement only contains indexes (i.e. '(0, 2)') or a mix of indexes and OWL constructors
@@ -338,12 +339,15 @@ class SemanticTransformer(object):
             # find constructor's statement
             match = [(x, re.findall(const + re.sub(r'[\\(]', '\\(', x).replace(r')', '\\)'), logic)) for x in result]
             substr, filtered_match = [(x[0], x[1][0]) for x in match if len(x[1]) > 0][0]
-            # extract constructor's content (e.g. '2' from NOT(2))
-            if not any(x for x in ['AND', 'OR', 'NOT'] if x in substr): idx = re.sub(r'[\\(|)]', '', substr)
-            else: idx = re.sub(r'(?<=[A-z])\(.*?\)|[\\()]', '', substr)
-            extract = idx + ')' if '(' in idx and ')' not in idx else idx
             result.remove(substr)
-            uri_info.append([const, extract])
+            if not any(x for x in ['AND', 'OR', 'NOT'] if x in substr):  # extract const's content (e.g. '2' in NOT(2))
+                idx = re.sub(r'[\\(|)]', '', substr)
+            else:
+                for x in [y for y in uri_info if y[0] + '(' + y[1] + ')' in filtered_match]:
+                    str_idx = str(logic.index('{}({})'.format(x[0], x[1])))
+                    substr = substr.replace(r'{}({})'.format(x[0], x[1]), x[0] + '-' + str_idx)
+                idx = re.sub(r'(?<=[A-z])\(.*?\)|[\\()]', '', substr)
+            uri_info.append([const, idx + ')' if '(' in idx and ')' not in idx else idx])
 
             return SemanticTransformer.extracts_logic(logic, result, constructors, uri_info)
 
@@ -403,18 +407,18 @@ class SemanticTransformer(object):
             return uuid_constructor, triples
 
     @staticmethod
-    def class_constructor(all_logic: List, logic_info: List, uris: List, triples: Optional[Dict] = None) -> Tuple:
+    def class_constructor(logic: str, logic_info: List, span: List, uri: List, triples: Optional[Dict] = None) -> Tuple:
         """Method is the primary directive which guides the transformation of each mapping into a semantic
         definition. This is done in the following four steps:
 
         Args:
-            all_logic: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
-                the first item contains a string representing an OWL constructor and the second item contains a
-                comma-delimited string of URI indexes. This list stays full.
+            logic: A string containing a logic statement that is updated on each run of the method.
             logic_info: A nested list of OWL constructors and URI indexes. In each inner list there are two items where
                 the first item contains a string representing an OWL constructor and the second item contains a
                 comma-delimited string of URI indexes. This list is decremented with each loop.
-            uris: A list of URIs needed to construct semantic definitions for a given mapping.
+            span: A nested list of logic spans from the original regular expression data. For example, if the logic
+                str is 'AND(0, 1, 2, 3)' --> [['AND', '0, 1, 2, 3']]
+            uri: A list of URIs needed to construct semantic definitions for a given mapping.
             triples: A nested list of constructed triples. The first item in the list is the RDFLib BNode used to link
                 a set of triples to important class metadata (e.g. OMOP2OBO namespace identifier and label).
 
@@ -425,35 +429,35 @@ class SemanticTransformer(object):
 
         triples = {'full_set': [], 'bridge_node': None} if triples is None else triples
 
-        if len(logic_info) == 0:
+        if len(logic_info) == 0:  # add heading triples (i.e. restriction, which accompanies all triple sets)
             uuid_key = BNode('N' + str(uuid4().hex))
             triples = [(uuid_key, RDF.type, OWL.Restriction), (uuid_key, OWL.onProperty, URIRef(obo + 'BFO_0000051')),
                        (uuid_key, OWL.someValuesFrom, triples['bridge_node']),
                        (triples['bridge_node'], RDF.type, OWL.Class)] + triples['full_set']
+
             return uuid_key, triples
         else:
-            constructor, uri_idx = logic_info.pop(0)
-            if all_logic[-1] == [constructor, uri_idx]:
-                uri_info =
-            else:
-                uri_info = [URIRef(obo + uris[int(x)]) if x.split('(')[0] not in ['AND', 'OR', 'NOT']
-                            else triples['('.join(all_logic[all_logic.index([constructor, uri_idx]) - 1]) + ')']
-                            for x in uri_idx.split(', ')]
-
+            const, uri_idx = logic_info.pop(0)
+            span_data = span.pop(0)
+            uri_info = [triples[x] if x.split('-')[0] in ['AND', 'OR', 'NOT'] else URIRef(obo + uri[int(x)])
+                        for x in uri_idx.split(', ')]
             # obtain constructor triples
-            if constructor == 'AND':
-                triple_info = other_owl_constructor(uri_info, OWL.intersectionOf)
-            elif constructor == 'OR':
-                triple_info = other_owl_constructor(uri_info, OWL.unionOf)
-            else:
-                triple_info = complement_of_constructor(uri_info[0])
-            triples['bridge_node'], triples[constructor + '(' + uri_idx + ')'] = triple_info[0], triple_info[0]
-            triples['full_set'] = triple_info[1] + triples['full_set']
+            if const == 'AND': triple = SemanticTransformer.other_owl_constructor(uri_info, OWL.intersectionOf)
+            elif const == 'OR': triple = SemanticTransformer.other_owl_constructor(uri_info, OWL.unionOf)
+            else: triple = SemanticTransformer.complement_of_constructor(uri_info[0])
+            # update triple dictionary
+            triples['bridge_node'], triples[const + '-' + str(logic.index(const + span_data))] = triple[0], triple[0]
+            triples['full_set'] = triple[1] + triples['full_set']
+            # if len(logic_info) != 0:
+            #     org_idx = re.sub(r'-\d.*?(?=$|,)', '', uri_idx)
+            #     if any(x for x in ['AND', 'OR', 'NOT'] if x in uri_idx): org_idx = '(' + org_idx
+            #     else: org_idx = '(' + org_idx + ')'
+            #     key = str(logic.index(constructor + org_idx)) if constructor in triples.keys() else uri_idx
+            # else: key = uri_idx
+            # triples['bridge_node'], triples[constructor + '-' + key] = triple[0], triple[0]
+            # triples['full_set'] = triple[1] + triples['full_set']
 
-        for x in triple_info[1]:
-            print(str(x[0]), str(x[1]), str(x[2]))
-
-        return SemanticTransformer.class_constructor(all_logic, logic_info, uris, triples)
+        return SemanticTransformer.class_constructor(logic, logic_info, span, uri, triples)
 
     def adds_class_metadata(self, class_info: Dict, data_level: str) -> List:
         """Adds important metadata to triples output after running the class_constructor method. The method adds class
@@ -578,21 +582,20 @@ class SingleOntologyConstruction(SemanticTransformer):
         # STEP 2 - Create Semantic Definitions of Mappings
         # for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
         for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
-            if row['HP_LOGIC'] == 'OR(AND(0, 1), OR(0, 1))':
-                break
+            # if row['HP_LOGIC'] == logic:
+            #     break
             # STEP 2A - Get Primary and Secondary Data
             # row_data = self.gets_concept_id_data(row)
             row_data = gets_concept_id_data(row)
             primary_key = list(row_data.keys())[0]
             class_data[primary_key] = {}
 
-            for ont in self.ontologies:
-                # for ont in ontologies:
+            # for ont in self.ontologies:
+            for ont in ontologies:
                 if row[ont.upper() + '_MAPPING'] != 'Unmapped':
                     # STEP 2B - get ontology information to needed to build classes
                     class_data[primary_key][ont] = row_data[primary_key]
                     logic, uri = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'].split(' | ')
-                    logic
 
                     # STEP 3 - Construct Classes
                     if logic == 'N/A':
@@ -602,30 +605,40 @@ class SingleOntologyConstruction(SemanticTransformer):
                             logic = '{}({})'.format(logic, ', '.join([str(x) for x in range(len(uri))]))
 
                         # STEP 3A - Extract OWL constructors and order inside out (inner constructors appear first)
-                        # construct = re.sub(r'[^A-z]', ' ', logic).split()[::-1]
                         result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
+                        span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
                         constructors = orders_constructors(logic, result.copy())
                         logic_info = extracts_logic(logic, result.copy(), constructors)
-                        logic_info
-
                         # logic_info = SemanticTransformer.extracts_logic(logic, result.captures('rec'), construct)
-                        # print(logic_info)
 
                         # STEP 3B - Construct Classes
-                        # triples = SemanticTransformer.class_constructor(logic_info.copy(), logic_info, uri)
+                        # triples = SemanticTransformer.class_constructor(logic, logic_info.copy(), span_data, uri)
                         # class_data[primary_key][ont]['triples'] = triples
-                        class_data[primary_key][ont]['triples'] = class_constructor(logic_info.copy(), logic_info, uri)
+
+                        class_data[primary_key][ont]['triples'] = class_constructor(logic, logic_info.copy(),
+                                                                                    span_data, uri)
+
+                        # try:
+                        #     class_data[primary_key][ont]['triples'] = class_constructor(logic, logic_info.copy(),
+                        #                                                                 span_data, uri)
+                        # except (IndexError, ValueError, KeyError):
+                        #     errors.add(logic)
 
                     # STEP 4 - Add Primary Data Metadata
                     # updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
                     updated_triples = adds_class_metadata(class_data[primary_key][ont], 'primary_data')
                     # class_data[primary_key][ont]['triples'] = updated_triples
 
-                    'OR(AND(0, 1, 2, 3), OR(AND(0, 1, 2), 3))'
-                    ['HP_0002381', 'HP_0010524', 'HP_0010522', 'HP_0002186']
+                    print(logic)
+                    print(logic_info)
+                    print(uri)
                     for triple in updated_triples:
                         print(str(triple[0]).split('/')[-1], str(triple[1]).split('#')[-1],
                               str(triple[2]).split('/')[-1].split('#')[-1])
+                    print('\n')
+
+                    for x in errors:
+                        print(x)
 
         # STEP 5 - Add Classes to Ontology Data
         self.adds_triples_to_ontology()
