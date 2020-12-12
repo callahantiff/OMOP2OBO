@@ -30,7 +30,7 @@ Mapping Result Aggregation/Manuipulation
 # import needed libraries
 import pandas as pd  # type: ignore
 import re
-import regex
+import regex  # type: ignore
 
 from functools import reduce
 from more_itertools import unique_everseen
