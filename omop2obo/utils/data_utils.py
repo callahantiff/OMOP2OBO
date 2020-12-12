@@ -632,14 +632,19 @@ def finds_nonoverlapping_span_indexes(logic: str) -> List:
 
     Method was adapted from: https://codereview.stackexchange.com/questions/21309
 
+    Example input/output:
+        input: 'OR(AND(0, 1), AND(1, 2))'
+        output: ['AND-3', 'AND-14']
+
     Args:
         logic: A string of logical statements (e.g. 'OR(AND(0, NOT(1)), OR(0, NOT(1)))').
 
     Returns:
-        A list of corresponding OWL constructors for span indexes.
+        constructor_idx: A list of corresponding OWL constructors appended with their logic statement index for
+            each span index. See example input and output above.
     """
 
-    result, current_start, current_stop, const_types = [], -1, -1, ['OR', 'AND', 'NOT']
+    result, current_start, current_stop, const = [], -1, -1, ['OR', 'AND', 'NOT']
     spans = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).spans('grp')[:-1]
 
     for start, stop in sorted(spans):
@@ -650,6 +655,7 @@ def finds_nonoverlapping_span_indexes(logic: str) -> List:
             result[-1], current_stop = (current_start, stop + 1), max(current_stop, stop)
 
     # find constructors
-    constructors = [[logic[z[0] - x:z[0]] for x in range(4) if logic[z[0] - x:z[0]] in const_types][0] for z in result]
+    constructors = [([logic[z[0] - x:z[0]] for x in range(4) if logic[z[0] - x:z[0]] in const][0], z) for z in result]
+    constructor_idx = [x[0] + '-' + str(logic.index(x[0] + logic[x[1][0]:x[1][1]])) for x in constructors]
 
-    return constructors
+    return constructor_idx

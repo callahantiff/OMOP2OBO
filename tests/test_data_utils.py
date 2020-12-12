@@ -607,6 +607,6 @@ class TestDataUtils(unittest.TestCase):
         # test method
         output = finds_nonoverlapping_span_indexes(logic)
         self.assertIsInstance(output, List)
-        self.assertEqual(output, ['AND', 'OR'])
+        self.assertEqual(output, ['AND-3', 'OR-19'])
 
         return None
