@@ -8,7 +8,7 @@ import os
 import pandas as pd  # type: ignore
 import pickle  # type: ignore
 import re
-import regex
+import regex  # type: ignore
 
 from abc import ABCMeta, abstractmethod
 from datetime import date, datetime  # type: ignore
@@ -20,6 +20,7 @@ from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from omop2obo.utils import *
+
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -75,7 +76,6 @@ class SemanticTransformer(object):
         self.owltools_location = './omop2obo/libs/owltools'
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
         self.ontology_data_dict: Dict = {}
-        self.class_data_dict: Dict = {}
 
         # EXISTING OMOP2OBO OWL FILE
         existing_mappings = glob.glob('resources/mapping_semantics/omop2obo*.owl')
@@ -98,7 +98,7 @@ class SemanticTransformer(object):
             raise TypeError('Input file: {} is empty'.format(omop2obo_data_file))
         else:
             print('Loading Mapping Data')
-            self.omop2obo_data = pd.read_excel(omop2obo_data_file, sep=',', header=0)
+            self.omop2obo_data = pd.read_excel(omop2obo_data_file, sep=',', header=0, engine='openpyxl')
             self.omop2obo_data.fillna('N/A', inplace=True)
 
         # CLINICAL DOMAIN
@@ -285,7 +285,7 @@ class SemanticTransformer(object):
             constructors: A list of ordered OWL constructors.
         """
 
-        constructors = []
+        constructors: List = []
 
         while len(result) != 0:
             res = result.pop(0)
@@ -390,7 +390,7 @@ class SemanticTransformer(object):
             raise ValueError('OWL:unionOf and OWL:intersectionOf constructors require at least 2 ontology identifiers.')
         else:
             uuid_constructor = BNode('N' + str(uuid4().hex))
-            member_nodes = [BNode('N' + str(uuid4().hex)) for x in range(len(uris))]
+            member_nodes = [BNode('N' + str(uuid4().hex)) for _ in range(len(uris))]
             triples: List = []
 
             # assemble class triples
@@ -448,14 +448,6 @@ class SemanticTransformer(object):
             # update triple dictionary
             triples['bridge_node'], triples[const + '-' + str(logic.index(const + span_data))] = triple[0], triple[0]
             triples['full_set'] = triple[1] + triples['full_set']
-            # if len(logic_info) != 0:
-            #     org_idx = re.sub(r'-\d.*?(?=$|,)', '', uri_idx)
-            #     if any(x for x in ['AND', 'OR', 'NOT'] if x in uri_idx): org_idx = '(' + org_idx
-            #     else: org_idx = '(' + org_idx + ')'
-            #     key = str(logic.index(constructor + org_idx)) if constructor in triples.keys() else uri_idx
-            # else: key = uri_idx
-            # triples['bridge_node'], triples[constructor + '-' + key] = triple[0], triple[0]
-            # triples['full_set'] = triple[1] + triples['full_set']
 
         return SemanticTransformer.class_constructor(logic, logic_info, span, uri, triples)
 
@@ -508,7 +500,8 @@ class SemanticTransformer(object):
         """
         - function that adds triples to an existing ontology
 
-        :return:
+        Returns:
+
         """
 
         return None
@@ -574,24 +567,22 @@ class SingleOntologyConstruction(SemanticTransformer):
         """
 
         # self.class_data
-        class_data = {}
+        class_data: Dict = {}
 
         # STEP 1 - Load Ontology Data
         self.ontology_data_dict = self.loads_ontology_data()
 
         # STEP 2 - Create Semantic Definitions of Mappings
-        # for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
-        for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
-            # if row['HP_LOGIC'] == logic:
-            #     break
+        for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
+        # for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
             # STEP 2A - Get Primary and Secondary Data
-            # row_data = self.gets_concept_id_data(row)
-            row_data = gets_concept_id_data(row)
+            row_data = self.gets_concept_id_data(row)
+            # row_data = gets_concept_id_data(row)
             primary_key = list(row_data.keys())[0]
             class_data[primary_key] = {}
 
-            # for ont in self.ontologies:
-            for ont in ontologies:
+            for ont in self.ontologies:
+            # for ont in ontologies:
                 if row[ont.upper() + '_MAPPING'] != 'Unmapped':
                     # STEP 2B - get ontology information to needed to build classes
                     class_data[primary_key][ont] = row_data[primary_key]
@@ -607,41 +598,23 @@ class SingleOntologyConstruction(SemanticTransformer):
                         # STEP 3A - Extract OWL constructors and order inside out (inner constructors appear first)
                         result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
                         span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
-                        constructors = orders_constructors(logic, result.copy())
-                        logic_info = extracts_logic(logic, result.copy(), constructors)
-                        # logic_info = SemanticTransformer.extracts_logic(logic, result.captures('rec'), construct)
+                        constructors = self.orders_constructors(logic, result.copy())
+                        # logic_info = extracts_logic(logic, result.copy(), constructors)
+                        logic_info = SemanticTransformer.extracts_logic(logic, result.copy(), constructors)
 
                         # STEP 3B - Construct Classes
-                        # triples = SemanticTransformer.class_constructor(logic, logic_info.copy(), span_data, uri)
-                        # class_data[primary_key][ont]['triples'] = triples
-
-                        class_data[primary_key][ont]['triples'] = class_constructor(logic, logic_info.copy(),
-                                                                                    span_data, uri)
-
-                        # try:
-                        #     class_data[primary_key][ont]['triples'] = class_constructor(logic, logic_info.copy(),
-                        #                                                                 span_data, uri)
-                        # except (IndexError, ValueError, KeyError):
-                        #     errors.add(logic)
+                        triples = SemanticTransformer.class_constructor(logic, logic_info.copy(), span_data, uri)
+                        class_data[primary_key][ont]['triples'] = triples
+                        # class_data[primary_key][ont]['triples'] = class_constructor(logic, logic_info.copy(), span_data,
+                        #                                                             uri)
 
                     # STEP 4 - Add Primary Data Metadata
-                    # updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
-                    updated_triples = adds_class_metadata(class_data[primary_key][ont], 'primary_data')
-                    # class_data[primary_key][ont]['triples'] = updated_triples
-
-                    print(logic)
-                    print(logic_info)
-                    print(uri)
-                    for triple in updated_triples:
-                        print(str(triple[0]).split('/')[-1], str(triple[1]).split('#')[-1],
-                              str(triple[2]).split('/')[-1].split('#')[-1])
-                    print('\n')
-
-                    for x in errors:
-                        print(x)
+                    updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                    # updated_triples = adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                    class_data[primary_key][ont]['triples'] = updated_triples
 
         # STEP 5 - Add Classes to Ontology Data
-        self.adds_triples_to_ontology()
+        # self.adds_triples_to_ontology(class_data)
 
         # STEP 6 - Serialize Updated Ontologies
         self.serializes_semantic_representation(ont, 'resources/mapping_semantics')
@@ -651,17 +624,6 @@ class SingleOntologyConstruction(SemanticTransformer):
     #
     # omop2obo_data = pd.read_excel(omop2obo_data_file, sep=',', header=0)
     # omop2obo_data.fillna('N/A', inplace=True)
-
-    for x in set(list(omop2obo_data['HP_LOGIC']) + list(omop2obo_data['MONDO_LOGIC'])):
-        if x == 'N/A' or '(' not in x:
-            pass
-        else:
-            result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', x).captures('grp')
-            constructors = orders_constructors(x, result.copy())
-            logic_info = extracts_logic(x, result.copy(), constructors)
-            print(x)
-            print(logic_info)
-            print('\n')
 
 
 class MultipleOntologyConstruction(SemanticTransformer):

@@ -17,7 +17,7 @@ from unittest import TestCase
 from omop2obo.semantic_mapping_representation import SemanticTransformer
 
 
-class TestSemanticMappingTransformer(TestCase):
+class TestSemanticTransformer(TestCase):
     """Class to test functions used when converting the omop2obo mapping set to RDF."""
 
     def setUp(self):
@@ -487,23 +487,13 @@ class TestSemanticMappingTransformer(TestCase):
 
         # set-up inputs
         logic = 'OR(AND(0, 1, 2, 3), OR(AND(0, 1, 2), 3))'
-        result = ['(0, 1, 2, 3)', '(0, 1, 2)', '(AND(0, 1, 2), 3)', '(AND(0, 1, 2, 3), OR(AND(0, 1, 2), 3))']
-        output_results = [['AND', '0, 1, 2, 3'], ['AND', '0, 1, 2'], ['OR', 'AND, 3'], ['OR', 'AND, AND, OR']]
+        result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
+        output_results = ['AND', 'AND', 'OR', 'OR']
 
         # test method
         output = self.map_transformer.orders_constructors(logic, result)
         self.assertIsInstance(output, List)
         self.assertEqual(output, output_results)
-
-        return None
-
-    def test_extracts_logic_information_na(self):
-        """Tests the extracts_logic_information method when logic is 'N/A'."""
-
-        # test simple logic - N/A
-        logic = 'N/A'
-        result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
-        self.assertRaises(AttributeError, self.map_transformer.orders_constructors, logic, result.copy())
 
         return None
 
@@ -678,12 +668,11 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the class_constructor method for a simple intersection."""
 
         # create method inputs
-        logic = 'OR(0, 1)'
-        logic_info = [['OR', '0, 1']]
-        uris = ['HP_0004430', 'HP_0000007']
+        logic, logic_info, uris = 'OR(0, 1)', [['OR', '0, 1']], ['HP_0004430', 'HP_0000007']
+        span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
 
         # test method
-        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), logic_info, uris)
+        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), span_data, uris)
         self.assertIsInstance(test_output, Tuple)
         self.assertIsInstance(test_output[0], BNode)
         self.assertIsInstance(test_output[1], List)
@@ -695,12 +684,11 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the class_constructor method for a simple union."""
 
         # create method inputs
-        logic = 'AND(0, 1)'
-        logic_info = [['AND', '0, 1']]
-        uris = ['HP_0004430', 'HP_0000007']
+        logic, logic_info, uris = 'AND(0, 1)', [['AND', '0, 1']], ['HP_0004430', 'HP_0000007']
+        span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
 
         # test method
-        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), logic_info, uris)
+        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), span_data, uris)
         self.assertIsInstance(test_output, Tuple)
         self.assertIsInstance(test_output[0], BNode)
         self.assertIsInstance(test_output[1], List)
@@ -712,12 +700,11 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the class_constructor method for a simple complement."""
 
         # create method inputs
-        logic = 'NOT(0)'
-        logic_info = [['NOT', '0']]
-        uris = ['HP_0004430']
+        logic, logic_info, uris = 'NOT(0)', [['NOT', '0']], ['HP_0004430']
+        span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
 
         # test method
-        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), logic_info, uris)
+        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), span_data, uris)
         self.assertIsInstance(test_output, Tuple)
         self.assertIsInstance(test_output[0], BNode)
         self.assertIsInstance(test_output[1], List)
@@ -729,16 +716,16 @@ class TestSemanticMappingTransformer(TestCase):
         """Tests the class_constructor method for a complex set of log."""
 
         # create method inputs
-        logic = 'AND(OR(1, 2), AND(0, 3))'
-        logic_info = [['OR', '1, 2'], ['AND', '0, 3, OR']]
+        logic, logic_info = 'AND(OR(1, 2), AND(0, 3))', [['OR', '1, 2'], ['AND', '0, 3'], ['AND', 'OR-4, AND-14']]
         uris = ['HP_0004430', 'HP_0000007', 'HP_0001419', 'HP_0005359']
+        span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
 
         # test method
-        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), logic_info, uris)
+        test_output = self.map_transformer.class_constructor(logic, logic_info.copy(), span_data, uris)
         self.assertIsInstance(test_output, Tuple)
         self.assertIsInstance(test_output[0], BNode)
         self.assertIsInstance(test_output[1], List)
-        self.assertEqual(len(test_output[1]), 16)
+        self.assertEqual(len(test_output[1]), 19)
 
         return None
 
