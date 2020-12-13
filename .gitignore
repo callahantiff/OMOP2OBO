@@ -26,11 +26,12 @@ resources/clinical_data
 !resources/clinical_data/README.md
 resources/documentation
 resources/mappings/
+resources/mapping_semantics/
 !resources/mappings/condition_codes/.gitkeep
 !resources/mappings/laboratory_tests/.gitkeep
 !resources/mappings/medication_codes/.gitkeep
 !resources/mappings/source_code_vocab_map.csv
-!resources/mapping_semantics/*
+!resources/mapping_semantics/*.md
 resources/ontologies/
 !resources/ontologies/ontology_source_metadata.txt
 resources/programming/
