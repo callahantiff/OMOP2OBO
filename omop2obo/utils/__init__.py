@@ -7,7 +7,7 @@ from .ontology_utils import *
 from .umls_api import cui_search
 
 
-__all__ = ['gets_ontology_statistics', 'gets_ontology_classes', 'gets_ontology_class_labels',
+__all__ = ['gets_ontology_statistics', 'cleans_ontology', 'gets_ontology_classes', 'gets_ontology_class_labels',
            'gets_ontology_class_labels', 'gets_ontology_class_definitions', 'gets_ontology_class_synonyms',
            'gets_ontology_class_dbxrefs', 'gets_deprecated_ontology_classes', 'merges_ontologies',
            'ontology_file_formatter', 'gets_class_ancestors', 'cui_search', 'data_frame_subsetter',

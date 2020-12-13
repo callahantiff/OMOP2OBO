@@ -55,6 +55,22 @@ class TestOntologyUtils(unittest.TestCase):
 
         return None
 
+    def test_cleans_ontology(self):
+        """Tests the cleans_ontology method."""
+
+        # prep input objects
+        ontology = Graph().parse(self.good_ontology_file_location, format='xml')
+        org_nodes, org_edges = len(set([i for j in [x[0::2] for x in ontology] for i in j])), len(ontology)
+
+        # test method
+        clean_ontology = cleans_ontology(ontology, ['so', 'ext'])
+        cln_nodes, cln_edges = len(set([i for j in [x[0::2] for x in clean_ontology] for i in j])), len(clean_ontology)
+        self.assertIsInstance(clean_ontology, Graph)
+        self.assertTrue(org_nodes >= cln_nodes)
+        self.assertTrue(org_edges >= cln_edges)
+
+        return None
+
     def test_gets_ontology_classes(self):
         """Tests the gets_ontology_classes method."""
 

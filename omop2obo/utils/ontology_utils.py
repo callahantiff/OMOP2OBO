@@ -10,6 +10,7 @@ Interacts with OWL Tools API
 * ontology_file_formatter
 
 Obtains Graph Information
+* cleans_ontology
 * gets_ontology_classes
 * gets_ontology_class_labels
 * gets_ontology_class_definitions
@@ -128,7 +129,7 @@ def ontology_file_formatter(write_location: str, full_kg: str,
         TypeError: If the input file contains no data.
     """
 
-    print('\n*** Applying OWL API Formatting to Ontology OWL File ***')
+    print('Applying OWL API Formatting to Ontology OWL File')
     graph_write_location = write_location + full_kg
 
     # check input owl file
@@ -147,6 +148,46 @@ def ontology_file_formatter(write_location: str, full_kg: str,
             print(error.output)
 
     return None
+
+
+def cleans_ontology(ontology: Graph, onts: List) -> Graph:
+    """Method cleans a single ontology or merged set of ontologies to remove all deprecated and obsolete information.
+
+    Args:
+        ontology: An RDFLib Graph object containing ontology data.
+        onts: A list of ontology prefixes.
+
+    Returns:
+        ontology: An updated RDFLib Graph object with all obsolete and deprecated information removed.
+    """
+
+    ont_updated = [x if x != 'ext' else 'uberon' for x in onts]
+    ont_prefix = ['http://purl.obolibrary.org/obo/' + ont.upper() for ont in ont_updated]
+
+    # get deprecated classes and triples
+    dep_cls = [x[0] for x in list(ontology.triples((None, OWL.deprecated, Literal('true', datatype=schema.boolean))))]
+    dep_triples = [(s, p, o) for s, p, o in ontology
+                   if 'deprecated' in ', '.join([str(s).lower(), str(p).lower(), str(o).lower()])
+                   and any(str(s).startswith(ont) for ont in ont_prefix)]
+    oth_dep_triple_classes = [x[0] for x in dep_triples]
+    deprecated_classes = set(dep_cls + oth_dep_triple_classes)
+
+    # get obsolete classes and triples
+    obs_cls = [x[0] for x in list(ontology.triples((None, RDFS.subClassOf, oboinowl.ObsoleteClass)))]
+    obs_triples = [(s, p, o) for s, p, o in ontology
+                   if 'obsolete' in ', '.join([str(s).lower(), str(p).lower(), str(o).lower()])
+                   and any(str(s).startswith(ont) for ont in ont_prefix)]
+    oth_obs_triple_classes = [x[0] for x in obs_triples]
+    obsolete_classes = set(obs_cls + oth_obs_triple_classes)
+
+    # remove deprecated/obsolete classes and triples
+    for node in list(deprecated_classes) + list(obsolete_classes):
+        ontology.remove((node, None, None))  # remove all triples about node
+        ontology.remove((None, None, node))  # remove all triples pointing to node
+    for triple in dep_triples + obs_triples:
+        ontology.remove(triple)
+
+    return ontology
 
 
 def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
