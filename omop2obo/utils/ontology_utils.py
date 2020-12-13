@@ -161,6 +161,7 @@ def cleans_ontology(ontology: Graph, onts: List) -> Graph:
         ontology: An updated RDFLib Graph object with all obsolete and deprecated information removed.
     """
 
+    print('Cleaning Ontology')
     ont_updated = [x if x != 'ext' else 'uberon' for x in onts]
     ont_prefix = ['http://purl.obolibrary.org/obo/' + ont.upper() for ont in ont_updated]
 
