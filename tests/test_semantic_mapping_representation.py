@@ -9,7 +9,7 @@ import regex
 import shutil
 
 from datetime import date, datetime
-from rdflib import BNode, Graph, URIRef
+from rdflib import BNode, Graph, Literal, URIRef
 from rdflib.namespace import OWL
 from typing import Dict, List, Tuple
 from unittest import TestCase
@@ -38,7 +38,7 @@ class TestSemanticTransformer(TestCase):
         self.owltools_location = os.path.abspath(dir_loc3)
 
         # create input parameters
-        self.ontology_list = ['HP', 'MONDO']
+        self.ontology_list = ['hp', 'mondo']
         self.omop2obo_data_file = self.mapping_directory + '/omop2obo_mapping_data.xlsx'
         self.ontology_directory = self.ontology_directory
         self.map_type = 'single'
@@ -87,6 +87,9 @@ class TestSemanticTransformer(TestCase):
 
         # make sure that instantiated class points to testing data location of the OWLTools API
         self.map_transformer.owltools_location = self.owltools_location
+
+        # make sure the the write location points to
+        self.map_transformer.write_location = self.dir_loc2 + '/mapping_semantics'
 
         return None
 
@@ -199,6 +202,15 @@ class TestSemanticTransformer(TestCase):
                           omop2obo_data_file=empty_data_file, domain='condition', map_type=self.map_type,
                           ontology_directory=self.ontology_directory, superclasses=self.superclasses,
                           primary_column='CONCEPT')
+
+        return None
+
+    def test_write_location(self):
+        """Tests the write location for outputting processed ontology data."""
+
+        # make sure default location is a string and that it exists
+        self.assertIsInstance(self.map_transformer.write_location, str)
+        self.assertTrue(os.path.exists(self.map_transformer.write_location))
 
         return None
 
@@ -733,10 +745,10 @@ class TestSemanticTransformer(TestCase):
         """Tests the serializes_semantic_representation method for a single ontology."""
 
         # Set up inputs
-        self.map_transformer.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+        graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
 
         # test method
-        self.map_transformer.serializes_semantic_representation('hp', self.ontology_directory)
+        self.map_transformer.serializes_semantic_representation('hp', graph, self.ontology_directory)
         # make sure method runs on legitimate file
         serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
         file_name = '/OMOP2OBO_Condition_SemanticRepresentation_HP' + self.timestamp + '.owl'
@@ -751,10 +763,10 @@ class TestSemanticTransformer(TestCase):
         """Tests the serializes_semantic_representation method for all ontologies."""
 
         # Set up inputs
-        self.map_transformer.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+        graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
 
         # test method
-        self.map_transformer.serializes_semantic_representation('merged', self.ontology_directory)
+        self.map_transformer.serializes_semantic_representation('merged', graph, self.ontology_directory)
         # make sure method runs on legitimate file
         serialized_file = glob.glob(self.ontology_directory + '/OMOP2OBO*.owl')
         file_name = '/OMOP2OBO_Condition_SemanticRepresentation_Full' + self.timestamp + '.owl'
@@ -801,5 +813,109 @@ class TestSemanticTransformer(TestCase):
         triples = self.map_transformer.adds_class_metadata(class_data, 'primary_data')
         self.assertIsInstance(triples, List)
         self.assertEqual(len(triples), 6)
+
+        return None
+
+    def test_adds_triples_to_ontology(self):
+        """Tests the adds_triples_to_ontology method."""
+
+        # set-up method
+        class_data = {46274126: {'so': {'primary_data': {'CONCEPT_ID': 46274126, 'CONCEPT_LABEL': 'Edentulism'},
+                                        'secondary_data': None,
+                                        'triples':
+                                            [(URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                              URIRef('http://www.geneontology.org/formats/oboInOwl#hasOBONamespace'),
+                                              Literal('OMOP2OBO')),
+                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                              URIRef('http://www.geneontology.org/formats/oboInOwl#id'),
+                                              Literal('OMOP:46274126')),
+                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                              URIRef('http://www.w3.org/2002/07/owl#Class')),
+                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                              URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+                                              Literal('Complete edentulism due to caries')),
+                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                              URIRef('http://www.w3.org/2002/07/owl#equivalentClass'),
+                                              BNode('Nd65d385cf6734a19b37e79adbf48e095')),
+                                             (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                              URIRef('http://www.w3.org/2002/07/owl#Restriction')),
+                                             (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
+                                              URIRef('http://www.w3.org/2002/07/owl#onProperty'),
+                                              URIRef('http://purl.obolibrary.org/obo/BFO_0000051')),
+                                             (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
+                                              URIRef('http://www.w3.org/2002/07/owl#someValuesFrom'),
+                                              BNode('N40a89b262a5545e5afbeb6c8244d2619')),
+                                             (BNode('N40a89b262a5545e5afbeb6c8244d2619'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                              URIRef('http://www.w3.org/2002/07/owl#Class')),
+                                             (BNode('N40a89b262a5545e5afbeb6c8244d2619'),
+                                              URIRef('http://www.w3.org/2002/07/owl#intersectionOf'),
+                                              BNode('Nee63471f3bc4480da0dd663b6dd48dbc')),
+                                             (BNode('Nee63471f3bc4480da0dd663b6dd48dbc'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#first'),
+                                              URIRef('http://purl.obolibrary.org/obo/HP_0006480')),
+                                             (BNode('Nee63471f3bc4480da0dd663b6dd48dbc'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#rest'),
+                                              BNode('N9ef5520613c84ee2bac214241c2cdb02')),
+                                             (BNode('N9ef5520613c84ee2bac214241c2cdb02'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#first'),
+                                              URIRef('http://purl.obolibrary.org/obo/HP_0000670')),
+                                             (BNode('N9ef5520613c84ee2bac214241c2cdb02'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#rest'),
+                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))]},
+                      'vo': {'primary_data': {'CONCEPT_ID': 22871, 'CONCEPT_LABEL': 'Pineal neoplasm'},
+                             'secondary_data': None,
+                             'triples': [(URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                          URIRef('http://www.geneontology.org/formats/oboInOwl#hasOBONamespace'),
+                                          Literal('OMOP2OBO')),
+                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                          URIRef('http://www.geneontology.org/formats/oboInOwl#id'),
+                                          Literal('OMOP:22871')),
+                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                          URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                          URIRef('http://www.w3.org/2002/07/owl#Class')),
+                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                          URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+                                          Literal('Neoplasm of uncertain behavior of pineal gland')),
+                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                          URIRef('http://www.w3.org/2002/07/owl#equivalentClass'),
+                                          URIRef('http://purl.obolibrary.org/obo/HP_0030693'))]}}}
+
+        # prepare to test method by loading ontology data
+        self.map_transformer.ontology_list = ['so', 'vo']
+        self.map_transformer.ontology_data_dict = self.map_transformer.loads_ontology_data()
+        so_graph = self.map_transformer.ontology_data_dict['so']
+        so_original_nodes = len(set([i for j in [x[0::2] for x in so_graph] for i in j]))
+        so_original_edges = len(so_graph)
+        vo_graph = self.map_transformer.ontology_data_dict['vo']
+        vo_original_nodes = len(set([i for j in [x[0::2] for x in vo_graph] for i in j]))
+        vo_original_edges = len(vo_graph)
+
+        # test method
+        self.map_transformer.adds_triples_to_ontology(class_data, ['so', 'vo'])
+        # so results
+        so_file_name = glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_SO_*.owl')[0]
+        self.assertTrue(os.path.exists(so_file_name))
+        so_post_graph = Graph().parse(so_file_name, format='xml')
+        so_post_nodes = len(set([i for j in [x[0::2] for x in so_post_graph] for i in j]))
+        so_post_edges = len(so_post_graph)
+        self.assertTrue(so_post_nodes > so_original_nodes)
+        self.assertTrue(so_post_edges > so_original_edges)
+        self.assertEqual(so_post_edges, 42251)
+        # vo results
+        vo_file_name = glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_VO_*.owl')[0]
+        self.assertTrue(os.path.exists(vo_file_name))
+        vo_post_graph = Graph().parse(vo_file_name, format='xml')
+        vo_post_nodes = len(set([i for j in [x[0::2] for x in vo_post_graph] for i in j]))
+        vo_post_edges = len(vo_post_graph)
+        self.assertTrue(vo_post_nodes > vo_original_nodes)
+        self.assertTrue(vo_post_edges > vo_original_edges)
+        self.assertEqual(vo_post_edges, 85074)
+
+        # clean up environment
+        os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_VO_*.owl')[0])
+        os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_SO_*.owl')[0])
 
         return None

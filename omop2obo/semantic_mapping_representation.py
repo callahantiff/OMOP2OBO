@@ -74,6 +74,7 @@ class SemanticTransformer(object):
         # CREATE CLASS ATTRIBUTES
         self.graph: Graph = Graph()
         self.owltools_location = './omop2obo/libs/owltools'
+        self.write_location = 'resources/mapping_semantics'
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
         self.ontology_data_dict: Dict = {}
 
@@ -206,7 +207,7 @@ class SemanticTransformer(object):
         """Method iterates over each ontology in the ontologies attribute and loads them as RDFLib Graph objects. For
         both "single" and "multi" class construction_types the ontology prefixes are used as dictionary keys and the
         RDFLib Graph objects are the values. If the construction_type is "multi" then an additional key is added to
-        the dictionary where the value contains all of the ontologies merged together.
+        the dictionary where the value contains all of the ontologies merged together. For either
 
         Returns:
             ontology_data_dict:A dictionary containing ontology data. If construction_type is "single" or "multi" then
@@ -214,22 +215,22 @@ class SemanticTransformer(object):
                 construction_type is "multi" then an additional key is added to store the merged ontology data.
         """
 
-        ontology_data, ontology_files = {}, []
+        ontology_data: Dict = {}
         write_loc = os.path.relpath('/'.join(self.ont_directory[0].split('/')[:-1]))
 
         if self.construction_type == 'single':
             for ont in self.ontologies:
                 print('Loading: {}'.format(ont.upper()))
-                # store ontology prefix as key and RDFLib graph objects as values
                 ont_data = 'ext' if ont == 'uberon' else ont
-                ont_file = [x for x in self.ont_directory if ont_data][0]
-                ontology_files.append(ont_file)
-                ontology_data[ont] = Graph().parse(ont_file, format='xml')
+                ont_file = [x for x in self.ont_directory if ont_data in x][0]
+                ontology_graph = Graph().parse(ont_file, format='xml')
+                ontology_data[ont] = cleans_ontology(ontology_graph, [ont])
         else:  # merge all relevant ontologies and add to ontology_data dictionary
             omop2obo_merged_filepath = '/OMOP2OBO_MergedOntologies' + self.timestamp + '.owl'
             merges_ontologies(self.ont_directory, write_loc, omop2obo_merged_filepath, self.owltools_location)
             print('Loading merged ontology data: {}'.format(write_loc + omop2obo_merged_filepath))
-            ontology_data['merged'] = Graph().parse(write_loc + omop2obo_merged_filepath, format='xml')
+            ontology_graph = Graph().parse(write_loc + omop2obo_merged_filepath, format='xml')
+            ontology_data['merged'] = cleans_ontology(ontology_graph, self.ontologies)
 
         return ontology_data
 
@@ -364,12 +365,10 @@ class SemanticTransformer(object):
                 second item in the tuple, to other types of important metadata.
         """
 
-        if not isinstance(uri, str):
-            raise TypeError('OWL:complementOf constructors requires a single URI string as input (i.e. "HP_0000021").')
-        else:
-            triples = [(BNode('N' + str(uuid4().hex)), OWL.complementOf, uri)]
+        if not isinstance(uri, str): raise TypeError('OWL:complementOf constructors requires a single URI input.')
+        else: triples = [(BNode('N' + str(uuid4().hex)), OWL.complementOf, uri)]
 
-            return triples[0][0], triples
+        return triples[0][0], triples
 
     @staticmethod
     def other_owl_constructor(uris: List, constructor: URIRef) -> Tuple:
@@ -385,7 +384,6 @@ class SemanticTransformer(object):
                 stored as the second item in the tuple, to other types of important metadata.
         """
 
-        # make sure that the input contains at least 2 items
         if len(uris) < 2:
             raise ValueError('OWL:unionOf and OWL:intersectionOf constructors require at least 2 ontology identifiers.')
         else:
@@ -496,38 +494,59 @@ class SemanticTransformer(object):
 
         return identifiers + superclass + triple_list
 
-    def adds_triples_to_ontology(self):
-        """
-        - function that adds triples to an existing ontology
-
-        Returns:
-
-        """
-
-        return None
-
-    def serializes_semantic_representation(self, ont: str, write_location: str) -> None:
+    def serializes_semantic_representation(self, ont: str, graph: Graph, write_location: str) -> None:
         """method serializes the semantic representation of the OMOP2OBO clinical mappings.
 
         Args:
             ont: A string containing a single ontology prefix (e.g. "hp") or the keyword "merged", which is used in
                 the serialized file name.
+            graph: An RDFLib Graph object containing ontology data.
             write_location: A string containing the file path for where to write the serialized data.
 
         Returns:
             None.
         """
 
-        # set inputs
         ont = ont.upper() if ont != 'merged' else 'Full'
         file_name = '/OMOP2OBO_' + self.domain.title() + '_SemanticRepresentation_' + ont + self.timestamp + '.owl'
 
         # serialize and save ontology
-        print('\nSerializing Knowledge Graph')
-        self.graph.serialize(destination=write_location + file_name, format='xml')
+        print('Serializing Knowledge Graph')
+        graph.serialize(destination=write_location + file_name, format='xml')
 
         # re-format ontology output to match OWL API standard
         ontology_file_formatter(write_location, file_name, self.owltools_location)
+
+        return None
+
+    def adds_triples_to_ontology(self, class_data: Dict, ontology_list: List) -> None:
+        """Function takes a dictionary of processed clinical mappings and a list of ontologies, where each item in
+        the ontology list is also a key in the nested class_dict input Dict object. Iterating over each ontology,
+        this function updates the ontology with corresponding mapping triples. Once complete, the updated ontology is
+        serialized.
+
+        Args:
+            class_data: A dictionary containing clinical concept data and triples for processed mappings.
+            ontology_list: A list of keys for the ontologies that need to be updated and serialized.
+
+        Returns:
+            None.
+        """
+
+        for ont in ontology_list:
+            graph = self.ontology_data_dict[ont]
+            org_edges, org_nodes = len(graph), len(set([i for j in [x[0::2] for x in graph] for i in j]))
+            print('\nThe original {} ontology contains: {} triples and {} nodes'.format(ont, org_edges, org_nodes))
+
+            # get all relevant triples and add them to ontology graph
+            ont_triples = [i for j in [class_data[x][ont]['triples'] for x in tqdm(class_data.keys())] for i in j]
+            for triple in ont_triples:
+                graph.add(triple)
+
+            # serialize updated ontologies
+            up_edges, up_nodes = len(graph), len(set([i for j in [x[0::2] for x in graph] for i in j]))
+            print('The updated {} ontology contains: {} triples and {} nodes'.format(ont, up_edges, up_nodes))
+            self.serializes_semantic_representation(ont, graph, self.write_location)
 
         return None
 
@@ -535,6 +554,8 @@ class SemanticTransformer(object):
         """Method parses a Pandas DataFrame containing OMOP2OBO mappings and builds semantic representations of the
         mappings for single ontology or for a collection of ontologies. If the OMOP2OBO mapping file contains
         multiple ontologies, but the class construction type is "single" then an owl file is serialized for each
+        ontology, otherwise a single merged set of ontologies is serialized. Additional details for each approach can
+        be found below within each respective subclass.
 
         Returns:
             None.
@@ -557,73 +578,60 @@ class SingleOntologyConstruction(SemanticTransformer):
     def gets_class_construction_type(self) -> str:
         """"A string representing the type of knowledge graph being built."""
 
-        return 'Single Ontology Class Construction'
+        return 'Single Ontology Construction'
 
     def transforms_mappings(self) -> None:
-        """
+        """Method converts the clinical mappings, which are read in and stored as a Pandas DataFrame into a
+        semantic representation, for each individual input ontology, and outputs each ontology containing the
+        semantic representations as a serialized RDF/XML file. This work is completed by performing the following steps:
+            (1) Load Ontology Data
+            (2) Process Clinical Data
+            (3) Construct Semantic Representation
+            (4) Add Primary Data Metadata
+            (5) Add Classes  and Serialize Updated Ontology
 
         Returns:
              None.
         """
 
-        # self.class_data
-        class_data: Dict = {}
-
         # STEP 1 - Load Ontology Data
         self.ontology_data_dict = self.loads_ontology_data()
 
-        # STEP 2 - Create Semantic Definitions of Mappings
+        # STEP 2 - Process Clinical Data
+        class_data: Dict = {}
         for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
-        # for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
             # STEP 2A - Get Primary and Secondary Data
             row_data = self.gets_concept_id_data(row)
-            # row_data = gets_concept_id_data(row)
             primary_key = list(row_data.keys())[0]
             class_data[primary_key] = {}
-
+            # STEP 2B - Get ontology information to needed to build classes
             for ont in self.ontologies:
-            # for ont in ontologies:
-                if row[ont.upper() + '_MAPPING'] != 'Unmapped':
-                    # STEP 2B - get ontology information to needed to build classes
-                    class_data[primary_key][ont] = row_data[primary_key]
-                    logic, uri = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'].split(' | ')
+                class_data[primary_key][ont] = row_data[primary_key]
+                logic, uri = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'].split(' | ')
 
-                    # STEP 3 - Construct Classes
-                    if logic == 'N/A':
-                        class_data[primary_key][ont]['triples'] = (BNode('N' + str(uuid4().hex)), [])
-                    else:
-                        if '(' not in logic:
-                            logic = '{}({})'.format(logic, ', '.join([str(x) for x in range(len(uri))]))
+                # STEP 3 - Construct Semantic Representation
+                if logic == 'N/A':
+                    class_data[primary_key][ont]['triples'] = (URIRef(obo + uri[0]), [])
+                else:
+                    if '(' not in logic: logic = '{}({})'.format(logic, ', '.join([str(x) for x in range(len(uri))]))
 
-                        # STEP 3A - Extract OWL constructors and order inside out (inner constructors appear first)
-                        result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
-                        span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
-                        constructors = self.orders_constructors(logic, result.copy())
-                        # logic_info = extracts_logic(logic, result.copy(), constructors)
-                        logic_info = SemanticTransformer.extracts_logic(logic, result.copy(), constructors)
+                    # STEP 3A - Extract OWL constructors and order inside out (inner constructors appear first)
+                    result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
+                    span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
+                    constructors = self.orders_constructors(logic, result.copy())
+                    logic_info = SemanticTransformer.extracts_logic(logic, result.copy(), constructors)
+                    # STEP 3B - Construct Classes
+                    triples = SemanticTransformer.class_constructor(logic, logic_info.copy(), span_data, uri)
+                    class_data[primary_key][ont]['triples'] = triples
 
-                        # STEP 3B - Construct Classes
-                        triples = SemanticTransformer.class_constructor(logic, logic_info.copy(), span_data, uri)
-                        class_data[primary_key][ont]['triples'] = triples
-                        # class_data[primary_key][ont]['triples'] = class_constructor(logic, logic_info.copy(), span_data,
-                        #                                                             uri)
+                # STEP 4 - Add Primary Data Metadata
+                updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                class_data[primary_key][ont]['triples'] = updated_triples
 
-                    # STEP 4 - Add Primary Data Metadata
-                    updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
-                    # updated_triples = adds_class_metadata(class_data[primary_key][ont], 'primary_data')
-                    class_data[primary_key][ont]['triples'] = updated_triples
-
-        # STEP 5 - Add Classes to Ontology Data
-        # self.adds_triples_to_ontology(class_data)
-
-        # STEP 6 - Serialize Updated Ontologies
-        self.serializes_semantic_representation(ont, 'resources/mapping_semantics')
+        # STEP 5 - Add Classes  and Serialize Updated Ontology
+        self.adds_triples_to_ontology(class_data, list(self.ontology_data_dict.keys()))
 
         return None
-
-    #
-    # omop2obo_data = pd.read_excel(omop2obo_data_file, sep=',', header=0)
-    # omop2obo_data.fillna('N/A', inplace=True)
 
 
 class MultipleOntologyConstruction(SemanticTransformer):
@@ -633,7 +641,7 @@ class MultipleOntologyConstruction(SemanticTransformer):
     def gets_class_construction_type(self) -> str:
         """"A string representing the type of knowledge graph being built."""
 
-        return 'Multiple Ontology Class Construction'
+        return 'Multiple Ontology Construction'
 
     def constructs_multi_ontology_definitions(self, ont, uri):
         """
@@ -684,5 +692,57 @@ class MultipleOntologyConstruction(SemanticTransformer):
 
         :return:
         """
+
+        # self.class_data
+        class_data: Dict = {}
+
+        # STEP 1 - Load Ontology Data
+        self.ontology_data_dict = self.loads_ontology_data()
+
+        # STEP 2 - Process Clinical Data
+        for idx, row in tqdm(self.omop2obo_data.iterrows(), total=self.omop2obo_data.shape[0]):
+            # for idx, row in tqdm(omop2obo_data.iterrows(), total=omop2obo_data.shape[0]):
+            # STEP 2A - Get Primary and Secondary Data
+            row_data = self.gets_concept_id_data(row)
+            # row_data = gets_concept_id_data(row)
+            primary_key = list(row_data.keys())[0]
+            class_data[primary_key] = {}
+            # STEP 2B - Get ontology information to needed to build classes
+            for ont in self.ontologies:
+                # for ont in ontologies:
+                class_data[primary_key][ont] = row_data[primary_key]
+                logic, uri = row[ont.upper() + '_LOGIC'], row[ont.upper() + '_URI'].split(' | ')
+
+                # STEP 3 - Construct Semantic Representation
+                if logic == 'N/A':
+                    class_data[primary_key][ont]['triples'] = (URIRef(obo + uri[0]), [])
+                else:
+                    if '(' not in logic:
+                        logic = '{}({})'.format(logic, ', '.join([str(x) for x in range(len(uri))]))
+
+                    # STEP 3A - Extract OWL constructors and order inside out (inner constructors appear first)
+                    result = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
+                    span_data = regex.search(r'(?<grp>\((?:[^()]++|(?&grp))*\))', logic).captures('grp')
+                    constructors = self.orders_constructors(logic, result.copy())
+                    # constructors = orders_constructors(logic, result.copy())
+                    # logic_info = extracts_logic(logic, result.copy(), constructors)
+                    logic_info = SemanticTransformer.extracts_logic(logic, result.copy(), constructors)
+
+                    # STEP 3B - Construct Classes
+                    triples = SemanticTransformer.class_constructor(logic, logic_info.copy(), span_data, uri)
+                    class_data[primary_key][ont]['triples'] = triples
+                    # class_data[primary_key][ont]['triples'] = class_constructor(logic, logic_info.copy(), span_data,
+                    #                                                             uri)
+
+                # STEP 4 - Add Primary Data Metadata
+                updated_triples = self.adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                # updated_triples = adds_class_metadata(class_data[primary_key][ont], 'primary_data')
+                class_data[primary_key][ont]['triples'] = updated_triples
+
+        # STEP 5 - Add Classes to Ontology Data
+        self.adds_triples_to_ontology(class_data, list(self.ontology_data_dict.keys()))
+
+        # omop2obo_data = pd.read_excel(omop2obo_data_file, sep=',', header=0)
+        # omop2obo_data.fillna('N/A', inplace=True)
 
         return None
