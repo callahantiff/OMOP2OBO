@@ -25,13 +25,13 @@ class TestSemanticTransformer(TestCase):
         current_directory = os.path.dirname(__file__)
         dir_loc1 = os.path.join(current_directory, 'data')
         self.dir_loc1 = os.path.abspath(dir_loc1)
-        self.ontology_directory = self.dir_loc1 + '/ontologies'
-        self.mapping_directory = self.dir_loc1 + '/mappings'
+        self.ontology_directory = os.path.join(self.dir_loc1, 'ontologies')
+        self.mapping_directory = os.path.join(self.dir_loc1, 'mappings')
 
         # create a second location
         dir_loc2 = os.path.join(current_directory, 'resources')
         self.dir_loc2 = os.path.abspath(dir_loc2)
-        self.resources_directory = self.dir_loc2 + '/mapping_semantics'
+        self.resources_directory = os.path.join(self.dir_loc2, 'mapping_semantics')
 
         # create pointer to testing utilities
         dir_loc3 = os.path.join(current_directory, 'utils/owltools')
@@ -39,7 +39,7 @@ class TestSemanticTransformer(TestCase):
 
         # create input parameters
         self.ontology_list = ['hp', 'mondo']
-        self.omop2obo_data_file = self.mapping_directory + '/omop2obo_mapping_data.xlsx'
+        self.omop2obo_data_file = os.path.join(self.mapping_directory, 'omop2obo_mapping_data.xlsx')
         self.ontology_directory = self.ontology_directory
         self.map_type = 'single'
         self.superclasses = None
@@ -68,11 +68,11 @@ class TestSemanticTransformer(TestCase):
 
         # create/move needed data to enable successful class instantiation
         shutil.copyfile(self.dir_loc1 + '/master_ontology_dictionary.pickle',
-                        self.ontology_directory + '/master_ontology_dictionary.pickle')
+                        self.ontology_directory + '/master_ontology_dictionary.pickle', follow_symlinks=False)
         shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations.txt',
-                        self.resources_directory + '/omop2obo_class_relations.txt')
+                        self.resources_directory + '/omop2obo_class_relations.txt', follow_symlinks=False)
         shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
-                        self.resources_directory + '/omop2obo_v0.owl')
+                        self.resources_directory + '/omop2obo_v0.owl', follow_symlinks=False)
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
@@ -93,7 +93,7 @@ class TestSemanticTransformer(TestCase):
         self.map_transformer.owltools_location = self.owltools_location
 
         # make sure the the write location points to
-        self.map_transformer.write_location = self.dir_loc2 + '/mapping_semantics'
+        self.map_transformer.write_location = os.path.join(self.dir_loc2, 'mapping_semantics')
 
         return None
 
