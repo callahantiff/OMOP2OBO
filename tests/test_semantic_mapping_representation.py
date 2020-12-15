@@ -486,7 +486,7 @@ class TestSemanticTransformer(TestCase):
         self.assertIsInstance(ont_dictionary, Dict)
         self.assertIn('merged', list(ont_dictionary.keys())[0])
         self.assertIsInstance(ont_dictionary['merged'], Graph)
-        self.assertEqual(len(ont_dictionary['merged']), 127283)
+        self.assertEqual(len(ont_dictionary['merged']), 125090)
         self.assertEqual(merged_file, self.ontology_directory + '/OMOP2OBO_MergedOntologies' + self.timestamp + '.owl')
 
         # remove file
@@ -783,13 +783,13 @@ class TestSemanticTransformer(TestCase):
         # set-up input
         class_data = {'primary_data': {'CONCEPT_ID': 27526, 'CONCEPT_LABEL': "Nezelof's syndrome"},
                       'secondary_data': None,
-                      'triples': (BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
-                                  [(BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
-                                    URIRef('http://www.w3.org/2002/07/owl#complementOf'),
-                                    URIRef('http://purl.obolibrary.org/obo/HP_0004430'))])}
+                      'hp': {'triples': (BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                         [(BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                           URIRef('http://www.w3.org/2002/07/owl#complementOf'),
+                                           URIRef('http://purl.obolibrary.org/obo/HP_0004430'))])}}
 
         # test method
-        triples = self.map_transformer_multi.adds_class_metadata(class_data, 'primary_data')
+        triples = self.map_transformer_multi.adds_class_metadata(class_data, 'hp', 'primary_data')
         self.assertIsInstance(triples, List)
         self.assertEqual(len(triples), 7)
         self.assertIn((URIRef('https://github.com/callahantiff/omop2obo/OMOP_27526'),
@@ -804,13 +804,13 @@ class TestSemanticTransformer(TestCase):
         # set-up input
         class_data = {'primary_data': {'CONCEPT_ID': 27526, 'CONCEPT_LABEL': "Nezelof's syndrome"},
                       'secondary_data': None,
-                      'triples': (BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
-                                  [(BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
-                                    URIRef('http://www.w3.org/2002/07/owl#complementOf'),
-                                    URIRef('http://purl.obolibrary.org/obo/HP_0004430'))])}
+                      'hp': {'triples': (BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                         [(BNode('N464bb6346c4c421f8de89c3d56cc0f2c'),
+                                           URIRef('http://www.w3.org/2002/07/owl#complementOf'),
+                                           URIRef('http://purl.obolibrary.org/obo/HP_0004430'))])}}
 
         # test method
-        triples = self.map_transformer.adds_class_metadata(class_data, 'primary_data')
+        triples = self.map_transformer.adds_class_metadata(class_data, 'hp', 'primary_data')
         self.assertIsInstance(triples, List)
         self.assertEqual(len(triples), 6)
 
@@ -820,68 +820,68 @@ class TestSemanticTransformer(TestCase):
         """Tests the adds_triples_to_ontology method."""
 
         # set-up method
-        class_data = {46274126: {'so': {'primary_data': {'CONCEPT_ID': 46274126, 'CONCEPT_LABEL': 'Edentulism'},
-                                        'secondary_data': None,
-                                        'triples':
-                                            [(URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
-                                              URIRef('http://www.geneontology.org/formats/oboInOwl#hasOBONamespace'),
-                                              Literal('OMOP2OBO')),
-                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
-                                              URIRef('http://www.geneontology.org/formats/oboInOwl#id'),
-                                              Literal('OMOP:46274126')),
-                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-                                              URIRef('http://www.w3.org/2002/07/owl#Class')),
-                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
-                                              URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
-                                              Literal('Complete edentulism due to caries')),
-                                             (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
-                                              URIRef('http://www.w3.org/2002/07/owl#equivalentClass'),
-                                              BNode('Nd65d385cf6734a19b37e79adbf48e095')),
-                                             (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-                                              URIRef('http://www.w3.org/2002/07/owl#Restriction')),
-                                             (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
-                                              URIRef('http://www.w3.org/2002/07/owl#onProperty'),
-                                              URIRef('http://purl.obolibrary.org/obo/BFO_0000051')),
-                                             (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
-                                              URIRef('http://www.w3.org/2002/07/owl#someValuesFrom'),
-                                              BNode('N40a89b262a5545e5afbeb6c8244d2619')),
-                                             (BNode('N40a89b262a5545e5afbeb6c8244d2619'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-                                              URIRef('http://www.w3.org/2002/07/owl#Class')),
-                                             (BNode('N40a89b262a5545e5afbeb6c8244d2619'),
-                                              URIRef('http://www.w3.org/2002/07/owl#intersectionOf'),
-                                              BNode('Nee63471f3bc4480da0dd663b6dd48dbc')),
-                                             (BNode('Nee63471f3bc4480da0dd663b6dd48dbc'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#first'),
-                                              URIRef('http://purl.obolibrary.org/obo/HP_0006480')),
-                                             (BNode('Nee63471f3bc4480da0dd663b6dd48dbc'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#rest'),
-                                              BNode('N9ef5520613c84ee2bac214241c2cdb02')),
-                                             (BNode('N9ef5520613c84ee2bac214241c2cdb02'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#first'),
-                                              URIRef('http://purl.obolibrary.org/obo/HP_0000670')),
-                                             (BNode('N9ef5520613c84ee2bac214241c2cdb02'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#rest'),
-                                              URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))]},
-                      'vo': {'primary_data': {'CONCEPT_ID': 22871, 'CONCEPT_LABEL': 'Pineal neoplasm'},
-                             'secondary_data': None,
-                             'triples': [(URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
-                                          URIRef('http://www.geneontology.org/formats/oboInOwl#hasOBONamespace'),
-                                          Literal('OMOP2OBO')),
-                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
-                                          URIRef('http://www.geneontology.org/formats/oboInOwl#id'),
-                                          Literal('OMOP:22871')),
-                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
-                                          URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-                                          URIRef('http://www.w3.org/2002/07/owl#Class')),
-                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
-                                          URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
-                                          Literal('Neoplasm of uncertain behavior of pineal gland')),
-                                         (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
-                                          URIRef('http://www.w3.org/2002/07/owl#equivalentClass'),
-                                          URIRef('http://purl.obolibrary.org/obo/HP_0030693'))]}}}
+        self.map_transformer.construction_type = 'single'
+        class_data = {46274126: {'primary_data': {'CONCEPT_ID': 46274126, 'CONCEPT_LABEL': 'Edentulism'},
+                                 'secondary_data': None,
+                                 'so': {'triples': [
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                      URIRef('http://www.geneontology.org/formats/oboInOwl#hasOBONamespace'),
+                                      Literal('OMOP2OBO')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                      URIRef('http://www.geneontology.org/formats/oboInOwl#id'),
+                                      Literal('OMOP:46274126')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                      URIRef('http://www.w3.org/2002/07/owl#Class')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                      URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+                                      Literal('Complete edentulism due to caries')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_46274126'),
+                                      URIRef('http://www.w3.org/2002/07/owl#equivalentClass'),
+                                      BNode('Nd65d385cf6734a19b37e79adbf48e095')),
+                                     (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                      URIRef('http://www.w3.org/2002/07/owl#Restriction')),
+                                     (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
+                                      URIRef('http://www.w3.org/2002/07/owl#onProperty'),
+                                      URIRef('http://purl.obolibrary.org/obo/BFO_0000051')),
+                                     (BNode('Nd65d385cf6734a19b37e79adbf48e095'),
+                                      URIRef('http://www.w3.org/2002/07/owl#someValuesFrom'),
+                                      BNode('N40a89b262a5545e5afbeb6c8244d2619')),
+                                     (BNode('N40a89b262a5545e5afbeb6c8244d2619'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                      URIRef('http://www.w3.org/2002/07/owl#Class')),
+                                     (BNode('N40a89b262a5545e5afbeb6c8244d2619'),
+                                      URIRef('http://www.w3.org/2002/07/owl#intersectionOf'),
+                                      BNode('Nee63471f3bc4480da0dd663b6dd48dbc')),
+                                     (BNode('Nee63471f3bc4480da0dd663b6dd48dbc'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#first'),
+                                      URIRef('http://purl.obolibrary.org/obo/HP_0006480')),
+                                     (BNode('Nee63471f3bc4480da0dd663b6dd48dbc'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#rest'),
+                                      BNode('N9ef5520613c84ee2bac214241c2cdb02')),
+                                     (BNode('N9ef5520613c84ee2bac214241c2cdb02'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#first'),
+                                      URIRef('http://purl.obolibrary.org/obo/HP_0000670')),
+                                     (BNode('N9ef5520613c84ee2bac214241c2cdb02'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#rest'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))]},
+                                 'vo': {'triples': [
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                      URIRef('http://www.geneontology.org/formats/oboInOwl#hasOBONamespace'),
+                                      Literal('OMOP2OBO')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                      URIRef('http://www.geneontology.org/formats/oboInOwl#id'),
+                                      Literal('OMOP:22871')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                      URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                                      URIRef('http://www.w3.org/2002/07/owl#Class')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                      URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+                                      Literal('Neoplasm of uncertain behavior of pineal gland')),
+                                     (URIRef('https://github.com/callahantiff/omop2obo/OMOP_22871'),
+                                      URIRef('http://www.w3.org/2002/07/owl#equivalentClass'),
+                                      URIRef('http://purl.obolibrary.org/obo/HP_0030693'))]}}}
 
         # prepare to test method by loading ontology data
         self.map_transformer.ontology_list = ['so', 'vo']
@@ -894,25 +894,25 @@ class TestSemanticTransformer(TestCase):
         vo_original_edges = len(vo_graph)
 
         # test method
-        self.map_transformer.adds_triples_to_ontology(class_data, ['so', 'vo'])
+        self.map_transformer.adds_triples_to_ontology(class_data)
         # so results
         so_file_name = glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_SO_*.owl')[0]
         self.assertTrue(os.path.exists(so_file_name))
         so_post_graph = Graph().parse(so_file_name, format='xml')
         so_post_nodes = len(set([i for j in [x[0::2] for x in so_post_graph] for i in j]))
         so_post_edges = len(so_post_graph)
-        self.assertTrue(so_post_nodes > so_original_nodes)
-        self.assertTrue(so_post_edges > so_original_edges)
-        self.assertEqual(so_post_edges, 42251)
+        self.assertTrue(so_post_nodes != so_original_nodes)
+        self.assertTrue(so_post_edges != so_original_edges)
+        self.assertEqual(so_post_edges, 39647)
         # vo results
         vo_file_name = glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_VO_*.owl')[0]
         self.assertTrue(os.path.exists(vo_file_name))
         vo_post_graph = Graph().parse(vo_file_name, format='xml')
         vo_post_nodes = len(set([i for j in [x[0::2] for x in vo_post_graph] for i in j]))
         vo_post_edges = len(vo_post_graph)
-        self.assertTrue(vo_post_nodes > vo_original_nodes)
-        self.assertTrue(vo_post_edges > vo_original_edges)
-        self.assertEqual(vo_post_edges, 85074)
+        self.assertTrue(vo_post_nodes != vo_original_nodes)
+        self.assertTrue(vo_post_edges != vo_original_edges)
+        self.assertEqual(vo_post_edges, 85075)
 
         # clean up environment
         os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_VO_*.owl')[0])
