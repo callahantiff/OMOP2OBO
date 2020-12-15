@@ -66,13 +66,13 @@ class TestSemanticTransformer(TestCase):
         # create timestamp
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
-        # move needed data to enable successful class instantiation
+        # create/move needed data to enable successful class instantiation
         shutil.copyfile(self.dir_loc1 + '/master_ontology_dictionary.pickle',
                         self.ontology_directory + '/master_ontology_dictionary.pickle')
-        shutil.copyfile(self.ontology_directory + '/so_without_imports.owl',
-                        self.resources_directory + '/omop2obo_v0.owl')
-        shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations.txt',
+        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations.txt',
                         self.resources_directory + '/omop2obo_class_relations.txt')
+        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
+                        self.resources_directory + '/omop2obo_v0.owl')
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
@@ -338,7 +338,7 @@ class TestSemanticTransformer(TestCase):
         """Tests the multi-ontology class relations data when relations data is empty."""
 
         # move needed file
-        shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations_empty.txt',
+        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
                         self.resources_directory + '/omop2obo_class_relations.txt')
 
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
