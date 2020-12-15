@@ -75,6 +75,7 @@ setup(
         'more-itertools==8.2.0',
         'nltk==3.5',
         'oauth2client==4.1.3',
+        'openpyxl==3.0.3',
         'pandas==1.0.3',
         'rdflib==5.0.0',
         'regex==2020.7.14',
