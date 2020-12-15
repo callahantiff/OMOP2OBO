@@ -67,12 +67,12 @@ class TestSemanticTransformer(TestCase):
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
         # create/move needed data to enable successful class instantiation
-        shutil.copyfile(self.dir_loc1 + '/master_ontology_dictionary.pickle',
-                        self.ontology_directory + '/master_ontology_dictionary.pickle', follow_symlinks=False)
-        # shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations.txt',
-        #                 self.resources_directory + '/omop2obo_class_relations.txt', follow_symlinks=False)
-        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
-                        self.resources_directory + '/omop2obo_v0.owl', follow_symlinks=False)
+        shutil.copy2(self.dir_loc1 + '/master_ontology_dictionary.pickle',
+                     self.ontology_directory + '/master_ontology_dictionary.pickle')
+        shutil.copy2(self.dir_loc2 + '/omop2obo_class_relations.txt',
+                     self.resources_directory + '/omop2obo_class_relations.txt')
+        shutil.copy2(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
+                     self.resources_directory + '/omop2obo_v0.owl')
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
@@ -123,8 +123,8 @@ class TestSemanticTransformer(TestCase):
         """Tests the ont_dictionary when the file is empty"""
 
         # create fake empty file
-        shutil.copyfile(self.ontology_directory + '/empty_hp_without_imports.owl',
-                        self.ontology_directory + '/master_ontology_dictionary.pickle')
+        shutil.copy2(self.ontology_directory + '/empty_hp_without_imports.owl',
+                     self.ontology_directory + '/master_ontology_dictionary.pickle')
 
         # catch when ontology_dictionary file is empty
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so', 'vo'],
@@ -338,8 +338,8 @@ class TestSemanticTransformer(TestCase):
         """Tests the multi-ontology class relations data when relations data is empty."""
 
         # move needed file
-        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
-                        self.resources_directory + '/omop2obo_class_relations.txt')
+        shutil.copy2(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
+                     self.resources_directory + '/omop2obo_class_relations.txt')
 
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
