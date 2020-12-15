@@ -65,12 +65,12 @@ setup(
     # Add here the package dependencies
     install_requires=[
         'click==7.1.2',
-        'google-api-core==1.13.0',
-        'google-auth==1.24.1',
+        'google-api-core==1.17.0',
+        'google-auth==1.14.1',
         'google-auth-oauthlib==0.4.2',
         'google-cloud==0.34.0',
-        'google-cloud-core==1.0.2',
-        'google-cloud-storage==1.16.0',
+        'google-cloud-core==1.3.0',
+        'google-cloud-storage==1.28.0',
         'lxml==4.6.2',
         'more-itertools==8.6.0',
         'nltk==3.5',
