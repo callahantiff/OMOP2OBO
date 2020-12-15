@@ -43,7 +43,8 @@ class TestOntologyInfoExtractor(TestCase):
         self.assertRaises(OSError, OntologyInfoExtractor, 'ontologies', self.ont_dictionary)
 
         # test if file is empty
-        self.assertRaises(TypeError, OntologyInfoExtractor, self.ontology_directory, self.ont_dictionary)
+        os.mkdir(self.dir_loc + '/temp_ontologies')
+        self.assertRaises(TypeError, OntologyInfoExtractor, self.dir_loc + '/temp_ontologies', self.ont_dictionary)
 
         # move files back
         shutil.copyfile(self.dir_loc + '/empty_hp_without_imports.owl',
@@ -53,6 +54,7 @@ class TestOntologyInfoExtractor(TestCase):
 
         os.remove(self.dir_loc + '/empty_hp_without_imports.owl')
         os.remove(self.dir_loc + '/so_without_imports.owl')
+        os.rmdir(self.dir_loc + '/temp_ontologies')
 
         return None
 
