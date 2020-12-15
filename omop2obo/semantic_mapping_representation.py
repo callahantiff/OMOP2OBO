@@ -99,7 +99,7 @@ class SemanticTransformer(object):
             raise TypeError('Input file: {} is empty'.format(omop2obo_data_file))
         else:
             print('Loading Mapping Data')
-            self.omop2obo_data = pd.read_excel(omop2obo_data_file, sep=',', header=0, engine='openpyxl')
+            self.omop2obo_data = pd.read_excel(omop2obo_data_file, header=0, engine='openpyxl')
             self.omop2obo_data.fillna('N/A', inplace=True)
 
         # CLINICAL DOMAIN
