@@ -361,7 +361,7 @@ class TestSemanticTransformer(TestCase):
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
         # clean up environment
-        os.remove('resources/mapping_semantics/omop2obo_class_relations.txt')
+        os.remove(self.resources_directory + '/omop2obo_class_relations.txt')
 
         return None
 
@@ -378,7 +378,7 @@ class TestSemanticTransformer(TestCase):
         self.assertEqual(test_method2.multi_class_relations, self.test_relations_dict)
 
         # clean up environment
-        os.remove('resources/mapping_semantics/omop2obo_class_relations.txt')
+        os.remove(self.resources_directory + '/omop2obo_class_relations.txt')
 
         return None
 
