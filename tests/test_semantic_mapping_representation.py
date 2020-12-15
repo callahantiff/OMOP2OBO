@@ -73,6 +73,10 @@ class TestSemanticTransformer(TestCase):
         # move needed data
         shutil.copyfile(self.dir_loc1 + '/master_ontology_dictionary.pickle',
                         self.ontology_directory + '/master_ontology_dictionary.pickle')
+        shutil.copyfile(self.ontology_directory + '/so_without_imports.owl',
+                        self.resources_directory + '/omop2obo_v0.owl')
+        shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations.txt',
+                        self.resources_directory + '/omop2obo_class_relations.txt')
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
@@ -110,27 +114,17 @@ class TestSemanticTransformer(TestCase):
         """Tests the ont_dictionary when the file does not exist"""
 
         # move file out of directory
-        shutil.copyfile(self.ontology_directory + '/master_ontology_dictionary.pickle',
-                        self.ontology_directory + '/master_ontology.pickle')
-        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
+        os.remove(glob.glob(self.ontology_directory + '/*.pickle')[0])
 
         # catch when ontology_dictionary file does not exist
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so', 'vo'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
-        # move file back and clean-up directory
-        os.remove(self.ontology_directory + '/master_ontology.pickle')
-
         return None
 
     def test_ont_dictionary_empty_file(self):
         """Tests the ont_dictionary when the file is empty"""
-
-        # rename original file
-        shutil.copyfile(self.ontology_directory + '/master_ontology_dictionary.pickle',
-                        self.ontology_directory + '/master_ontology.pickle')
-        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
 
         # create fake empty file
         shutil.copyfile(self.ontology_directory + '/empty_hp_without_imports.owl',
@@ -140,12 +134,6 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so', 'vo'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT')
-
-        # move file back and clean-up directory
-        shutil.copyfile(self.ontology_directory + '/master_ontology.pickle',
-                        self.ontology_directory + '/master_ontology_dictionary.pickle')
-        os.remove(self.ontology_directory + '/master_ontology.pickle')
-        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
 
         return None
 
@@ -353,32 +341,19 @@ class TestSemanticTransformer(TestCase):
     def test_input_ontology_relations_empty_relations(self):
         """Tests the multi-ontology class relations data when relations data is empty."""
 
-        # move and rename empty file into repo
         shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations_empty.txt',
                         self.resources_directory + '/omop2obo_class_relations.txt')
+
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT')
-
-        # clean up environment
-        os.remove(self.resources_directory + '/omop2obo_class_relations.txt')
 
         return None
 
     def test_input_ontology_relations_correct_formatting(self):
         """Tests the multi-ontology class relations data when file is correct - in order to test output."""
 
-        # check output when file correctly formatted
-        shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations.txt',
-                        self.resources_directory + '/omop2obo_class_relations.txt')
-        test_method2 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
-                                           ontology_directory=self.ontology_directory,
-                                           domain='condition', map_type='multi', superclasses=self.superclasses,
-                                           primary_column='CONCEPT')
-        self.assertEqual(test_method2.multi_class_relations, self.test_relations_dict)
-
-        # clean up environment
-        os.remove(self.resources_directory + '/omop2obo_class_relations.txt')
+        self.assertEqual(self.map_transformer_multi.multi_class_relations, self.test_relations_dict)
 
         return None
 
@@ -429,18 +404,9 @@ class TestSemanticTransformer(TestCase):
         return None
 
     def test_find_existing_omop2obo_data(self):
-        """"Tests the search for existing omop2obo mapping ontology data."""
+        """"Tests the search for existing omop2obo mapping ontology data when it exists."""
 
-        # test when there is not an existing omop2obo mapping file present
-        test_method1 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
-                                           ontology_directory=self.ontology_directory,
-                                           domain='condition', map_type='multi', superclasses=self.superclasses,
-                                           primary_column='CONCEPT')
-        self.assertEqual(test_method1.current_omop2obo, None)
-
-        # test when there is not an existing omop2obo mapping file present
-        shutil.copyfile(self.ontology_directory + '/so_without_imports.owl',
-                        self.resources_directory + '/omop2obo_v0.owl')
+        # test when there is an existing omop2obo mapping file present
         test_method2 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                            ontology_directory=self.ontology_directory,
                                            domain='condition', map_type='multi', superclasses=self.superclasses,
@@ -448,8 +414,19 @@ class TestSemanticTransformer(TestCase):
 
         self.assertEqual(test_method2.current_omop2obo, 'resources/mapping_semantics/omop2obo_v0.owl')
 
-        # clean up environment
-        os.remove('resources/mapping_semantics/omop2obo_v0.owl')
+        return None
+
+    def test_find_existing_omop2obo_data_none(self):
+        """"Tests the search for existing omop2obo mapping ontology data when it's none."""
+
+        # test when there is not an existing omop2obo mapping file present
+        os.remove(self.resources_directory + '/omop2obo_v0.owl')
+        test_method1 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
+                                           ontology_directory=self.ontology_directory,
+                                           domain='condition', map_type='multi', superclasses=self.superclasses,
+                                           primary_column='CONCEPT')
+
+        self.assertEqual(test_method1.current_omop2obo, None)
 
         return None
 
@@ -923,9 +900,12 @@ class TestSemanticTransformer(TestCase):
     def tearDown(self):
 
         # need to remove master dictionary which is recreated in setUp
-        file_to_delete = self.ontology_directory + '/master_ontology_dictionary.pickle'
+        files_to_delete = [self.ontology_directory + '/master_ontology_dictionary.pickle',
+                           self.resources_directory + '/omop2obo_v0.owl',
+                           self.resources_directory + '/omop2obo_class_relations.txt']
 
-        if os.path.exists(file_to_delete):
-            os.remove(file_to_delete)
+        for _ in files_to_delete:
+            if os.path.exists(_):
+                os.remove(_)
 
         return None
