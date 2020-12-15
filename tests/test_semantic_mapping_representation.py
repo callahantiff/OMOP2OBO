@@ -70,6 +70,10 @@ class TestSemanticTransformer(TestCase):
         # create timestamp
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
+        # move needed data
+        shutil.copyfile(self.dir_loc1 + '/master_ontology_dictionary.pickle',
+                        self.ontology_directory + '/master_ontology_dictionary.pickle')
+
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
                                                    omop2obo_data_file=self.omop2obo_data_file,
@@ -116,8 +120,6 @@ class TestSemanticTransformer(TestCase):
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
         # move file back and clean-up directory
-        shutil.copyfile(self.ontology_directory + '/master_ontology.pickle',
-                        self.ontology_directory + '/master_ontology_dictionary.pickle')
         os.remove(self.ontology_directory + '/master_ontology.pickle')
 
         return None
@@ -139,13 +141,11 @@ class TestSemanticTransformer(TestCase):
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT')
 
-        # remove bad file
-        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
-
         # move file back and clean-up directory
         shutil.copyfile(self.ontology_directory + '/master_ontology.pickle',
                         self.ontology_directory + '/master_ontology_dictionary.pickle')
         os.remove(self.ontology_directory + '/master_ontology.pickle')
+        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
 
         return None
 
@@ -917,5 +917,15 @@ class TestSemanticTransformer(TestCase):
         # clean up environment
         os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_VO_*.owl')[0])
         os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_SO_*.owl')[0])
+
+        return None
+
+    def tearDown(self):
+
+        # need to remove master dictionary which is recreated in setUp
+        file_to_delete = self.ontology_directory + '/master_ontology_dictionary.pickle'
+
+        if os.path.exists(file_to_delete):
+            os.remove(file_to_delete)
 
         return None
