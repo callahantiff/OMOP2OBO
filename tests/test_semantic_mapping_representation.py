@@ -44,10 +44,6 @@ class TestSemanticTransformer(TestCase):
         self.map_type = 'single'
         self.superclasses = None
 
-        # move relation data to main semantic directory
-        shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations.txt',
-                        self.resources_directory + '/omop2obo_class_relations.txt')
-
         # create test data
         self.test_relations_dict = {
             'conditions': {'relations': {'MONDO-HP': URIRef('http://purl.obolibrary.org/obo/RO_0002200')}},
@@ -341,6 +337,7 @@ class TestSemanticTransformer(TestCase):
     def test_input_ontology_relations_empty_relations(self):
         """Tests the multi-ontology class relations data when relations data is empty."""
 
+        # move needed file
         shutil.copyfile(self.dir_loc1 + '/omop2obo_class_relations_empty.txt',
                         self.resources_directory + '/omop2obo_class_relations.txt')
 
