@@ -77,6 +77,7 @@ setup(
         'oauth2client==4.1.3',
         'pandas==1.0.3',
         'rdflib==5.0.0',
+        'regex==2020.7.14',
         'responses==0.10.12',
         'scipy==1.4.1',
         'scikit-learn==0.22.1',
