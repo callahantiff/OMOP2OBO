@@ -175,9 +175,7 @@ def cleans_ontology(ontology: Graph, onts: List) -> Graph:
 
     # get obsolete classes and triples
     obs_cls = [x[0] for x in list(ontology.triples((None, RDFS.subClassOf, oboinowl.ObsoleteClass)))]
-    obs_triples = [(s, p, o) for s, p, o in ontology
-                   if 'obsolete' in ', '.join([str(s).lower(), str(p).lower(), str(o).lower()])
-                   and any(str(s).startswith(ont) for ont in ont_prefix)]
+    obs_triples = [(s, p, o) for s, p, o in ontology if 'OBSOLETE:' in ', '.join([str(s), str(o)])]
     oth_obs_triple_classes = [x[0] for x in obs_triples]
     obsolete_classes = set(obs_cls + oth_obs_triple_classes)
 
