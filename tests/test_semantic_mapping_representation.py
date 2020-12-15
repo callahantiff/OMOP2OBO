@@ -66,7 +66,7 @@ class TestSemanticTransformer(TestCase):
         # create timestamp
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
-        # move needed data
+        # move needed data to enable successful class instantiation
         shutil.copyfile(self.dir_loc1 + '/master_ontology_dictionary.pickle',
                         self.ontology_directory + '/master_ontology_dictionary.pickle')
         shutil.copyfile(self.ontology_directory + '/so_without_imports.owl',
