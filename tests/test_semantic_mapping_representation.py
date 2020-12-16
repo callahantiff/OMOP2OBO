@@ -71,8 +71,7 @@ class TestSemanticTransformer(TestCase):
                         self.ontology_directory + '/master_ontology_dictionary.pickle')
         print(self.dir_loc2)
         print(self.resources_directory)
-        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations.txt',
-                        self.resources_directory + '/omop2obo_class_relations.txt')
+        shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt', self.resources_directory)
         shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
                         self.resources_directory + '/omop2obo_v0.owl')
 
