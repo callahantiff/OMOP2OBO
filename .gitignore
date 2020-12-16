@@ -35,7 +35,7 @@ resources/mappings/
 !resources/mappings/medication_codes/.gitkeep
 !resources/mappings/source_code_vocab_map.csv
 resources/mapping_semantics
-!resources/*.md
+!resources/mapping_semantics/*.md
 resources/ontologies/
 !resources/ontologies/ontology_source_metadata.txt
 resources/programming/
