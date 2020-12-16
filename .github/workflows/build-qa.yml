@@ -1,0 +1,98 @@
+# WorkFlow Do: install Python dependencies, run tests and linter, and return code coverage  
+name: CI - Workflow
+on: [push, pull_request]
+jobs:  
+  
+  build:
+    name: Quality Check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.6, 3.7]
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Set-up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      
+      - uses: actions/cache@v2  # caching environment + pip
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
+      
+      - name: Install Requirements and Dependencies
+        run: |
+          pip install pip --upgrade
+          pip install --upgrade pytest
+          pip install --upgrade mypy
+          pip install --upgrade pylint
+          pip install --upgrade and --upgrade-strategy eager -r requirements.txt -e .
+      
+      - name: Run PyTest
+        run: | 
+          pytest --cov=omop2obo --cov-report xml:coverage.xml
+          
+      - name: Linting with Mypy
+        run: mypy --strict-optional omop2obo
+          
+      - name: Linting with PyLint
+        run: pylint --errors-only --exit-zero omop2obo
+        
+      - name: Archive Code Coverage Results
+        uses: actions/upload-artifact@master
+        with:
+          name: code-coverage-report
+          path: bin
+      
+  coverageReportTrigger:
+    needs: build
+    name: Coverage Trigger
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+      
+      - name: Clean Environment
+        run: | 
+          rm -rf .coverage
+          coverage erase
+        
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: bin 
+        
+      - name: Sonar Cloud   
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrest.SONAR_TOKEN }}
+      
+      - name: Codacy
+        uses: codacy/codacy-coverage-reporter-action@master
+        with:
+          PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      
+      - name: CodeClimate
+        uses: marsam/codeclimate-action@master
+        with:
+          command: echo 'Uploading Test Coverage'
+          reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
+      
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Combine Coverage Results
+          coverage combine --append || true
+          coverage report
+          coverage xml
+    
