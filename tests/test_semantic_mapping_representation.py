@@ -341,8 +341,6 @@ class TestSemanticTransformer(TestCase):
         """Tests the multi-ontology class relations data when relations data is empty."""
 
         # move and rename needed file
-        # shutil.copy2(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
-        #              self.resources_directory + '/omop2obo_class_relations.txt')
         shutil.copy(self.dir_loc2 + '/omop2obo_class_relations_empty.txt', self.resources_directory)
         os.rename(self.resources_directory + '/omop2obo_class_relations_empty.txt',
                   self.resources_directory + '/omop2obo_class_relations.txt')
