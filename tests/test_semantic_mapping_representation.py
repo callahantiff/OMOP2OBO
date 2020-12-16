@@ -69,10 +69,12 @@ class TestSemanticTransformer(TestCase):
         # create/move needed data to enable successful class instantiation
         shutil.copyfile(self.dir_loc1 + '/master_ontology_dictionary.pickle',
                         self.ontology_directory + '/master_ontology_dictionary.pickle')
-        shutil.copy2(self.dir_loc2 + '/omop2obo_class_relations.txt',
-                     self.resources_directory + '/omop2obo_class_relations.txt')
-        shutil.copy2(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
-                     self.resources_directory + '/omop2obo_v0.owl')
+        print(self.dir_loc2)
+        print(self.resources_directory)
+        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations.txt',
+                        self.resources_directory + '/omop2obo_class_relations.txt')
+        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations_empty.txt',
+                        self.resources_directory + '/omop2obo_v0.owl')
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
