@@ -21,7 +21,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Run Tests and Ouput Coverage Report
+      - name: Run Tests and Generate Coverage Report
         run: |
           pytest --cov=omop2obo --cov-report xml:coverage.xml
           coverage combine --append || true
@@ -39,10 +39,10 @@ jobs:
       
   sonarCloudTrigger:
     needs: build
-    name: Coverage Trigger
+    name: Sonar Cloud Trigger
     runs-on: ubuntu-latest
-    
     steps:
+
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
@@ -53,8 +53,8 @@ jobs:
         with:
           name: code-coverage-report
           path: coverage.xml
-        
-      - name: Sonar Cloud   
+
+      - name: Sonar Cloud Scanner
         uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,10 +62,10 @@ jobs:
 
   codacyTrigger:
     needs: build
-    name: Coverage Trigger
+    name: Codacy Coverage Trigger
     runs-on: ubuntu-latest
-
     steps:
+
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
@@ -89,10 +89,10 @@ jobs:
 
   codeClimateTrigger:
     needs: build
-    name: Coverage Trigger
+    name: Code Climate Trigger
     runs-on: ubuntu-latest
-
     steps:
+
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
@@ -104,30 +104,28 @@ jobs:
           name: code-coverage-report
           path: coverage.xml
 
-      - name: CodeClimate
-        uses: paambaati/codeclimate-action@master
+      - name: CodeClimate Coverage
+        uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          command: echo 'Uploading Test Coverage'
-          reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
+          coverageLocation: ${{github.workspace}}/coverage.xml
 
   coverallsTrigger:
     needs: build
-    name: Coverage Trigger
+    name: Coveralls Trigger
     runs-on: ubuntu-latest
-
     steps:
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
-
       - name: Download Code Coverage Results
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
           path: coverage.xml
-
-      - name: Coveralls
+      - name: Coverall Coverage
         uses: coverallsapp/github-action@master
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
