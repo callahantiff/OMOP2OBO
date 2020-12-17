@@ -17,10 +17,9 @@ jobs:
       - name: Install Requirements and Dependencies
         run: |
           pip install --upgrade pip
-          pip install --upgrade setuptools
+          pip install -e .[test]
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
-          pip install -e .[test]
 
       - name: Run Tests and Generate Coverage Results
         run: |
@@ -134,7 +133,7 @@ jobs:
 
       - name: Complete Coveralls
         run: |
-          pip3 install --upgrade coveralls
+          pip3 install --upgrade coveralls setuptools
           coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
