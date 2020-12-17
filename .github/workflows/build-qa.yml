@@ -35,6 +35,7 @@ jobs:
           coverage xml
           python-codacy-coverage -r coverage.xml
           coveralls
+          ./cc-test-reporter format-coverage --output coverage/*.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_PARALLEL: true
@@ -42,14 +43,6 @@ jobs:
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
-
-      - name: Save Coverage Results
-        run: |
-          coverage report
-          coverage xml
-          python-codacy-coverage -r coverage.xml
-          coveralls
-          ./cc-test-reporter format-coverage --output coverage/codeclimate*.json
 
       - name: print outputs
         run: |
