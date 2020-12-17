@@ -1,7 +1,7 @@
 *****
 omop2obo
 *****
-|travis| |sonar_quality| |sonar_maintainability| |codacy| 
+|github_action| |sonar_quality| |sonar_maintainability| |codacy| 
 
 |coveralls| |sonar_coverage| |code_climate_coverage|  
 
@@ -287,9 +287,9 @@ Contact
 We’d love to hear from you! To get in touch with us, please `create an issue`_ or `send us an email`_ 💌
 
 
-.. |travis| image:: https://travis-ci.org/callahantiff/OMOP2OBO.png
-   :target: https://travis-ci.org/callahantiff/OMOP2OBO
-   :alt: Travis CI build
+.. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/CI%20-%20Workflow/badge.svg
+   :target: https://github.com/callahantiff/OMOP2OBO/workflows/CI%20-%20Workflow
+   :alt: GitHub Action CI-Workflow
 
 .. |sonar_quality| image:: https://sonarcloud.io/api/project_badges/measure?project=callahantiff_OMOP2OBO&metric=alert_status
     :target: https://sonarcloud.io/dashboard/index/callahantiff_OMOP2OBO
