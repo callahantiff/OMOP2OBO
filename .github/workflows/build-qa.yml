@@ -26,7 +26,6 @@ jobs:
           rm -rf .coverage
           coverage erase
           pytest --cov=omop2obo --cov-report xml:coverage.xml
-          coverage combine --append || true
           coverage report
           coverage xml
           python-codacy-coverage -r coverage.xml
@@ -39,14 +38,13 @@ jobs:
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
 
-      - name: Print Test Reprots
-        run: ls -la
-
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@master
         with:
           name: code-coverage-report
-          path: coverage.xml
+          path: |
+            coverage.xml
+            .coverage
 
   sonarCloudTrigger:
     needs: build
@@ -62,7 +60,9 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
-          path: coverage.xml
+          path: |
+            coverage.xml
+            .coverage
 
       - name: Sonar Cloud Scanner
         uses: sonarsource/sonarcloud-github-action@master
@@ -84,7 +84,9 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
-          path: coverage.xml
+          path: |
+            coverage.xml
+            .coverage
 
       - name: Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@master
@@ -106,7 +108,9 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
-          path: coverage.xml
+          path: |
+            coverage.xml
+            .coverage
 
       - name: Publish Coverage to Code Climate
         uses: paambaati/codeclimate-action@v2.7.5
@@ -135,7 +139,9 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
-          path: coverage.xml
+          path: |
+            coverage.xml
+            .coverage
 
       - name: Complete Coveralls
         run: |
