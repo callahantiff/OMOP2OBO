@@ -20,7 +20,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
-      
+
       - name: Run PyTest
         run: pytest --cov=omop2obo --cov-report xml:coverage.xml
           
@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: code-coverage-report
-          path: bin
+          path: .coverage.xml
       
   coverageReportTrigger:
     needs: build
@@ -41,9 +41,9 @@ jobs:
     steps:
       - name: Clone Repository
         uses: actions/checkout@v2
-      
+
       - name: Clean Environment
-        run: | 
+        run: |
           rm -rf .coverage
           coverage erase
         
@@ -51,7 +51,7 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
-          path: bin 
+          path: .coverage.xml
         
       - name: Sonar Cloud   
         uses: sonarsource/sonarcloud-github-action@master
@@ -65,7 +65,7 @@ jobs:
           PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       
       - name: CodeClimate
-        uses: marsam/codeclimate-action@master
+        uses: paambaati/codeclimate-action@master
         with:
           command: echo 'Uploading Test Coverage'
           reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
