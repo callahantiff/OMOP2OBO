@@ -42,11 +42,6 @@ jobs:
       - name: Clone Repository
         uses: actions/checkout@v2
 
-      - name: Clean Environment
-        run: |
-          rm -rf .coverage
-          coverage erase
-        
       - name: Download Code Coverage Results
         uses: actions/download-artifact@master
         with:
