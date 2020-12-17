@@ -6,7 +6,6 @@ jobs:
   build:
     name: Quality Check
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       
@@ -20,6 +19,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
+          pip install -e .[test]
 
       - name: Run Tests and Generate Coverage Report
         run: |
@@ -27,10 +27,18 @@ jobs:
           coverage combine --append || true
           coverage report
           coverage xml
+          python-codacy-coverage -r coverage.xml
+          ls
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
-        
+
+      - name: Run Coveralls
+        run: coveralls
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            COVERALLS_PARALLEL: true
+
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@master
         with:
@@ -39,10 +47,9 @@ jobs:
       
   sonarCloudTrigger:
     needs: build
-    name: Sonar Cloud Trigger
+    name: Sonar Cloud
     runs-on: ubuntu-latest
     steps:
-
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
@@ -62,10 +69,9 @@ jobs:
 
   codacyTrigger:
     needs: build
-    name: Codacy Coverage Trigger
+    name: Codacy
     runs-on: ubuntu-latest
     steps:
-
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
@@ -89,10 +95,9 @@ jobs:
 
   codeClimateTrigger:
     needs: build
-    name: Code Climate Trigger
+    name: Code Climate
     runs-on: ubuntu-latest
     steps:
-
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
@@ -104,28 +109,32 @@ jobs:
           name: code-coverage-report
           path: coverage.xml
 
-      - name: CodeClimate Coverage
+      - name: Publish Coverage to Code Climate
         uses: paambaati/codeclimate-action@v2.7.5
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          coverageLocation: ${{github.workspace}}/coverage.xml
+          coverageLocations: ${{github.workspace}}
 
   coverallsTrigger:
     needs: build
-    name: Coveralls Trigger
+    name: Coveralls
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
       - name: Download Code Coverage Results
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
           path: coverage.xml
-      - name: Coverall Coverage
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Complete Coveralls
+      run: |
+        pip3 install --upgrade coveralls
+        coveralls --finish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
