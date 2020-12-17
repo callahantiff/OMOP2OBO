@@ -81,15 +81,11 @@ jobs:
           name: code-coverage-report
           path: coverage.xml
 
-      - name: Codacy CLI Analysis
-        uses: codacy/codacy-coverage-reporter-action@master
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-
       - name: Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
 
   codeClimateTrigger:
     needs: build
@@ -125,6 +121,11 @@ jobs:
         with:
           fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
 
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
       - name: Download Code Coverage Results
         uses: actions/download-artifact@master
         with:
@@ -133,7 +134,7 @@ jobs:
 
       - name: Complete Coveralls
         run: |
-          pip3 install --upgrade coveralls setuptools
+          pip install --upgrade coveralls setuptools
           coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
