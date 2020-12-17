@@ -17,7 +17,6 @@ jobs:
       
       - name: Install Requirements and Dependencies
         run: |
-          pip install pip --upgrade
           pip install --upgrade pytest
           pip install --upgrade mypy
           pip install --upgrade pylint
