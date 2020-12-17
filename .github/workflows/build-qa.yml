@@ -1,6 +1,6 @@
 # WorkFlow Do: install Python dependencies, run tests and linter, and return code coverage  
 name: CI - Workflow
-on: [push, pull_request]
+on: push
 jobs:  
   
   build:
