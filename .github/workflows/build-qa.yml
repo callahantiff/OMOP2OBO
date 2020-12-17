@@ -21,15 +21,14 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Clean Directory Before Running Tests
+      - name: Clean-Up Environment
         run: |
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
           chmod +x ./cc-test-reporter
-          ./cc-test-reporter before-build
           rm -rf .coverage
           coverage erase
 
-      - name: Run Tests and Generate Coverage Results
+      - name: Run Tests
         run: |
           pytest --cov=omop2obo --cov-report xml:coverage.xml
           coverage report
@@ -43,6 +42,20 @@ jobs:
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
+
+      - name: Save Coverage Results
+        run: |
+          coverage report
+          coverage xml
+          python-codacy-coverage -r coverage.xml
+          coveralls
+          ./cc-test-reporter format-coverage --output coverage/codeclimate*.json
+
+      - name: print outputs
+        run: |
+          ls -la
+          ls -la coverage
+
 
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@master
@@ -90,14 +103,13 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
-          path: |
-            coverage.xml
-            .coverage
+          path: coverage.xml
 
       - name: Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
 
   codeClimateTrigger:
     needs: build
@@ -109,13 +121,16 @@ jobs:
         with:
           fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
 
+      - name: Set-Up Envrionment
+        run: |
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
+
       - name: Download Code Coverage Results
         uses: actions/download-artifact@master
         with:
           name: code-coverage-report
-          path: |
-            coverage.xml
-            .coverage
+          path: .coverage
 
       - name: Publish Coverage to Code Climate
         uses: paambaati/codeclimate-action@v2.7.5
