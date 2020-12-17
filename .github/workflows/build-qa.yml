@@ -17,10 +17,10 @@ jobs:
       
       - name: Install Requirements and Dependencies
         run: |
-          pip install --upgrade pytest
-          pip install --upgrade mypy
-          pip install --upgrade pylint
-          pip install --upgrade and --upgrade-strategy eager -r requirements.txt
+          pip install pytest
+          pip install mypy
+          pip install pylint
+          pip install requirements.txt
       
       - name: Run PyTest
         run: pytest --cov=omop2obo --cov-report xml:coverage.xml
