@@ -64,6 +64,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.verbose=true
 
   codacyTrigger:
     needs: build
@@ -134,7 +138,7 @@ jobs:
 
       - name: Complete Coveralls
         run: |
-          pip install --upgrade coveralls setuptools
+          pip install --upgrade pip coveralls setuptools
           coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
