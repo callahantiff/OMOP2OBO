@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Clone Repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
 
       - name: Download Code Coverage Results
         uses: actions/download-artifact@master
