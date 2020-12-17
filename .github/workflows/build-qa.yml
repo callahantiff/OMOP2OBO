@@ -5,34 +5,20 @@ jobs:
   
   build:
     name: Quality Check
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.6, 3.7]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
       
-      - name: Set-up Python ${{ matrix.python-version }}
+      - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
+          python-version: 3.6
       
       - uses: actions/cache@v2
-        if: startsWith(runner.os, 'Linux')
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
-      
-      - uses: actions/cache@v2
-        if: startsWith(runner.os, 'macOS')
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-  
+          key: ${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
       
       - name: Install Requirements and Dependencies
         run: |
@@ -40,7 +26,7 @@ jobs:
           pip install --upgrade pytest
           pip install --upgrade mypy
           pip install --upgrade pylint
-          pip install --upgrade and --upgrade-strategy eager -r requirements.txt -e .
+          pip install --upgrade and --upgrade-strategy eager -r requirements.txt -e 
       
       - name: Run PyTest
         run: pytest --cov=omop2obo --cov-report xml:coverage.xml
