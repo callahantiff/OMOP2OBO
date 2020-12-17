@@ -34,8 +34,7 @@ jobs:
           pip install --upgrade and --upgrade-strategy eager -r requirements.txt -e .
       
       - name: Run PyTest
-        run: | 
-          pytest --cov=omop2obo --cov-report xml:coverage.xml
+        run: pytest --cov=omop2obo --cov-report xml:coverage.xml
           
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
@@ -92,6 +91,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Combine Coverage Results
+        run: | 
           coverage combine --append || true
           coverage report
           coverage xml
