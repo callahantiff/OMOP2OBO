@@ -20,10 +20,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
       
-      - uses: actions/cache@v2  # caching environment + pip
+      - uses: actions/cache@v2
+        if: startsWith(runner.os, 'Linux')
         with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+      
+      - uses: actions/cache@v2
+        if: startsWith(runner.os, 'macOS')
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-:  
       
       - name: Install Requirements and Dependencies
         run: |
@@ -72,7 +81,7 @@ jobs:
         uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrest.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       
       - name: Codacy
         uses: codacy/codacy-coverage-reporter-action@master
