@@ -32,7 +32,6 @@ test_deps = [
     'codacy-coverage',
     'coveralls',
     'mypy',
-    'pylint',
     'pytest',
     'pytest-cov',
     'validate_version_code'
