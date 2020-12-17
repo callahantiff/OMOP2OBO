@@ -27,9 +27,6 @@ jobs:
           pytest --cov=omop2obo --cov-report xml:coverage.xml
           python-codacy-coverage -r coverage.xml
           coveralls
-          coverage run
-          coverage report
-          coverage xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_PARALLEL: true

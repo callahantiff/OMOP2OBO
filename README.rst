@@ -304,8 +304,8 @@ We’d love to hear from you! To get in touch with us, please `create an issue`_
     :target: https://sonarcloud.io/dashboard/index/callahantiff_OMOP2OBO
     :alt: SonarCloud Coverage
 
-.. |coveralls| image:: https://coveralls.io/repos/github/callahantiff/OMOP2OBO/badge.svg?branch=master
-    :target: https://coveralls.io/github/callahantiff/OMOP2OBO?branch=master
+.. |coveralls| image:: https://coveralls.io/repos/github/callahantiff/OMOP2OBO/badge.svg
+    :target: https://coveralls.io/github/callahantiff/OMOP2OBO
     :alt: Coveralls Coverage
 
 .. |pip| image:: https://badge.fury.io/py/omop2obo.svg
