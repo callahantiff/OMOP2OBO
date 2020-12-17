@@ -26,9 +26,6 @@ jobs:
           
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
-          
-      - name: Linting with PyLint
-        run: pylint --errors-only --exit-zero omop2obo
         
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@master
