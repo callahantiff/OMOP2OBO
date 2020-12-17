@@ -21,7 +21,7 @@ jobs:
           pip install -r dev-requirements.txt
           pip install -e .[test]
 
-      - name: Run Tests and Generate Coverage Report
+      - name: Run Tests and Generate Coverage Results
         run: |
           pytest --cov=omop2obo --cov-report xml:coverage.xml
           python-codacy-coverage -r coverage.xml
@@ -33,7 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_PARALLEL: true
-          CODACY_PROJECTC_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
