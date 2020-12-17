@@ -24,20 +24,19 @@ jobs:
       - name: Run Tests and Generate Coverage Report
         run: |
           pytest --cov=omop2obo --cov-report xml:coverage.xml
+          python-codacy-coverage -r coverage.xml
+          coveralls
           coverage combine --append || true
           coverage report
           coverage xml
-          python-codacy-coverage -r coverage.xml
           ls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_PARALLEL: true
+          CODACY_PROJECTC_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
-
-      - name: Run Coveralls
-        run: coveralls
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            COVERALLS_PARALLEL: true
 
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@master
