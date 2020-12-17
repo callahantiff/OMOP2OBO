@@ -21,7 +21,7 @@ jobs:
           pip install --upgrade pytest
           pip install --upgrade mypy
           pip install --upgrade pylint
-          pip install --upgrade and --upgrade-strategy eager -r requirements.txt -e 
+          pip install --upgrade and --upgrade-strategy eager -r requirements.txt
       
       - name: Run PyTest
         run: pytest --cov=omop2obo --cov-report xml:coverage.xml
