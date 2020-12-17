@@ -1,0 +1,6 @@
+mock==4.0.3
+mypy==0.790
+pylint==2.6.0
+pytest==6.2.1
+pytest-cov==2.10.1
+validate-version-code==1.0.4
