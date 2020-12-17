@@ -39,26 +39,107 @@ jobs:
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
 
+      - name: Print Test Reprots
+        run ls -la
+
+      - name: Archive Code Coverage Results
+        uses: actions/upload-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
+  sonarCloudTrigger:
+    needs: build
+    name: Sonar Cloud
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
       - name: Sonar Cloud Scanner
         uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Codacy
+  codacyTrigger:
+    needs: build
+    name: Codacy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
+      - name: Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml
 
-      - name: Code Climate
+  codeClimateTrigger:
+    needs: build
+    name: Code Climate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
+      - name: Publish Coverage to Code Climate
         uses: paambaati/codeclimate-action@v2.7.5
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageCommand: ./cc-test-reporter after-build --exit-code
+          coverageLocations: ${{github.workspace}}
 
-      - name: Coveralls
-        run: coveralls --finish
+  coverallsTrigger:
+    needs: build
+    name: Coveralls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
+      - name: Complete Coveralls
+        run: |
+          pip install --upgrade pip coveralls setuptools
+          coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
