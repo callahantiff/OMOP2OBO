@@ -72,6 +72,7 @@ setup(
         'google-cloud-core==1.0.2',
         'google-cloud-storage==1.16.0',
         'lxml==4.6.2',
+        'mock==4.0.3',
         'more-itertools==8.6.0',
         'nltk==3.5',
         'oauth2client==4.1.3',
