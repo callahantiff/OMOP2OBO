@@ -5,37 +5,27 @@ jobs:
   
   build:
     name: Quality Check
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.6, 3.7]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
       
-      - name: Set-up Python ${{ matrix.python-version }}
+      - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-      
-      - uses: actions/cache@v2  # caching environment + pip
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
+          python-version: 3.6
       
       - name: Install Requirements and Dependencies
         run: |
-          pip install pip --upgrade
-          pip install --upgrade pytest
-          pip install --upgrade mypy
-          pip install --upgrade pylint
-          pip install --upgrade and --upgrade-strategy eager -r requirements.txt -e .
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install pytest-cov
+          pip install mypy
+          pip install pylint
+          pip install -r requirements.txt
       
       - name: Run PyTest
-        run: | 
-          pytest --cov=omop2obo --cov-report xml:coverage.xml
+        run: pytest --cov=omop2obo --cov-report xml:coverage.xml
           
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
@@ -73,7 +63,7 @@ jobs:
         uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrest.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       
       - name: Codacy
         uses: codacy/codacy-coverage-reporter-action@master
@@ -92,6 +82,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Combine Coverage Results
+        run: | 
           coverage combine --append || true
           coverage report
           coverage xml
