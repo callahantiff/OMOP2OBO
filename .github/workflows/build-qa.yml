@@ -23,8 +23,8 @@ jobs:
 
       - name: Clean-Up Environment
         run: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
+#          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+#          chmod +x ./cc-test-reporter
           rm -rf .coverage
           coverage erase
 
@@ -35,7 +35,6 @@ jobs:
           coverage xml
           python-codacy-coverage -r coverage.xml
           coveralls
-          ./cc-test-reporter format-coverage --output coverage/*.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_PARALLEL: true
@@ -47,8 +46,7 @@ jobs:
       - name: print outputs
         run: |
           ls -la
-          ls -la coverage
-
+          ls -la .coverage
 
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@master
@@ -130,8 +128,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          coverageCommand: ./cc-test-reporter after-build --exit-code
-          coverageLocations: ${{github.workspace}}/coverage
+          coverageLocations: ${{github.workspace}}/.coverage
 
   coverallsTrigger:
     needs: build
