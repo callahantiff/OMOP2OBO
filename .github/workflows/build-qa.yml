@@ -17,10 +17,11 @@ jobs:
       
       - name: Install Requirements and Dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install pytest
           pip install mypy
           pip install pylint
-          pip install requirements.txt
+          pip install -r requirements.txt
       
       - name: Run PyTest
         run: pytest --cov=omop2obo --cov-report xml:coverage.xml
