@@ -18,7 +18,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ hashFiles('setup.py') }}-${{ hasFiles('requirements.txt') }}
+          key: ${{ hashFiles('**/setup.py') }}-${{ hasFiles('**/requirements.txt') }}
       
       - name: Install Requirements and Dependencies
         run: |
