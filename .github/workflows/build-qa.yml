@@ -21,10 +21,16 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Run Tests and Generate Coverage Results
+      - name: Clean Directory Before Running Tests
         run: |
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
+          ./cc-test-reporter before-build
           rm -rf .coverage
           coverage erase
+
+      - name: Run Tests and Generate Coverage Results
+        run: |
           pytest --cov=omop2obo --cov-report xml:coverage.xml
           coverage report
           coverage xml
@@ -92,7 +98,6 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: coverage.xml
 
   codeClimateTrigger:
     needs: build
@@ -118,7 +123,7 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageCommand: ./cc-test-reporter after-build --exit-code
-          coverageLocations: ${{github.workspace}}
+          coverageLocations: ${{github.workspace}}/coverage
 
   coverallsTrigger:
     needs: build
@@ -134,14 +139,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.6
-
-      - name: Download Code Coverage Results
-        uses: actions/download-artifact@master
-        with:
-          name: code-coverage-report
-          path: |
-            coverage.xml
-            .coverage
 
       - name: Complete Coveralls
         run: |
