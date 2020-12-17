@@ -133,8 +133,8 @@ jobs:
           path: coverage.xml
 
       - name: Complete Coveralls
-      run: |
-        pip3 install --upgrade coveralls
-        coveralls --finish
+        run: |
+          pip3 install --upgrade coveralls
+          coveralls --finish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
