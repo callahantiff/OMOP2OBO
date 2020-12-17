@@ -21,9 +21,13 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Run PyTest
-        run: pytest --cov=omop2obo --cov-report xml:coverage.xml
-          
+      - name: Run Tests and Ouput Coverage Report
+        run: |
+          pytest --cov=omop2obo --cov-report xml:coverage.xml
+          coverage combine --append || true
+          coverage report
+          coverage xml
+
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
         
@@ -60,6 +64,8 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        run: |
+          <(curl -Ls https://coverage.codacy.com/get.sh) report
       
       - name: CodeClimate
         uses: paambaati/codeclimate-action@master
@@ -71,9 +77,3 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Combine Coverage Results
-        run: | 
-          coverage combine --append || true
-          coverage report
-          coverage xml
