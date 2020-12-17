@@ -29,11 +29,13 @@ def find_version(*file_paths):
 __version__ = find_version("omop2obo", "__version__.py")
 
 test_deps = [
-    "pytest",
-    "pytest-cov",
-    "coveralls",
-    "validate_version_code",
-    "codacy-coverage"
+    'codacy-coverage',
+    'coveralls',
+    'mypy',
+    'pylint',
+    'pytest',
+    'pytest-cov',
+    'validate_version_code'
 ]
 
 extras = {
@@ -65,12 +67,6 @@ setup(
     # Add here the package dependencies
     install_requires=[
         'click==8.0.0a1',
-        'google-api-core==1.13.0',
-        'google-auth==1.24.1',
-        'google-auth-oauthlib==0.4.2',
-        'google-cloud==0.34.0',
-        'google-cloud-core==1.0.2',
-        'google-cloud-storage==1.16.0',
         'lxml==4.6.2',
         'more-itertools==8.6.0',
         'nltk==3.5',

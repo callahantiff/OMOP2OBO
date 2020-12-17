@@ -18,6 +18,7 @@ jobs:
       - name: Install Requirements and Dependencies
         run: |
           pip install --upgrade pip
+          pip install -r requirements.txt
           pip install -r dev-requirements.txt
       
       - name: Run PyTest
@@ -82,4 +83,3 @@ jobs:
           coverage combine --append || true
           coverage report
           coverage xml
-    
