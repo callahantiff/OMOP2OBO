@@ -37,7 +37,7 @@ jobs:
           name: code-coverage-report
           path: coverage.xml
       
-  coverageReportTrigger:
+  sonarCloudTrigger:
     needs: build
     name: Coverage Trigger
     runs-on: ubuntu-latest
@@ -59,20 +59,78 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      
-      - name: Codacy
+
+  codacyTrigger:
+    needs: build
+    name: Coverage Trigger
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
+      - name: Codacy CLI Analysis
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: |
           <(curl -Ls https://coverage.codacy.com/get.sh) report
-      
+
+      - name: Codacy Coverage Reporter
+        uses: codacy/codacy-coverage-reporter-action@master
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        run: |
+          <(curl -Ls https://coverage.codacy.com/get.sh) report
+
+  codeClimateTrigger:
+    needs: build
+    name: Coverage Trigger
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
       - name: CodeClimate
         uses: paambaati/codeclimate-action@master
         with:
           command: echo 'Uploading Test Coverage'
           reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
-      
+
+  coverallsTrigger:
+    needs: build
+    name: Coverage Trigger
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
+
+      - name: Download Code Coverage Results
+        uses: actions/download-artifact@master
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
