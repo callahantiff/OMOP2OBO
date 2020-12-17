@@ -17,6 +17,7 @@ jobs:
       - name: Install Requirements and Dependencies
         run: |
           pip install --upgrade pip
+          pip install --upgrade setuptools
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
           pip install -e .[test]
@@ -26,14 +27,16 @@ jobs:
           pytest --cov=omop2obo --cov-report xml:coverage.xml
           python-codacy-coverage -r coverage.xml
           coveralls
-          coverage combine --append || true
+          coverage run
           coverage report
           coverage xml
-          ls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_PARALLEL: true
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
+      - name: Print directory information
+        run: ls
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
@@ -113,6 +116,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
+          coverageCommand: ./cc-test-reporter after-build --exit-code
           coverageLocations: ${{github.workspace}}
 
   coverallsTrigger:
