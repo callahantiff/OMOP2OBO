@@ -26,9 +26,6 @@ jobs:
           
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
-
-      - name: Print File Location
-        run: echo $realpath coverage.xml
         
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@master
