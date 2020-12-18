@@ -34,7 +34,8 @@ class SemanticTransformer(object):
 
     def __init__(self, ontology_list: List, omop2obo_data_file: str, domain: str, map_type: str = 'multi',
                  ontology_directory: str = Optional[None], superclasses: Optional[Dict] = None,
-                 primary_column: str = 'CONCEPT', secondary_column: Optional[str] = None) -> None:
+                 primary_column: str = 'CONCEPT', secondary_column: Optional[str] = None,
+                 root_directory: str = None) -> None:
 
         """This class is designed to facilitate the transformation of OMOP2OBO mappings into semantic
         representations. To do this, the class includes several methods that assist with processing different aspects
@@ -72,14 +73,15 @@ class SemanticTransformer(object):
         """
 
         # CREATE CLASS ATTRIBUTES
+        self.root = os.path.abspath(root_directory) if root_directory is not None else 'resources'
         self.graph: Graph = Graph()
-        self.owltools_location = './omop2obo/libs/owltools'
-        self.write_location = 'resources/mapping_semantics'
+        self.owltools_location = os.path.abspath('omop2obo/libs/owltools')
+        self.write_location = self.root + '/mapping_semantics'
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
         self.ontology_data_dict: Dict = {}
 
         # EXISTING OMOP2OBO OWL FILE
-        existing_mappings = glob.glob('resources/mapping_semantics/omop2obo*.owl')
+        existing_mappings = glob.glob(self.write_location + '/omop2obo*.owl')
         self.current_omop2obo = None if len(existing_mappings) == 0 else existing_mappings[0]
 
         # ONTOLOGY LIST
@@ -111,7 +113,7 @@ class SemanticTransformer(object):
             self.domain = domain.lower()
 
         # ONTOLOGY DIRECTORY
-        onts = 'resources/ontologies' if ontology_directory is None else ontology_directory
+        onts = '/ontologies' if ontology_directory is None else ontology_directory
         ont_data = glob.glob(onts + '/*.owl')
         if not os.path.exists(onts):
             raise OSError("Can't find 'ontologies/' directory, this directory is a required input")
@@ -150,16 +152,15 @@ class SemanticTransformer(object):
 
         # RO RELATIONS FOR MULTI-ONTOLOGY CLASSES
         if self.construction_type == 'multi':
-            rel_data_loc = 'resources/mapping_semantics/omop2obo_class_relations.txt'
+            rel_data_loc = self.write_location + '/omop2obo_class_relations.txt'
             if not os.path.exists(rel_data_loc):
                 raise OSError('The {} file does not exist!'.format(rel_data_loc))
             elif os.stat(rel_data_loc).st_size == 0:
                 raise TypeError('Input file: {} is empty'.format(rel_data_loc))
             else:
                 print('Loading Multi-Ontology Class Construction Relations')
-                rel_data = glob.glob('resources/mapping_semantics/omop2obo_class_relations.txt')[0]
                 self.multi_class_relations: Optional[Dict] = {}
-                with open(rel_data, 'r') as f:
+                with open(rel_data_loc, 'r') as f:
                     for x in f.read().splitlines()[1:]:
                         row = [i.strip() for i in x.split(',')]
                         key = row[1] + '-' + row[3]
@@ -174,13 +175,14 @@ class SemanticTransformer(object):
 
         # ONTOLOGY DICTIONARY
         if self.construction_type == 'multi':
-            ont_dictionary = glob.glob(os.getcwd() + '/*/*/master_ontology_dictionary.pickle')
-            if len(ont_dictionary) == 0:
+            ont_dictionary = self.root + '/ontologies/master_ontology_dictionary.pickle'
+            print(ont_dictionary)
+            if not os.path.exists(ont_dictionary):
                 raise OSError("Can't find master_ontology_dictionary.pickle please re-run the process ontology steps.")
-            elif os.stat(ont_dictionary[0]).st_size == 0:
-                raise TypeError('Input file: {} is empty'.format(ont_dictionary[0]))
+            elif os.stat(ont_dictionary).st_size == 0:
+                raise TypeError('Input file: {} is empty'.format(ont_dictionary))
             else:
-                with open(ont_dictionary[0], 'rb') as handle:
+                with open(ont_dictionary, 'rb') as handle:
                     self.ontology_metadata: Optional[Dict] = pickle.load(handle)
                 handle.close()
         else:
