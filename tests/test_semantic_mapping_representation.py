@@ -22,19 +22,19 @@ class TestSemanticTransformer(TestCase):
 
     def setUp(self):
         # initialize data directories
-        current_directory = os.path.dirname(__file__)
-        dir_loc1 = os.path.join(current_directory, 'data')
+        self.root = os.path.dirname(__file__)
+        dir_loc1 = os.path.join(self.root, 'data')
         self.dir_loc1 = os.path.abspath(dir_loc1)
         self.ontology_directory = os.path.join(self.dir_loc1, 'ontologies')
         self.mapping_directory = os.path.join(self.dir_loc1, 'mappings')
 
         # create a second location
-        dir_loc2 = os.path.join(current_directory, 'resources')
+        dir_loc2 = os.path.join(self.root, 'resources')
         self.dir_loc2 = os.path.abspath(dir_loc2)
         self.resources_directory = os.path.join(self.dir_loc2, 'mapping_semantics')
 
         # create pointer to testing utilities
-        dir_loc3 = os.path.join(current_directory, 'utils/owltools')
+        dir_loc3 = os.path.join(self.root, 'utils/owltools')
         self.owltools_location = os.path.abspath(dir_loc3)
 
         # create input parameters
@@ -43,6 +43,10 @@ class TestSemanticTransformer(TestCase):
         self.ontology_directory = self.ontology_directory
         self.map_type = 'single'
         self.superclasses = None
+
+        # create temp directory for testing
+        if not os.path.exists(os.path.join(self.dir_loc2, 'ontologies')):
+            os.mkdir(os.path.join(self.dir_loc2, 'ontologies'))
 
         # create test data
         self.test_relations_dict = {
@@ -67,7 +71,7 @@ class TestSemanticTransformer(TestCase):
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
         # create/move needed data to enable successful class instantiation
-        shutil.copy(self.dir_loc1 + '/master_ontology_dictionary.pickle', self.ontology_directory)
+        shutil.copy(self.dir_loc2 + '/master_ontology_dictionary.pickle', os.path.join(self.dir_loc2, 'ontologies'))
         shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt', self.resources_directory)
         shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl', self.resources_directory)
 
@@ -77,20 +81,45 @@ class TestSemanticTransformer(TestCase):
                                                    domain='condition',
                                                    map_type=self.map_type,
                                                    ontology_directory=self.ontology_directory,
-                                                   primary_column='CONCEPT')
+                                                   primary_column='CONCEPT',
+                                                   root_directory=self.dir_loc2)
 
         self.map_transformer_multi = SemanticTransformer(ontology_list=['so', 'vo'],
                                                          omop2obo_data_file=self.omop2obo_data_file,
                                                          domain='condition',
                                                          map_type='multi',
                                                          ontology_directory=self.ontology_directory,
-                                                         primary_column='CONCEPT')
+                                                         primary_column='CONCEPT',
+                                                         root_directory=self.dir_loc2)
 
         # make sure that instantiated class points to testing data location of the OWLTools API
         self.map_transformer.owltools_location = self.owltools_location
 
         # make sure the the write location points to
         self.map_transformer.write_location = os.path.join(self.dir_loc2, 'mapping_semantics')
+
+        return None
+
+    def test_root_directory(self):
+        """Test the root directory input when provided."""
+
+        self.assertEqual(self.map_transformer.root, self.dir_loc2)
+
+        return None
+
+    def test_root_directory_none(self):
+        """Test the root directory input when not provided."""
+
+        # initialize method with no root_directory argument
+        self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
+                                                   omop2obo_data_file=self.omop2obo_data_file,
+                                                   domain='condition',
+                                                   map_type='multi',
+                                                   ontology_directory=self.ontology_directory,
+                                                   primary_column='CONCEPT')
+
+        # test assignment
+        self.assertEqual(self.map_transformer.root, 'resources')
 
         return None
 
@@ -107,12 +136,13 @@ class TestSemanticTransformer(TestCase):
         """Tests the ont_dictionary when the file does not exist"""
 
         # move file out of directory
-        os.remove(glob.glob(self.ontology_directory + '/*.pickle')[0])
+        os.remove(os.path.abspath(self.dir_loc2 + '/ontologies/master_ontology_dictionary.pickle'))
 
         # catch when ontology_dictionary file does not exist
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so', 'vo'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
-                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -120,19 +150,16 @@ class TestSemanticTransformer(TestCase):
         """Tests the ont_dictionary when the file is empty"""
 
         # create fake empty file from existing empty file
-        shutil.copy(self.ontology_directory + '/empty_hp_without_imports.owl', self.dir_loc1)
-        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
-        os.rename(self.ontology_directory + '/empty_hp_without_imports.owl',
-                  self.ontology_directory + '/master_ontology_dictionary.pickle')
+        shutil.copy(os.path.join(self.dir_loc2, 'omop2obo_class_relations_empty.txt'),
+                    os.path.join(self.dir_loc2, 'ontologies'))
+        os.rename(os.path.join(self.dir_loc2, 'ontologies/omop2obo_class_relations_empty.txt'),
+                  os.path.join(self.dir_loc2, 'ontologies/master_ontology_dictionary.pickle'))
 
         # catch when ontology_dictionary file is empty
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so', 'vo'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
-                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
-
-        # move original file back
-        shutil.copy(self.dir_loc1 + '/empty_hp_without_imports.owl', self.ontology_directory)
-        os.remove(self.dir_loc1 + '/empty_hp_without_imports.owl')
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -143,7 +170,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=1234,
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                           map_type=self.map_type, ontology_directory=self.ontology_directory,
-                          superclasses=self.superclasses, primary_column='CONCEPT')
+                          superclasses=self.superclasses, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -154,7 +182,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(ValueError, SemanticTransformer, ontology_list=[],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                           map_type=self.map_type, ontology_directory=self.ontology_directory,
-                          superclasses=self.superclasses, primary_column='CONCEPT')
+                          superclasses=self.superclasses, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -165,7 +194,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=1234, domain='condition', map_type=self.map_type,
                           ontology_directory=self.ontology_directory, superclasses=self.superclasses,
-                          primary_column='CONCEPT')
+                          primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -176,7 +206,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.mapping_directory + '/fake+data_path.csv',
                           domain='condition', map_type=self.map_type, ontology_directory=self.ontology_directory,
-                          superclasses=self.superclasses, primary_column='CONCEPT')
+                          superclasses=self.superclasses, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -188,7 +219,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=empty_data_file, domain='condition', map_type=self.map_type,
                           ontology_directory=self.ontology_directory, superclasses=self.superclasses,
-                          primary_column='CONCEPT')
+                          primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -209,7 +241,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                           map_type=self.map_type, ontology_directory=ontology_directory,
-                          superclasses=self.superclasses, primary_column='CONCEPT')
+                          superclasses=self.superclasses, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -222,7 +255,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                           map_type=self.map_type, ontology_directory=ontology_directory,
-                          superclasses=self.superclasses, primary_column='CONCEPT')
+                          superclasses=self.superclasses, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
         os.rmdir(self.dir_loc1 + '/temp_ontologies')
 
         return None
@@ -234,7 +268,8 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(ValueError, SemanticTransformer, ontology_list=['cl'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                           map_type=self.map_type, ontology_directory=self.ontology_directory,
-                          superclasses=self.superclasses, primary_column='CONCEPT')
+                          superclasses=self.superclasses, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -244,7 +279,8 @@ class TestSemanticTransformer(TestCase):
         # test that input is string
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so', 'vo'],
                           omop2obo_data_file=self.omop2obo_data_file, domain=1234,
-                          map_type=self.map_type, ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+                          map_type=self.map_type, ontology_directory=self.ontology_directory,
+                          primary_column='CONCEPT', root_directory=self.dir_loc2)
 
         return None
 
@@ -254,7 +290,8 @@ class TestSemanticTransformer(TestCase):
         # test that input is in list of expected domains
         self.assertRaises(ValueError, SemanticTransformer, ontology_list=['so', 'vo'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='conditions',
-                          map_type=self.map_type, ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+                          map_type=self.map_type, ontology_directory=self.ontology_directory,
+                          primary_column='CONCEPT', root_directory=self.dir_loc2)
 
         return None
 
@@ -265,11 +302,12 @@ class TestSemanticTransformer(TestCase):
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type=123,
                           ontology_directory=self.ontology_directory, superclasses=self.superclasses,
-                          primary_column='CONCEPT')
+                          primary_column='CONCEPT', root_directory=self.dir_loc2)
 
         test_method = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                           domain='condition', ontology_directory=self.ontology_directory,
-                                          superclasses=self.superclasses, primary_column='CONCEPT')
+                                          superclasses=self.superclasses, primary_column='CONCEPT',
+                                          root_directory=self.dir_loc2)
 
         self.assertEqual(test_method.construction_type, 'multi')
 
@@ -288,7 +326,8 @@ class TestSemanticTransformer(TestCase):
         test_method1 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                            domain='condition', map_type='multi',
                                            ontology_directory=self.ontology_directory,
-                                           superclasses=self.superclasses, primary_column='CONCEPT')
+                                           superclasses=self.superclasses, primary_column='CONCEPT',
+                                           root_directory=self.dir_loc2)
         self.assertIsInstance(test_method1.superclass_dict, Dict)
         self.assertEqual(test_method1.superclass_dict, test_dict)
 
@@ -300,7 +339,8 @@ class TestSemanticTransformer(TestCase):
         # check when subclass dict is not None
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
-                          ontology_directory=self.ontology_directory, superclasses=123, primary_column='CONCEPT')
+                          ontology_directory=self.ontology_directory, superclasses=123, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -310,7 +350,8 @@ class TestSemanticTransformer(TestCase):
         # check when construction type is single that the subclass dict is None
         test_method2 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                            domain='condition', map_type='single',
-                                           ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+                                           ontology_directory=self.ontology_directory, primary_column='CONCEPT',
+                                           root_directory=self.dir_loc2)
         self.assertEqual(test_method2.superclass_dict, None)
 
         return None
@@ -321,7 +362,8 @@ class TestSemanticTransformer(TestCase):
         # test when construction type is not "multi"
         test_method = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                           ontology_directory=self.ontology_directory, map_type='single',
-                                          domain='condition', superclasses=self.superclasses)
+                                          domain='condition', superclasses=self.superclasses,
+                                          root_directory=self.dir_loc2)
         self.assertEqual(test_method.multi_class_relations, None)
 
         return None
@@ -333,7 +375,8 @@ class TestSemanticTransformer(TestCase):
         os.remove(self.resources_directory + '/omop2obo_class_relations.txt')
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
-                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -347,7 +390,8 @@ class TestSemanticTransformer(TestCase):
 
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
-                          ontology_directory=self.ontology_directory, primary_column='CONCEPT')
+                          ontology_directory=self.ontology_directory, primary_column='CONCEPT',
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -366,7 +410,8 @@ class TestSemanticTransformer(TestCase):
                           domain='condition',
                           map_type=self.map_type,
                           ontology_directory=self.ontology_directory,
-                          primary_column=1234)
+                          primary_column=1234,
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -375,7 +420,8 @@ class TestSemanticTransformer(TestCase):
 
         test_method = SemanticTransformer(ontology_list=['so', 'vo'],
                                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
-                                          map_type=self.map_type, ontology_directory=self.ontology_directory)
+                                          map_type=self.map_type, ontology_directory=self.ontology_directory,
+                                          root_directory=self.dir_loc2)
         self.assertEqual(test_method.primary_column, 'CONCEPT')
 
         return None
@@ -389,7 +435,8 @@ class TestSemanticTransformer(TestCase):
                           map_type=self.map_type,
                           ontology_directory=self.ontology_directory,
                           primary_column='CONCEPT',
-                          secondary_column=1234)
+                          secondary_column=1234,
+                          root_directory=self.dir_loc2)
 
         return None
 
@@ -399,7 +446,7 @@ class TestSemanticTransformer(TestCase):
         test_method = SemanticTransformer(ontology_list=['so', 'vo'],
                                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                                           map_type=self.map_type, ontology_directory=self.ontology_directory,
-                                          primary_column='CONCEPT')
+                                          primary_column='CONCEPT', root_directory=self.dir_loc2)
         self.assertEqual(test_method.secondary_column, None)
 
         return None
@@ -411,9 +458,9 @@ class TestSemanticTransformer(TestCase):
         test_method2 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                            ontology_directory=self.ontology_directory,
                                            domain='condition', map_type='multi', superclasses=self.superclasses,
-                                           primary_column='CONCEPT')
+                                           primary_column='CONCEPT', root_directory=self.dir_loc2)
 
-        self.assertEqual(test_method2.current_omop2obo, 'resources/mapping_semantics/omop2obo_v0.owl')
+        self.assertEqual(test_method2.current_omop2obo, os.path.abspath(self.resources_directory + '/omop2obo_v0.owl'))
 
         return None
 
@@ -425,7 +472,7 @@ class TestSemanticTransformer(TestCase):
         test_method1 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                            ontology_directory=self.ontology_directory,
                                            domain='condition', map_type='multi', superclasses=self.superclasses,
-                                           primary_column='CONCEPT')
+                                           primary_column='CONCEPT', root_directory=self.dir_loc2)
 
         self.assertEqual(test_method1.current_omop2obo, None)
 
@@ -453,7 +500,7 @@ class TestSemanticTransformer(TestCase):
                                                     omop2obo_data_file=self.omop2obo_data_file,
                                                     domain='condition', map_type='multi',
                                                     ontology_directory=self.ontology_directory,
-                                                    primary_column='CONCEPT')
+                                                    primary_column='CONCEPT', root_directory=self.dir_loc2)
         self.map_transformer2.owltools_location = self.owltools_location
 
         # run the method to load ontology data
@@ -901,12 +948,15 @@ class TestSemanticTransformer(TestCase):
     def tearDown(self):
 
         # need to remove master dictionary which is recreated in setUp
-        files_to_delete = [self.ontology_directory + '/master_ontology_dictionary.pickle',
-                           self.resources_directory + '/omop2obo_v0.owl',
-                           self.resources_directory + '/omop2obo_class_relations.txt']
+        files_to_delete = [self.resources_directory + '/omop2obo_v0.owl',
+                           self.resources_directory + '/omop2obo_class_relations.txt',
+                           os.path.join(self.dir_loc2, '/master_ontology_dictionary.pickle')]
 
         for _ in files_to_delete:
             if os.path.exists(_):
                 os.remove(_)
+
+        # delete temp directories
+        shutil.rmtree(os.path.join(self.dir_loc2, 'ontologies'), ignore_errors=True)
 
         return None
