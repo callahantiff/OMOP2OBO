@@ -21,7 +21,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Set-Up Envrionment
+      - name: Set-Up Environment
         run: |
           rm -rf .coverage
           coverage erase
