@@ -63,6 +63,8 @@ Getting Started
 Install Library
 **********************
 
+*NOT YET AVAILABLE - COMING SOON!!*
+
 This program requires Python version 3.6. To install the library from PyPI, run:
 
 .. code:: shell
