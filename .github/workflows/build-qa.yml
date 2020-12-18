@@ -94,6 +94,9 @@ jobs:
           name: code-coverage-report
           path: coverage.xml
 
+      - name: Complete Reporting Process
+        run: ./coverage-reporter final
+
       - name: Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@master
         with:
