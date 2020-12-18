@@ -21,10 +21,12 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Clean-Up Environment
+      - name: Set-Up Envrionment
         run: |
           rm -rf .coverage
           coverage erase
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
 
       - name: Run Tests
         run: |
@@ -35,37 +37,10 @@ jobs:
           coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_PARALLEL: true
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
-
-      - name: Archive Code Coverage Results
-        uses: actions/upload-artifact@master
-        with:
-          name: code-coverage-report
-          path: |
-            coverage.xml
-            .coverage
-
-  sonarCloudTrigger:
-    needs: build
-    name: Sonar Cloud
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
-
-      - name: Download Code Coverage Results
-        uses: actions/download-artifact@master
-        with:
-          name: code-coverage-report
-          path: |
-            coverage.xml
-            .coverage
 
       - name: Sonar Cloud Scanner
         uses: sonarsource/sonarcloud-github-action@master
@@ -73,77 +48,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  codacyTrigger:
-    needs: build
-    name: Codacy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
-
-      - name: Download Code Coverage Results
-        uses: actions/download-artifact@master
-        with:
-          name: code-coverage-report
-          path: coverage.xml
-
-      - name: Complete Reporting Process
-        run: ./coverage-reporter final
-
-      - name: Codacy Coverage Reporter
+      - name: Codacy
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml
 
-  codeClimateTrigger:
-    needs: build
-    name: Code Climate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
-
-      - name: Set-Up Envrionment
-        run: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-
-      - name: Download Code Coverage Results
-        uses: actions/download-artifact@master
-        with:
-          name: code-coverage-report
-          path: .coverage
-
-      - name: Publish Coverage to Code Climate
+      - name: Code Climate
         uses: paambaati/codeclimate-action@v2.7.5
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageLocations: ${{github.workspace}}/.coverage
 
-  coverallsTrigger:
-    needs: build
-    name: Coveralls
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # disabling shallow clone improves relevancy of reporting
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.6
-
-      - name: Complete Coveralls
-        run: |
-          pip install --upgrade pip coveralls setuptools
-          coveralls --finish
+      - name: Coveralls
+        run: coveralls --finish
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
