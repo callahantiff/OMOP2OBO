@@ -29,6 +29,7 @@ def find_version(*file_paths):
 __version__ = find_version("omop2obo", "__version__.py")
 
 test_deps = [
+    'codacy-coverage',
     'coveralls',
     'mypy',
     'pytest',
