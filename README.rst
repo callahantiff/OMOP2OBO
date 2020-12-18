@@ -2,9 +2,8 @@
 omop2obo
 *****
 
-|github_action| |sonar_quality| |sonar_maintainability| |codacy|
-
-|coveralls| |sonar_coverage| |code_climate_coverage|
+|github_action|
+|sonar_quality| |sonar_maintainability| |codacy| |coveralls| |code_climate_coverage|
 
 |ABRA|
 
