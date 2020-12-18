@@ -34,10 +34,9 @@ jobs:
           coverage report
           coverage xml
           python-codacy-coverage -r coverage.xml
-          coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
@@ -62,6 +61,7 @@ jobs:
           coverageLocations: ${{github.workspace}}/.coverage
 
       - name: Coveralls
-        run: coveralls --finish
+        run: coveralls
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
