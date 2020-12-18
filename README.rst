@@ -288,8 +288,8 @@ Contact
 We’d love to hear from you! To get in touch with us, please `create an issue`_ or `send us an email`_ 💌
 
 
-.. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/CI%20-%20Workflow/badge.svg
-   :target: https://github.com/callahantiff/OMOP2OBO/actions?query=workflow%3A%22CI+-+Workflow%22
+.. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/Domo%20Arigato%20CI%20Roboto/badge.svg
+   :target: https://github.com/callahantiff/OMOP2OBO/actions?query=workflow%3A%22Domo+Arigato+CI+Roboto%22
    :alt: GitHub Action CI-Workflow
 
 .. |sonar_quality| image:: https://sonarcloud.io/api/project_badges/measure?project=callahantiff_OMOP2OBO&metric=alert_status

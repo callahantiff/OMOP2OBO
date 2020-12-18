@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       
       - name: Setup Python
         uses: actions/setup-python@v2
@@ -21,14 +23,14 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Set-Up Environment
+      - name: Prepare Environment
         run: |
           rm -rf .coverage
           coverage erase
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
           chmod +x ./cc-test-reporter
 
-      - name: Run Tests
+      - name: Run Tests and Generate Coverage Results
         run: |
           pytest --cov=omop2obo --cov-report xml:coverage.xml
           coverage report
