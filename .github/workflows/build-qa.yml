@@ -1,6 +1,6 @@
-# WorkFlow Do: install Python dependencies, run tests and linter, and return code coverage  
+# WorkFlow Do: install Python dependencies, run tests, linter, and return code coverage
 name: CI - Workflow
-on: push
+on: [push, pull_request]
 jobs:  
   
   build:
@@ -36,7 +36,7 @@ jobs:
           python-codacy-coverage -r coverage.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
       - name: Linting with Mypy
         run: mypy --strict-optional omop2obo
@@ -64,4 +64,3 @@ jobs:
         run: coveralls
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
