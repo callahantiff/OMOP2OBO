@@ -44,10 +44,6 @@ class TestSemanticTransformer(TestCase):
         self.map_type = 'single'
         self.superclasses = None
 
-        # create temp directory for testing
-        if not os.path.exists(os.path.join(self.dir_loc2, 'ontologies')):
-            os.mkdir(os.path.join(self.dir_loc2, 'ontologies'))
-
         # create test data
         self.test_relations_dict = {
             'conditions': {'relations': {'MONDO-HP': URIRef('http://purl.obolibrary.org/obo/RO_0002200')}},
@@ -70,10 +66,16 @@ class TestSemanticTransformer(TestCase):
         # create timestamp
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
+        # create temp directory for testing
+        if not os.path.exists(os.path.join(self.dir_loc2, 'ontologies')):
+            os.mkdir(os.path.join(self.dir_loc2, 'ontologies'))
+
         # create/move needed data to enable successful class instantiation
         shutil.copy(self.dir_loc2 + '/master_ontology_dictionary.pickle', os.path.join(self.dir_loc2, 'ontologies'))
         shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt', self.resources_directory)
         shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl', self.resources_directory)
+
+        print(glob.glob(self.resources_directory + '/*'))
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
@@ -483,7 +485,6 @@ class TestSemanticTransformer(TestCase):
 
         # run the method to load ontology data
         ont_dictionary = self.map_transformer.loads_ontology_data()
-        print(ont_dictionary)
 
         # check output
         self.assertIsInstance(ont_dictionary, Dict)
