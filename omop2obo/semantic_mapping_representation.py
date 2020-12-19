@@ -176,7 +176,7 @@ class SemanticTransformer(object):
         # ONTOLOGY DICTIONARY
         if self.construction_type == 'multi':
             ont_dictionary = self.root + '/ontologies/master_ontology_dictionary.pickle'
-            print(ont_dictionary)
+            print('In SCRIPT: {}'.format(ont_dictionary))
             if not os.path.exists(ont_dictionary):
                 raise OSError("Can't find master_ontology_dictionary.pickle please re-run the process ontology steps.")
             elif os.stat(ont_dictionary).st_size == 0:
