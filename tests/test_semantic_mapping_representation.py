@@ -75,7 +75,7 @@ class TestSemanticTransformer(TestCase):
         shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt', self.resources_directory)
         shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl', self.resources_directory)
 
-        print(glob.glob(self.resources_directory + '/*'))
+        print(glob.glob(self.dir_loc2 + '/*'))
 
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
