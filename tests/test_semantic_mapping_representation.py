@@ -66,16 +66,16 @@ class TestSemanticTransformer(TestCase):
         # create timestamp
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
-        # create temp directory for testing
-        if not os.path.exists(os.path.join(self.dir_loc2, 'ontologies')):
-            os.mkdir(os.path.join(self.dir_loc2, 'ontologies'))
+        # # create temp directory for testing
+        # if not os.path.exists(os.path.join(self.dir_loc2, 'ontologies')):
+        #     os.mkdir(os.path.join(self.dir_loc2, 'ontologies'))
 
         # create/move needed data to enable successful class instantiation
         shutil.copy(self.dir_loc2 + '/master_ontology_dictionary.pickle', os.path.join(self.dir_loc2, 'ontologies'))
-        shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt',
-                    os.path.join(self.resources_directory + '/omop2obo_class_relations.txt'))
-        shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl',
-                    os.path.join(self.resources_directory + '/omop2obo_v0.owl'))
+        # shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt',
+        #             os.path.join(self.resources_directory + '/omop2obo_class_relations.txt'))
+        # shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl',
+        #             os.path.join(self.resources_directory + '/omop2obo_v0.owl'))
 
         print('PRE-TEST DIRECTORIES:')
         print(glob.glob(self.dir_loc2 + '/*'))
@@ -157,7 +157,7 @@ class TestSemanticTransformer(TestCase):
         """Tests the ont_dictionary when the file is empty"""
 
         # create fake empty file from existing empty file
-        shutil.copy(os.path.join(self.dir_loc2, 'omop2obo_class_relations_empty.txt'),
+        shutil.copy(os.path.join(self.resources_directory, 'omop2obo_class_relations_empty.txt'),
                     os.path.join(self.dir_loc2, 'ontologies'))
         os.rename(os.path.join(self.dir_loc2, 'ontologies/omop2obo_class_relations_empty.txt'),
                   os.path.join(self.dir_loc2, 'ontologies/master_ontology_dictionary.pickle'))
@@ -379,11 +379,15 @@ class TestSemanticTransformer(TestCase):
         """Tests the multi-ontology class relations data when the relations file does not exist."""
 
         # test when relations file does not exist
-        os.remove(self.resources_directory + '/omop2obo_class_relations.txt')
+        os.rename(self.resources_directory + '/omop2obo_class_relations.txt',
+                  self.resources_directory + '/omop2obo_class_relations_perturbed.txt')
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT',
                           root_directory=self.dir_loc2)
+
+        os.rename(self.resources_directory + '/omop2obo_class_relations_perturbed.txt',
+                  self.resources_directory + '/omop2obo_class_relations.txt')
 
         return None
 
@@ -391,7 +395,9 @@ class TestSemanticTransformer(TestCase):
         """Tests the multi-ontology class relations data when relations data is empty."""
 
         # move and rename needed file
-        shutil.copy(self.dir_loc2 + '/omop2obo_class_relations_empty.txt', self.resources_directory)
+        # shutil.copy(self.dir_loc2 + '/omop2obo_class_relations_empty.txt', self.resources_directory)
+        os.rename(self.resources_directory + '/omop2obo_class_relations.txt',
+                  self.resources_directory + '/omop2obo_class_relations_ORG.txt')
         os.rename(self.resources_directory + '/omop2obo_class_relations_empty.txt',
                   self.resources_directory + '/omop2obo_class_relations.txt')
 
@@ -399,6 +405,12 @@ class TestSemanticTransformer(TestCase):
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT',
                           root_directory=self.dir_loc2)
+
+        # add correct file names back
+        os.rename(self.resources_directory + '/omop2obo_class_relations.txt',
+                  self.resources_directory + '/omop2obo_class_relations_empty.txt',)
+        os.rename(self.resources_directory + '/omop2obo_class_relations_ORG.txt',
+                  self.resources_directory + '/omop2obo_class_relations.txt')
 
         return None
 
@@ -475,11 +487,16 @@ class TestSemanticTransformer(TestCase):
         """"Tests the search for existing omop2obo mapping ontology data when it's none."""
 
         # test when there is not an existing omop2obo mapping file present
-        os.remove(self.resources_directory + '/omop2obo_v0.owl')
+        os.rename(self.resources_directory + '/omop2obo_v0.owl',
+                  self.resources_directory + '/hidden_file.owl')
         test_method1 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                            ontology_directory=self.ontology_directory,
                                            domain='condition', map_type='multi', superclasses=self.superclasses,
                                            primary_column='CONCEPT', root_directory=self.dir_loc2)
+
+        # put the file back
+        os.rename(self.resources_directory + '/hidden_file.owl',
+                  self.resources_directory + '/omop2obo_v0.owl')
 
         self.assertEqual(test_method1.current_omop2obo, None)
 
@@ -954,15 +971,17 @@ class TestSemanticTransformer(TestCase):
     def tearDown(self):
 
         # need to remove master dictionary which is recreated in setUp
-        files_to_delete = [self.resources_directory + '/omop2obo_v0.owl',
-                           self.resources_directory + '/omop2obo_class_relations.txt',
-                           os.path.join(self.dir_loc2, '/master_ontology_dictionary.pickle')]
+        # files_to_delete = [self.resources_directory + '/omop2obo_v0.owl',
+        #                    self.resources_directory + '/omop2obo_class_relations.txt',
+        #                    os.path.join(self.dir_loc2, '/master_ontology_dictionary.pickle')]
+
+        files_to_delete = [os.path.join(self.dir_loc2, '/master_ontology_dictionary.pickle')]
 
         for _ in files_to_delete:
             if os.path.exists(_):
                 os.remove(_)
 
         # delete temp directories
-        shutil.rmtree(os.path.join(self.dir_loc2, 'ontologies'), ignore_errors=True)
+        # shutil.rmtree(os.path.join(self.dir_loc2, 'ontologies'), ignore_errors=True)
 
         return None
