@@ -6,7 +6,6 @@ import os
 import os.path
 import pandas as pd
 import regex
-import shutil
 
 from datetime import date, datetime
 from rdflib import BNode, Graph, Literal, URIRef
@@ -71,7 +70,7 @@ class TestSemanticTransformer(TestCase):
         #     os.mkdir(os.path.join(self.dir_loc2, 'ontologies'))
 
         # create/move needed data to enable successful class instantiation
-        shutil.copy(self.dir_loc2 + '/master_ontology_dictionary.pickle', os.path.join(self.dir_loc2, 'ontologies'))
+        # shutil.copy(self.dir_loc2 + '/master_ontology_dictionary.pickle', os.path.join(self.dir_loc2, 'ontologies'))
         # shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt',
         #             os.path.join(self.resources_directory + '/omop2obo_class_relations.txt'))
         # shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl',
@@ -88,8 +87,6 @@ class TestSemanticTransformer(TestCase):
                                                    ontology_directory=self.ontology_directory,
                                                    primary_column='CONCEPT',
                                                    root_directory=self.dir_loc2)
-
-        print('WRITE LOCATION: {}'.format(self.map_transformer.write_location))
 
         self.map_transformer_multi = SemanticTransformer(ontology_list=['so', 'vo'],
                                                          omop2obo_data_file=self.omop2obo_data_file,
@@ -142,8 +139,9 @@ class TestSemanticTransformer(TestCase):
     def test_ont_dictionary_not_exist(self):
         """Tests the ont_dictionary when the file does not exist"""
 
-        # move file out of directory
-        os.remove(os.path.abspath(self.dir_loc2 + '/ontologies/master_ontology_dictionary.pickle'))
+        # rename files to enable function testing
+        file_loc = self.dir_loc2 + '/ontologies/'
+        os.rename(file_loc + 'master_ontology_dictionary.pickle', file_loc + 'master_ontology_dictionary_ORG.pickle')
 
         # catch when ontology_dictionary file does not exist
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so', 'vo'],
@@ -151,22 +149,29 @@ class TestSemanticTransformer(TestCase):
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT',
                           root_directory=self.dir_loc2)
 
+        # fix file names
+        os.rename(file_loc + 'master_ontology_dictionary_ORG.pickle', file_loc + 'master_ontology_dictionary.pickle')
+
         return None
 
     def test_ont_dictionary_empty_file(self):
         """Tests the ont_dictionary when the file is empty"""
 
-        # create fake empty file from existing empty file
-        shutil.copy(os.path.join(self.resources_directory, 'omop2obo_class_relations_empty.txt'),
-                    os.path.join(self.dir_loc2, 'ontologies'))
-        os.rename(os.path.join(self.dir_loc2, 'ontologies/omop2obo_class_relations_empty.txt'),
-                  os.path.join(self.dir_loc2, 'ontologies/master_ontology_dictionary.pickle'))
+        # rename files to enable function testing
+        file_loc = self.dir_loc2 + '/ontologies/'
+        os.rename(file_loc + 'master_ontology_dictionary.pickle', file_loc + 'master_ontology_dictionary_ORG.pickle')
+
+        # create empty file
+        with open(file_loc + 'master_ontology_dictionary.pickle', mode='a'): pass
 
         # catch when ontology_dictionary file is empty
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so', 'vo'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT',
                           root_directory=self.dir_loc2)
+
+        # fix file names
+        os.rename(file_loc + 'master_ontology_dictionary_ORG.pickle', file_loc + 'master_ontology_dictionary.pickle')
 
         return None
 
@@ -379,38 +384,38 @@ class TestSemanticTransformer(TestCase):
         """Tests the multi-ontology class relations data when the relations file does not exist."""
 
         # test when relations file does not exist
-        os.rename(self.resources_directory + '/omop2obo_class_relations.txt',
-                  self.resources_directory + '/omop2obo_class_relations_perturbed.txt')
+        file_loc = self.resources_directory
+        os.rename(file_loc + '/omop2obo_class_relations.txt', file_loc + '/omop2obo_class_relations_ORG.txt')
+
+        # run tests
         self.assertRaises(OSError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT',
                           root_directory=self.dir_loc2)
 
-        os.rename(self.resources_directory + '/omop2obo_class_relations_perturbed.txt',
-                  self.resources_directory + '/omop2obo_class_relations.txt')
+        # fix file back to original name
+        os.rename(file_loc + '/omop2obo_class_relations_ORG.txt', file_loc + '/omop2obo_class_relations.txt')
 
         return None
 
     def test_input_ontology_relations_empty_relations(self):
         """Tests the multi-ontology class relations data when relations data is empty."""
 
-        # move and rename needed file
-        # shutil.copy(self.dir_loc2 + '/omop2obo_class_relations_empty.txt', self.resources_directory)
-        os.rename(self.resources_directory + '/omop2obo_class_relations.txt',
-                  self.resources_directory + '/omop2obo_class_relations_ORG.txt')
-        os.rename(self.resources_directory + '/omop2obo_class_relations_empty.txt',
-                  self.resources_directory + '/omop2obo_class_relations.txt')
+        # rename files in order to run tests
+        file_loc = self.resources_directory
+        os.rename(file_loc + '/omop2obo_class_relations.txt', file_loc + '/omop2obo_class_relations_ORG.txt')
 
+        # create empty file
+        with open(file_loc + '/omop2obo_class_relations.txt', mode='a'): pass
+
+        # run tests
         self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition', map_type='multi',
                           ontology_directory=self.ontology_directory, primary_column='CONCEPT',
                           root_directory=self.dir_loc2)
 
         # add correct file names back
-        os.rename(self.resources_directory + '/omop2obo_class_relations.txt',
-                  self.resources_directory + '/omop2obo_class_relations_empty.txt',)
-        os.rename(self.resources_directory + '/omop2obo_class_relations_ORG.txt',
-                  self.resources_directory + '/omop2obo_class_relations.txt')
+        os.rename(file_loc + '/omop2obo_class_relations_ORG.txt', file_loc + '/omop2obo_class_relations.txt')
 
         return None
 
@@ -487,18 +492,17 @@ class TestSemanticTransformer(TestCase):
         """"Tests the search for existing omop2obo mapping ontology data when it's none."""
 
         # test when there is not an existing omop2obo mapping file present
-        os.rename(self.resources_directory + '/omop2obo_v0.owl',
-                  self.resources_directory + '/hidden_file.owl')
+        os.rename(self.resources_directory + '/omop2obo_v0.owl', self.resources_directory + '/hidden_file.owl')
+
+        # run test
         test_method1 = SemanticTransformer(ontology_list=['so'], omop2obo_data_file=self.omop2obo_data_file,
                                            ontology_directory=self.ontology_directory,
                                            domain='condition', map_type='multi', superclasses=self.superclasses,
                                            primary_column='CONCEPT', root_directory=self.dir_loc2)
-
-        # put the file back
-        os.rename(self.resources_directory + '/hidden_file.owl',
-                  self.resources_directory + '/omop2obo_v0.owl')
-
         self.assertEqual(test_method1.current_omop2obo, None)
+
+        # rename file to original name
+        os.rename(self.resources_directory + '/hidden_file.owl', self.resources_directory + '/omop2obo_v0.owl')
 
         return None
 
@@ -975,11 +979,11 @@ class TestSemanticTransformer(TestCase):
         #                    self.resources_directory + '/omop2obo_class_relations.txt',
         #                    os.path.join(self.dir_loc2, '/master_ontology_dictionary.pickle')]
 
-        files_to_delete = [os.path.join(self.dir_loc2, '/master_ontology_dictionary.pickle')]
+        # files_to_delete = [os.path.join(self.dir_loc2, 'ontologies/master_ontology_dictionary.pickle')]
 
-        for _ in files_to_delete:
-            if os.path.exists(_):
-                os.remove(_)
+        # for _ in files_to_delete:
+        #     if os.path.exists(_):
+        #         os.remove(_)
 
         # delete temp directories
         # shutil.rmtree(os.path.join(self.dir_loc2, 'ontologies'), ignore_errors=True)
