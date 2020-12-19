@@ -33,9 +33,9 @@ class SemanticTransformer(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, ontology_list: List, omop2obo_data_file: str, domain: str, map_type: str = 'multi',
-                 ontology_directory: str = Optional[None], superclasses: Optional[Dict] = None,
+                 ontology_directory: Optional[str] = None, superclasses: Optional[Dict] = None,
                  primary_column: str = 'CONCEPT', secondary_column: Optional[str] = None,
-                 root_directory: str = None) -> None:
+                 root_directory: Optional[str] = None) -> None:
 
         """This class is designed to facilitate the transformation of OMOP2OBO mappings into semantic
         representations. To do this, the class includes several methods that assist with processing different aspects
@@ -615,62 +615,62 @@ class SingleOntologyConstruction(SemanticTransformer):
         return None
 
 
-class MultipleOntologyConstruction(SemanticTransformer):
-    """The Multiple Ontology Construction workflow is designed to create semantic definitions that span multiple
-    ontologies. This approach is the default method for creating semantic definitions within the OMOP2OBO framework."""
-
-    def gets_class_construction_type(self) -> str:
-        """"A string representing the type of knowledge graph being built."""
-
-        return 'Multiple Ontology Construction'
-
-    def constructs_multi_ontology_definitions(self, class_dict: Dict):
-        """
-
-        Args:
-            class_dict: A dict
-
-        - creates multiple ontology definitions
-        - if hpo == mondo then use equivalence class
-        - checks for CHEBI role vs entity
-        - checks for lab test allergen vs. antigen vs. neither
-
-        Return:
-
-        """
-
-        # pull dbxrefs from the ont dictionary to check for equiv or exact matches to other ontologies. This is
-        # particularly important for HP-MONDO mappings
-        # self.ontology_metadata
-
-        # obtain ontology ancestors -- only done for CHEBI
-        # if ont.upper() == 'CHEBI':
-        #     roots = {x: gets_class_ancestors(self.ontology_data_dict[ont], [x]) for x in uri.split(' | ')}
-        # else:
-        #     root_nodes = None
-
-        # CHEBI allergen vs. antigen
-
-        return None
-
-    def adds_secondary_data(self):
-        """
-        - if ingredient and drug are the same then set them as equivalent classes
-
-        :return:
-        """
-
-        return None
-
-    def adds_mapping_annotations(self):
-        """
-        - adds mapping categories, evidence
-        - adds synonyms (should work for primary and secondary data)
-
-        :return:
-        """
-
-        return None
+# class MultipleOntologyConstruction(SemanticTransformer):
+#     """The Multiple Ontology Construction workflow is designed to create semantic definitions that span multiple
+#     ontologies. This approach is the default method for creating semantic definitions within the OMOP2OBO framework."""
+#
+#     def gets_class_construction_type(self) -> str:
+#         """"A string representing the type of knowledge graph being built."""
+#
+#         return 'Multiple Ontology Construction'
+#
+#     def constructs_multi_ontology_definitions(self, class_dict: Dict):
+#         """
+#
+#         Args:
+#             class_dict: A dict
+#
+#         - creates multiple ontology definitions
+#         - if hpo == mondo then use equivalence class
+#         - checks for CHEBI role vs entity
+#         - checks for lab test allergen vs. antigen vs. neither
+#
+#         Return:
+#
+#         """
+#
+#         # pull dbxrefs from the ont dictionary to check for equiv or exact matches to other ontologies. This is
+#         # particularly important for HP-MONDO mappings
+#         # self.ontology_metadata
+#
+#         # obtain ontology ancestors -- only done for CHEBI
+#         # if ont.upper() == 'CHEBI':
+#         #     roots = {x: gets_class_ancestors(self.ontology_data_dict[ont], [x]) for x in uri.split(' | ')}
+#         # else:
+#         #     root_nodes = None
+#
+#         # CHEBI allergen vs. antigen
+#
+#         return None
+#
+#     def adds_secondary_data(self):
+#         """
+#         - if ingredient and drug are the same then set them as equivalent classes
+#
+#         :return:
+#         """
+#
+#         return None
+#
+#     def adds_mapping_annotations(self):
+#         """
+#         - adds mapping categories, evidence
+#         - adds synonyms (should work for primary and secondary data)
+#
+#         :return:
+#         """
+#
+#         return None
 
     # def transforms_mappings(self):
     #     """Method converts the clinical mappings, which are read in and stored as a Pandas DataFrame into a semantic
