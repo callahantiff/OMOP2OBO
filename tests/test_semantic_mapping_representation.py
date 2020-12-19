@@ -72,9 +72,8 @@ class TestSemanticTransformer(TestCase):
 
         # create/move needed data to enable successful class instantiation
         shutil.copy(self.dir_loc2 + '/master_ontology_dictionary.pickle', os.path.join(self.dir_loc2, 'ontologies'))
-        shutil.copyfile(self.dir_loc2 + '/omop2obo_class_relations.txt',
-                        self.resources_directory + '/omop2obo_class_relations.txt')
-        shutil.copyfile(self.dir_loc2 + '/omop2obo_v0.owl', self.resources_directory + '/omop2obo_v0.owl')
+        shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt', self.resources_directory)
+        shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl', self.resources_directory)
 
         print('PRE-TEST DIRECTORIES:')
         print(glob.glob(self.dir_loc2 + '/*'))
