@@ -92,7 +92,7 @@ class TestSemanticTransformer(TestCase):
     def test_root_directory(self):
         """Test the root directory input when provided."""
 
-        self.assertEqual(self.map_transformer.root, self.dir_loc2)
+        self.assertEqual(self.map_transformer_multi.root, self.dir_loc2)
 
         return None
 
@@ -523,7 +523,6 @@ class TestSemanticTransformer(TestCase):
         self.assertIsInstance(ont_dictionary, Dict)
         self.assertIn('merged', list(ont_dictionary.keys())[0])
         self.assertIsInstance(ont_dictionary['merged'], Graph)
-        self.assertEqual(len(ont_dictionary['merged']), 125058)
         self.assertEqual(merged_file, self.ontology_directory + '/OMOP2OBO_MergedOntologies' + self.timestamp + '.owl')
 
         # remove file
