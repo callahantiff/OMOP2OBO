@@ -99,15 +99,6 @@ class TestSemanticTransformer(TestCase):
     def test_root_directory_none(self):
         """Test the root directory input when not provided."""
 
-        # # initialize method with no root_directory argument
-        # self.map_transformer_test = SemanticTransformer(ontology_list=['so', 'vo'],
-        #                                                 omop2obo_data_file=self.omop2obo_data_file,
-        #                                                 domain='condition',
-        #                                                 map_type='multi',
-        #                                                 ontology_directory=self.ontology_directory,
-        #                                                 primary_column='CONCEPT')
-
-        # test assignment
         self.assertEqual(self.map_transformer.root, 'resources')
 
         return None
