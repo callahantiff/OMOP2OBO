@@ -153,7 +153,6 @@ class SemanticTransformer(object):
         # RO RELATIONS FOR MULTI-ONTOLOGY CLASSES
         if self.construction_type == 'multi':
             rel_data_loc = self.write_location + '/omop2obo_class_relations.txt'
-            print('In SCRIPT: {}'.format(rel_data_loc))
             if not os.path.exists(rel_data_loc):
                 raise OSError('The {} file does not exist!'.format(rel_data_loc))
             elif os.stat(rel_data_loc).st_size == 0:

@@ -65,28 +65,13 @@ class TestSemanticTransformer(TestCase):
         # create timestamp
         self.timestamp = '_' + datetime.strftime(datetime.strptime(str(date.today()), '%Y-%m-%d'), '%d%b%Y').upper()
 
-        # # create temp directory for testing
-        # if not os.path.exists(os.path.join(self.dir_loc2, 'ontologies')):
-        #     os.mkdir(os.path.join(self.dir_loc2, 'ontologies'))
-
-        # create/move needed data to enable successful class instantiation
-        # shutil.copy(self.dir_loc2 + '/master_ontology_dictionary.pickle', os.path.join(self.dir_loc2, 'ontologies'))
-        # shutil.copy(self.dir_loc2 + '/omop2obo_class_relations.txt',
-        #             os.path.join(self.resources_directory + '/omop2obo_class_relations.txt'))
-        # shutil.copy(self.dir_loc2 + '/omop2obo_v0.owl',
-        #             os.path.join(self.resources_directory + '/omop2obo_v0.owl'))
-
-        print('PRE-TEST DIRECTORIES:')
-        print(glob.glob(self.dir_loc2 + '/*'))
-
         # instantiate semantic transformation class
         self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
                                                    omop2obo_data_file=self.omop2obo_data_file,
                                                    domain='condition',
                                                    map_type=self.map_type,
                                                    ontology_directory=self.ontology_directory,
-                                                   primary_column='CONCEPT',
-                                                   root_directory=self.dir_loc2)
+                                                   primary_column='CONCEPT')
 
         self.map_transformer_multi = SemanticTransformer(ontology_list=['so', 'vo'],
                                                          omop2obo_data_file=self.omop2obo_data_file,
@@ -114,13 +99,13 @@ class TestSemanticTransformer(TestCase):
     def test_root_directory_none(self):
         """Test the root directory input when not provided."""
 
-        # initialize method with no root_directory argument
-        self.map_transformer = SemanticTransformer(ontology_list=['so', 'vo'],
-                                                   omop2obo_data_file=self.omop2obo_data_file,
-                                                   domain='condition',
-                                                   map_type='multi',
-                                                   ontology_directory=self.ontology_directory,
-                                                   primary_column='CONCEPT')
+        # # initialize method with no root_directory argument
+        # self.map_transformer_test = SemanticTransformer(ontology_list=['so', 'vo'],
+        #                                                 omop2obo_data_file=self.omop2obo_data_file,
+        #                                                 domain='condition',
+        #                                                 map_type='multi',
+        #                                                 ontology_directory=self.ontology_directory,
+        #                                                 primary_column='CONCEPT')
 
         # test assignment
         self.assertEqual(self.map_transformer.root, 'resources')
@@ -538,7 +523,7 @@ class TestSemanticTransformer(TestCase):
         self.assertIsInstance(ont_dictionary, Dict)
         self.assertIn('merged', list(ont_dictionary.keys())[0])
         self.assertIsInstance(ont_dictionary['merged'], Graph)
-        self.assertEqual(len(ont_dictionary['merged']), 125090)
+        self.assertEqual(len(ont_dictionary['merged']), 125058)
         self.assertEqual(merged_file, self.ontology_directory + '/OMOP2OBO_MergedOntologies' + self.timestamp + '.owl')
 
         # remove file
@@ -969,23 +954,5 @@ class TestSemanticTransformer(TestCase):
         # clean up environment
         os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_VO_*.owl')[0])
         os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_SO_*.owl')[0])
-
-        return None
-
-    def tearDown(self):
-
-        # need to remove master dictionary which is recreated in setUp
-        # files_to_delete = [self.resources_directory + '/omop2obo_v0.owl',
-        #                    self.resources_directory + '/omop2obo_class_relations.txt',
-        #                    os.path.join(self.dir_loc2, '/master_ontology_dictionary.pickle')]
-
-        # files_to_delete = [os.path.join(self.dir_loc2, 'ontologies/master_ontology_dictionary.pickle')]
-
-        # for _ in files_to_delete:
-        #     if os.path.exists(_):
-        #         os.remove(_)
-
-        # delete temp directories
-        # shutil.rmtree(os.path.join(self.dir_loc2, 'ontologies'), ignore_errors=True)
 
         return None
