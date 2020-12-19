@@ -153,6 +153,7 @@ class SemanticTransformer(object):
         # RO RELATIONS FOR MULTI-ONTOLOGY CLASSES
         if self.construction_type == 'multi':
             rel_data_loc = self.write_location + '/omop2obo_class_relations.txt'
+            print('In SCRIPT: {}'.format(rel_data_loc))
             if not os.path.exists(rel_data_loc):
                 raise OSError('The {} file does not exist!'.format(rel_data_loc))
             elif os.stat(rel_data_loc).st_size == 0:
@@ -176,7 +177,6 @@ class SemanticTransformer(object):
         # ONTOLOGY DICTIONARY
         if self.construction_type == 'multi':
             ont_dictionary = self.root + '/ontologies/master_ontology_dictionary.pickle'
-            print('In SCRIPT: {}'.format(ont_dictionary))
             if not os.path.exists(ont_dictionary):
                 raise OSError("Can't find master_ontology_dictionary.pickle please re-run the process ontology steps.")
             elif os.stat(ont_dictionary).st_size == 0:
