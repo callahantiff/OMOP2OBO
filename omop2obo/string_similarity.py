@@ -321,8 +321,9 @@ class SimilarStringFinder(object):
         # STEP 2 - CREATE TF-IDF MATRIX
         print('\n*** Building TF-IDF Matrix')
         corpus = preprocessed_clinical_data + [x for y in [v for k, v in ont_data_dict.items()] for x in y]
-        tf = TfidfVectorizer(tokenizer=lambda x: x, preprocessor=lambda x: x, use_idf=True, norm='l2', lowercase=False,
-                             ngram_range=(1, 3))
+        tf = TfidfVectorizer(tokenizer=lambda x: x, preprocessor=lambda x: x,
+                             use_idf=True, norm='l2', lowercase=False, ngram_range=(1, 3))
+
         self.matrix = tf.fit_transform([x[1] for x in corpus])
 
         # STEP 3 - Calculating Cosine Similarity
