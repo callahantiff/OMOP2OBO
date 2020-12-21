@@ -36,9 +36,10 @@ from typing import Dict, List, Optional, Set, Tuple, Union
 obo = Namespace('http://purl.obolibrary.org/obo/')
 oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
 schema = Namespace('http://www.w3.org/2001/XMLSchema#')
+owltools = './omop2obo/libs/owltools'
 
 
-def gets_ontology_statistics(file_location: str, owltools_location: str = './omop2obo/libs/owltools') -> None:
+def gets_ontology_statistics(file_location: str, owltools_location: str = owltools) -> None:
     """Uses the OWL Tools API to generate summary statistics (i.e. counts of axioms, classes, object properties, and
     individuals).
 
@@ -75,7 +76,7 @@ def gets_ontology_statistics(file_location: str, owltools_location: str = './omo
 
 
 def merges_ontologies(ontology_files: List[str], write_location: str, merged_ont_kg: str,
-                      owltools_location: str = './omop2obo/libs/owltools') -> Optional[Graph]:
+                      owltools_location: str = owltools) -> Optional[Graph]:
     """Using the OWLTools API, each ontology listed in in the ontologies attribute is recursively merged with into a
     master merged ontology file and saved locally to the provided file path via the merged_ontology attribute. The
     function assumes that the file is written to the directory specified by the write_location attribute.
@@ -111,7 +112,7 @@ def merges_ontologies(ontology_files: List[str], write_location: str, merged_ont
 
 
 def ontology_file_formatter(write_location: str, full_kg: str,
-                            owltools_location: str = './omop2obo/libs/owltools') -> None:
+                            owltools_location: str = owltools) -> None:
     """Reformat an .owl file to be consistent with the formatting used by the OWL API. To do this, an ontology
     referenced by graph_location is read in and output to the same location via the OWLTools API.
 
@@ -163,7 +164,7 @@ def cleans_ontology(ontology: Graph, onts: List) -> Graph:
 
     print('Cleaning Ontology')
     ont_updated = [x if x != 'ext' else 'uberon' for x in onts]
-    ont_prefix = ['http://purl.obolibrary.org/obo/' + ont.upper() for ont in ont_updated]
+    ont_prefix = [str(obo) + ont.upper() for ont in ont_updated]
 
     # get deprecated classes and triples
     dep_cls = [x[0] for x in list(ontology.triples((None, OWL.deprecated, Literal('true', datatype=schema.boolean))))]
@@ -375,7 +376,7 @@ def gets_class_ancestors(graph: Graph, class_uris: List[Union[URIRef, str]], cla
     class_list = [] if class_list is None else class_list
 
     # check class uris are formatted correctly
-    class_uris = [x if isinstance(x, URIRef) else URIRef('http://purl.obolibrary.org/obo/' + x) for x in class_uris]
+    class_uris = [x if isinstance(x, URIRef) else URIRef(obo + x) for x in class_uris]
 
     # gets ancestors
     ancestor_classes = [j for k in [list(graph.objects(x, RDFS.subClassOf)) for x in class_uris] for j in k]
