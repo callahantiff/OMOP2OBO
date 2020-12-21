@@ -56,7 +56,7 @@ class SemanticTransformer(object):
             domain: A string specifying the clinical domain. Must be "condition", "measurement", or "drug".
             map_type: A string indicating whether to build single (i.e. 'single') or multi-ontology (i.e. 'multi')
                 classes. The default type is "multi".
-           superclasses: A dictionary where keys are clinical domains and values are either a dictionary or a URIRef
+            superclasses: A dictionary where keys are clinical domains and values are either a dictionary or a URIRef
                 object. For example:
                     {'condition': {'phenotype': URIRef('http://purl.obolibrary.org/obo/HP_0000118'),
                                     'disease': URIRef('http://purl.obolibrary.org/obo/MONDO_0000001')},
@@ -68,8 +68,13 @@ class SemanticTransformer(object):
                 the secondary and primary columns. In this example, the primary columns are used for ingredient data
                 and the secondary columns are used for the drugs that map to each ingredient.
 
-        Returns:
-            None.
+        Raises:
+            TypeError: if ontology_list, omop2obo_data_file, domain, ontology_directory, map_type, superclasses,
+                master_ontology_dictionary, primary_column, seconadry_column are not type str
+            ValueError: if ontology_list, omop2obo_data_file, ontology_directory, omop2obo_class_relations is empty
+            ValueError: if domain is not a specific string
+            OSError: if omop2obo_data_file, ontology_directory, omop2obo_class_relations, master_ontology_dictionary
+                do not exist
         """
 
         # CREATE CLASS ATTRIBUTES
@@ -98,7 +103,7 @@ class SemanticTransformer(object):
         elif not os.path.exists(omop2obo_data_file):
             raise OSError('The {} file does not exist!'.format(omop2obo_data_file))
         elif os.stat(omop2obo_data_file).st_size == 0:
-            raise TypeError('Input file: {} is empty'.format(omop2obo_data_file))
+            raise ValueError('Input file: {} is empty'.format(omop2obo_data_file))
         else:
             print('Loading Mapping Data')
             self.omop2obo_data = pd.read_excel(omop2obo_data_file, header=0, engine='openpyxl')
@@ -118,7 +123,7 @@ class SemanticTransformer(object):
         if not os.path.exists(onts):
             raise OSError("Can't find 'ontologies/' directory, this directory is a required input")
         elif len(ont_data) == 0:
-            raise TypeError('The ontologies directory is empty')
+            raise ValueError('The ontologies directory is empty')
         else:
             # check for ontology data -- adds check for 'ext' to handle the fact that the uberon file is called 'ext'
             ont_list = [y.lower() if y.lower() != 'uberon' else 'ext' for y in self.ontologies]
@@ -189,18 +194,14 @@ class SemanticTransformer(object):
 
         # MAPPING COLUMNS
         if primary_column != 'CONCEPT':
-            if not isinstance(primary_column, str):
-                raise TypeError('primary_column must be type string')
-            else:
-                self.primary_column: str = primary_column.upper()
+            if not isinstance(primary_column, str): raise TypeError('primary_column must be type string')
+            else:  self.primary_column: str = primary_column.upper()
         else:
             self.primary_column = primary_column.upper()
 
         if secondary_column is not None:
-            if not isinstance(secondary_column, str):
-                raise TypeError('secondary_column must be type string')
-            else:
-                self.secondary_column: Optional[str] = secondary_column.upper()
+            if not isinstance(secondary_column, str): raise TypeError('secondary_column must be type string')
+            else: self.secondary_column: Optional[str] = secondary_column.upper()
         else:
             self.secondary_column = secondary_column
 

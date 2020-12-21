@@ -204,7 +204,7 @@ class TestSemanticTransformer(TestCase):
 
         # catch when omo2obo data file input points to an empty file
         empty_data_file = self.ontology_directory + '/empty_hp_without_imports.owl'
-        self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
+        self.assertRaises(ValueError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=empty_data_file, domain='condition', map_type=self.map_type,
                           ontology_directory=self.ontology_directory, superclasses=self.superclasses,
                           primary_column='CONCEPT',
@@ -237,10 +237,10 @@ class TestSemanticTransformer(TestCase):
     def test_input_ontology_directory_bad_directory(self):
         """Tests the ontology directory input parameter when the directory is incorrect."""
 
-        # catch when ontology_directory is empty b/c there are no ontology data files
+        # catch when ontology_directory is empty b/c there are no ontology data files at all
         os.mkdir(self.dir_loc1 + '/temp_ontologies')
         ontology_directory = self.dir_loc1 + '/temp_ontologies'
-        self.assertRaises(TypeError, SemanticTransformer, ontology_list=['so'],
+        self.assertRaises(ValueError, SemanticTransformer, ontology_list=['so'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                           map_type=self.map_type, ontology_directory=ontology_directory,
                           superclasses=self.superclasses, primary_column='CONCEPT',
@@ -252,7 +252,7 @@ class TestSemanticTransformer(TestCase):
     def test_input_ontology_directory_empty_directory(self):
         """Tests the ontology directory input parameter when directory is empty."""
 
-        # catch when ontology_directory is empty b/c there are no ontology data files from
+        # catch when ontology_directory is empty b/c there are no ontology data files of the correct type
         self.assertRaises(ValueError, SemanticTransformer, ontology_list=['cl'],
                           omop2obo_data_file=self.omop2obo_data_file, domain='condition',
                           map_type=self.map_type, ontology_directory=self.ontology_directory,
@@ -944,5 +944,13 @@ class TestSemanticTransformer(TestCase):
         # clean up environment
         os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_VO_*.owl')[0])
         os.remove(glob.glob(self.map_transformer.write_location + '/*_SemanticRepresentation_SO_*.owl')[0])
+
+        return None
+
+    def tearDown(self):
+
+        # remove temp directory
+        if os.path.exists(self.dir_loc1 + '/temp_ontologies'):
+            os.rmdir(self.dir_loc1 + '/temp_ontologies')
 
         return None
