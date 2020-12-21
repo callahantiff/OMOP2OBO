@@ -18,7 +18,7 @@ class OntologyInfoExtractor(object):
     """Class creates an RDF graph from an OWL file and then performs queries to return DbXRefs, synonyms, and labels.
 
     Attributes:
-        graph: An rdflib graph object.
+        graph: An RDFLib graph object.
         ont_dictionary: A dictionary, where keys are a string aliasing an ontology and values are a string pointing
             the local location where the ontology was downloaded.
         ont_directory: A string containing the filepath to the ontology data directory.
@@ -41,8 +41,8 @@ class OntologyInfoExtractor(object):
             self.ont_directory = ontology_directory
 
     def get_ontology_information(self, ont_id: str) -> Dict:
-        """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all
-        non-deprecated ontology classes.
+        """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all non-deprecated
+        ontology classes.
 
         Args:
             ont_id: A string containing an ontology namespace.
