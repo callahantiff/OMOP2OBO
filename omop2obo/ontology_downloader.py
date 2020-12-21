@@ -17,7 +17,7 @@ from omop2obo.utils import gets_ontology_statistics
 
 
 class OntologyDownloader(object):
-    """Download a list of ontologies listed in a text file.
+    """Download a list of ontologies specified in a text file ('resources/ontology_source_list.txt').
 
     Attributes:
             data_path: a string containing a file path/name to a txt file storing URLs of sources to download.
