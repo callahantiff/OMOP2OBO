@@ -4,7 +4,9 @@ omop2obo
 
 |github_action|
 
-|sonar_quality| |sonar_maintainability| |codacy| |coveralls| |code_climate_coverage|
+|sonar_quality| |sonar_maintainability| |code_climate_maintainability| |codacy|  
+
+|coveralls| |sonar_coverage| |code_climate_coverage|
 
 |ABRA|
 
