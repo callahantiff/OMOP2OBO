@@ -31,6 +31,7 @@ __version__ = find_version("omop2obo", "__version__.py")
 test_deps = [
     'codacy-coverage',
     'coveralls',
+    'mock',
     'mypy',
     'pytest',
     'pytest-cov',
