@@ -20,8 +20,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e .[test]
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
 
       - name: Prepare Environment
         run: |
@@ -59,8 +57,6 @@ jobs:
         uses: paambaati/codeclimate-action@v2.7.5
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        with:
-          coverageLocations: ${{github.workspace}}/.coverage
 
       - name: Coveralls
         run: coveralls
