@@ -152,7 +152,6 @@ class TestOntologyInfoExtractor(TestCase):
         # read back in data
         with open(self.ontology_directory + '/master_ontology_dictionary.pickle', 'rb') as handle:
             pickled_dict = pickle.load(handle)
-        handle.close()
 
         # make sure that output is correct
         self.assertTrue(len(pickled_dict.keys()) == 1)

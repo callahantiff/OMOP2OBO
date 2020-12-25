@@ -34,7 +34,6 @@ class TestSimilarStringFinder(TestCase):
         # create some fake ontology data
         with open(self.dir_loc + '/condition_occurrence_ontology_dictionary.pickle', 'rb') as handle:
             self.ont_dict = pickle.load(handle)
-        handle.close()
 
         # link to fake clinical data
         self.clinical_file = self.clinical_directory + '/sample_omop_condition_occurrence_data2.csv'

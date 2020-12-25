@@ -175,7 +175,6 @@ class SemanticTransformer(object):
                         else:
                             self.multi_class_relations[row[0]] = {'relations': {}}
                             self.multi_class_relations[row[0]]['relations'] = {key: URIRef(row[2])}
-                f.close()
         else:
             self.multi_class_relations = None
 
@@ -189,7 +188,6 @@ class SemanticTransformer(object):
             else:
                 with open(ont_dictionary, 'rb') as handle:
                     self.ontology_metadata: Optional[Dict] = pickle.load(handle)
-                handle.close()
         else:
             self.ontology_metadata = None
 

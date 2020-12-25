@@ -69,7 +69,6 @@ class OntologyDownloader(object):
                     raise ValueError('ERROR: input file: {} has incorrectly formatted data ('
                                      'i.e. non-comma-delimited rows) and/or is not of the correct type (i.e. '
                                      '.owl or .obo)'.format(self.data_path))
-        file_name.close()
 
         return None
 

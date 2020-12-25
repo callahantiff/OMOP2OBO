@@ -99,7 +99,6 @@ class OntologyInfoExtractor(object):
 
                 with open(str(ont[1][:-4]) + '_class_information.pickle', 'wb') as handle:
                     pickle.dump(ont_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                handle.close()
 
         return None
 
@@ -128,11 +127,9 @@ class OntologyInfoExtractor(object):
                         ont_data = pickle.load(_file)
                         ont_id = list(ont_data['label'].values())[0].split('/')[-1].split('_')[0].lower()
                         ontology_data[ont_id] = ont_data
-                    _file.close()
 
             # write out all ontologies into a single pickled file
             with open(self.ont_directory + '/master_ontology_dictionary.pickle', 'wb') as handle:
                 pickle.dump(ontology_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            handle.close()
 
             return None

@@ -82,7 +82,6 @@ class ConceptAnnotator(object):
                     row = x.split(',')
                     for i in row[1].split(' | '):
                         self.source_code_map[i] = row[0]
-            f.close()
 
         # clinical_file
         if not isinstance(clinical_file, str):
