@@ -2,7 +2,7 @@
 omop2obo
 *****
 
-|github_action|
+|github_action| |mypy|  
 
 |sonar_quality| |sonar_maintainability| |code_climate_maintainability| |codacy|  
 
@@ -295,6 +295,10 @@ We’d love to hear from you! To get in touch with us, please `create an issue`_
 .. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/Domo%20Arigato%20CI%20Roboto/badge.svg
    :target: https://github.com/callahantiff/OMOP2OBO/actions?query=workflow%3A%22Domo+Arigato+CI+Roboto%22
    :alt: GitHub Action CI-Workflow
+
+.. |mypy| image:: http://www.mypy-lang.org/static/mypy_badge.svg
+   :target: http://mypy-lang.org/
+   :alt: Linted with MyPy
 
 .. |sonar_quality| image:: https://sonarcloud.io/api/project_badges/measure?project=callahantiff_OMOP2OBO&metric=alert_status
     :target: https://sonarcloud.io/dashboard/index/callahantiff_OMOP2OBO
