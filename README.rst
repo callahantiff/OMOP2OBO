@@ -42,7 +42,9 @@ Through this repository we provide the following:
 How do I Learn More?
 **********************
 
-Please see the Project `Wiki`_ for more details on the ``omop2obo`` mappings, algorithm, and information on the experiments we ran to ensure each mapping set released is accurate, generalizable, and consistent!
+- Join an existing or start a new `Discussion`_
+
+- The Project `Wiki`_ for more details on the ``omop2obo`` mappings, algorithm, and information on the experiments we ran to ensure each mapping set released is accurate, generalizable, and consistent!
 
 |
 
@@ -287,7 +289,8 @@ Citing this Work
 Contact
 ########
 
-We’d love to hear from you! To get in touch with us, please `create an issue`_ or `send us an email`_ 💌
+We’d love to hear from you! To get in touch with us, please join or start a new `Discussion`_, `create an issue`_
+or `send us an email`_ 💌
 
 
 .. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/Domo%20Arigato%20CI%20Roboto/badge.svg
@@ -342,3 +345,5 @@ We’d love to hear from you! To get in touch with us, please `create an issue`_
 .. _`create an issue`: https://github.com/callahantiff/OMOP2OBO/issues/new/choose
 
 .. _`send us an email`: https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=callahantiff@gmail.com
+
+.. _`Discussion`: https://github.com/callahantiff/OMOP2OBO/discussions
