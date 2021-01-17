@@ -80,4 +80,9 @@ setup(
         'scikit-learn==0.23.2',
         'tqdm==4.54.1'],
     extras_require=extras,
+    entry_points={
+        "console_scripts": [
+            'omop2obo = omop2obo.main:main',
+        ],
+    },
 )

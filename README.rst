@@ -199,12 +199,12 @@ There are a few ways to run ``omop2obo``. An example workflow is provided below.
 
 |
 
-*COMMAND LINE* ➞ `main.py <https://github.com/callahantiff/OMOP2OBO/blob/master/main.py>`_
+*COMMAND LINE* ➞ after installing with pip, the `omop2obo` command is available directly in your shell.
 
 .. code:: bash
 
-  python main.py --help
-  Usage: main.py [OPTIONS]
+  omop2obo --help
+  Usage: omop2obo [OPTIONS]
 
   The OMOP2OBO package provides functionality to assist with mapping OMOP standard clinical terminology
   concepts to OBO terms. Successfully running this program requires several input parameters, which are
@@ -246,7 +246,7 @@ If you follow the instructions for how to format clinical data (`here <https://g
 
 .. code:: bash
 
- python main.py --clinical_domain condition --onts hp --onts mondo --clinical_data resources/clinical_data/omop2obo_conditions_june2020.csv
+ $ omop2obo --clinical_domain condition --onts hp --onts mondo --clinical_data resources/clinical_data/omop2obo_conditions_june2020.csv
 
 |
 
