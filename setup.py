@@ -78,6 +78,7 @@ setup(
         'responses==0.10.12',
         'scipy==1.5.4',
         'scikit-learn==0.23.2',
-        'tqdm==4.54.1'],
+        'tqdm==4.54.1',
+        'types-requests'],
     extras_require=extras,
 )
