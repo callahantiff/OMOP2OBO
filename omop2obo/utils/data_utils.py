@@ -178,7 +178,7 @@ def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: Lis
 
     # merge data frames by primary key and reset index
     merged_combo = reduce(lambda x, y: pd.merge(x, y, on=primary_key, how='outer'), combo)
-    merged_combo.reset_index(level=0, inplace=True)
+    merged_combo = merged_combo.reset_index(level=0, inplace=False)
 
     return merged_combo
 
