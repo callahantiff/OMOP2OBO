@@ -40,7 +40,7 @@ def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
     """
 
-    print('Querying Knowledge Graph to Obtain all OWL:Class Nodes')
+    print('Querying Knowledge Graph to Obtain all OWL:Class Objects')
 
     # find all classes in graph
     class_list = set([x for x in graph.subjects(RDF.type, OWL.Class) if ont_id.lower() in str(x).lower()])
@@ -65,7 +65,7 @@ def gets_ontology_class_labels(graph: Graph, cls: Set) -> Dict:
              'enhancer_blocking_element': 'http://purl.obolibrary.org/obo/SO_0002190', ...}
     """
 
-    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Labels')
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Object Labels')
 
     # find all classes in graph
     class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'label' in str(x[1]).lower()}
@@ -91,7 +91,7 @@ def gets_ontology_class_definitions(graph: Graph, cls: Set) -> Dict:
               'te that exists (or existed) in nature.': 'http://purl.obolibrary.org/obo/SO_0000797', ...}
     """
 
-    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Definitions')
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Object Definitions')
 
     # find all classes in graph
     class_list = {str(x[2]).lower(): str(x[0]) for x in tqdm(graph) if x[0] in cls and 'IAO_0000115' in str(x[1])}
@@ -120,7 +120,7 @@ def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Tuple:
                     {'susceptibility to herpesvirus': 'hasExactSynonym', 'full upper lip': 'hasExactSynonym'}
     """
 
-    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and Synonyms')
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Object Synonyms')
 
     # find all classes in graph
     class_list = [x for x in tqdm(graph) if x[0] in cls and 'synonym' in str(x[1]).lower()]
@@ -157,7 +157,7 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Tuple:
                 {
     """
 
-    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Nodes and DbXRefs')
+    print('\nQuerying Knowledge Graph to Obtain all OWL:Class Object DbXRefs')
 
     # dbxrefs
     dbxref_res = [x for x in tqdm(graph) if x[0] in cls and 'hasdbxref' in str(x[1]).lower()]
@@ -170,8 +170,7 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Tuple:
     exact_type = {str(x[2]).lower(): 'ExactMatch' for x in exact_res}
 
     # combine dictionaries
-    uris = {**dbxref_uris, **exact_uris}
-    types = {**dbxref_type, **exact_type}
+    uris = {**dbxref_uris, **exact_uris}; types = {**dbxref_type, **exact_type}
 
     return uris, types
 
@@ -187,7 +186,7 @@ def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
         class_list: A list of all of the deprecated OWL classes in the graph.
     """
 
-    print('Querying Knowledge Graph to Obtain all Deprecated OWL:Classes')
+    print('Querying Knowledge Graph to Obtain all Deprecated OWL:Class Objects')
 
     # find all deprecated classes in graph
     dep_classes = list(graph.subjects(OWL.deprecated, Literal('true', datatype=URIRef(schema + 'boolean'))))
@@ -207,7 +206,7 @@ def gets_obsolete_ontology_classes(graph: Graph, ont_id: str) -> Set:
         class_list: A list of all of the obsolete OWL classes in the graph.
     """
 
-    print('Querying Knowledge Graph to Obtain all Obsolete OWL:Classes')
+    print('Querying Knowledge Graph to Obtain all Obsolete OWL:Class Objects')
 
     # find all deprecated classes in graph
     obs_classes = list(graph.subjects(RDFS.subClassOf, oboinowl.ObsoleteClass))
