@@ -93,7 +93,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_definitions(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(2004, len(classes))
+        self.assertEqual(2022, len(classes))
 
         return None
 
@@ -106,7 +106,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_synonyms(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(3819, len(classes))
+        self.assertEqual(2109, len(classes))
 
         return None
 
@@ -118,10 +118,8 @@ class TestOntologyUtils(unittest.TestCase):
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_dbxrefs(graph, self.filter_classes)
-        self.assertIsInstance(classes[0], Dict)
-        self.assertIsInstance(classes[1], Dict)
-        self.assertEqual(391, len(classes[0]))
-        self.assertEqual(391, len(classes[1]))
+        self.assertIsInstance(classes, Dict)
+        self.assertEqual(447, len(classes))
 
         return None
 
