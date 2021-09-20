@@ -58,8 +58,7 @@ class TestOntologyUtils(unittest.TestCase):
         """Tests the gets_ontology_classes method."""
 
         # read in ontology
-        graph = Graph()
-        graph.parse(self.good_ontology_file_location)
+        graph = Graph().parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
         classes = gets_ontology_classes(graph, 'SO')
@@ -76,8 +75,7 @@ class TestOntologyUtils(unittest.TestCase):
         """Tests the gets_ontology_class_labels method."""
 
         # read in ontology
-        graph = Graph()
-        graph.parse(self.good_ontology_file_location)
+        graph = Graph().parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_labels(graph, self.filter_classes)
@@ -90,8 +88,7 @@ class TestOntologyUtils(unittest.TestCase):
         """Tests the gets_ontology_class_definitions method."""
 
         # read in ontology
-        graph = Graph()
-        graph.parse(self.good_ontology_file_location)
+        graph = Graph().parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_definitions(graph, self.filter_classes)
@@ -104,15 +101,12 @@ class TestOntologyUtils(unittest.TestCase):
         """Tests the gets_ontology_class_synonyms method."""
 
         # read in ontology
-        graph = Graph()
-        graph.parse(self.good_ontology_file_location)
+        graph = Graph().parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_synonyms(graph, self.filter_classes)
-        self.assertIsInstance(classes[0], Dict)
-        self.assertIsInstance(classes[1], Dict)
-        self.assertEqual(3819, len(classes[0]))
-        self.assertEqual(3819, len(classes[1]))
+        self.assertIsInstance(classes, Dict)
+        self.assertEqual(3819, len(classes))
 
         return None
 
@@ -120,8 +114,7 @@ class TestOntologyUtils(unittest.TestCase):
         """Tests the gets_ontology_class_dbxrefs method."""
 
         # read in ontology
-        graph = Graph()
-        graph.parse(self.good_ontology_file_location)
+        graph = Graph().parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
         classes = gets_ontology_class_dbxrefs(graph, self.filter_classes)

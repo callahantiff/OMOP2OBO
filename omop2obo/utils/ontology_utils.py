@@ -99,7 +99,7 @@ def gets_ontology_class_definitions(graph: Graph, cls: Set) -> Dict:
     return class_list
 
 
-def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Tuple:
+def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
     """Queries a knowledge graph and returns a tuple of dictionaries. The first dictionary contains all owl:Class
     objects and their synonyms in the graph. The second dictionary contains the synonyms and their OWL types.
 
@@ -109,25 +109,22 @@ def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Tuple:
             {URIRef('http://purl.obolibrary.org/obo/SO_0001590)}
 
     Returns:
-        A tuple of dictionaries:
-            synonyms: A dictionary where keys are string synonyms and values are ontology URIs. An example is shown
-                below:
-                    {'modified l selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
-                    'modified l-selenocysteine': 'http://purl.obolibrary.org/obo/SO_0001402',
-                    'frameshift truncation': 'http://purl.obolibrary.org/obo/SO_0001910', ...}
-            synonym_type: A dictionary where keys are string synonyms and values are OWL synonym types. An example is
-                shown below:
-                    {'susceptibility to herpesvirus': 'hasExactSynonym', 'full upper lip': 'hasExactSynonym'}
+        A dictionary where keys are string synonyms and values are ontology URIs. An example is shown below:
+            {'painful swallowing': [('http://purl.obolibrary.org/obo/HP_0032043', 'hasExactSynonym')],
+            'underdevelopment of facial bones': [('http://purl.obolibrary.org/obo/HP_0002692', 'hasBroadSynonym')],
+            ... }
     """
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Object Synonyms')
 
-    # find all classes in graph
-    class_list = [x for x in tqdm(graph) if x[0] in cls and 'synonym' in str(x[1]).lower()]
-    synonyms = {str(x[2]).lower(): str(x[0]) for x in class_list}
-    synonym_type = {str(x[2]).lower(): str(x[1]).split('#')[-1] for x in class_list}
+    synonyms: Dict = dict()
+    class_list = [x for x in graph if x[0] in cls and ('synonym' in str(x[1]).lower() and isinstance(x[0], URIRef))]
+    for x in tqdm(class_list):
+        cls_id = str(x[0]); syn = str(x[2]).lower(); syn_type = str(x[1]).split('#')[-1]
+        if syn in synonyms.keys(): synonyms[syn].append(tuple([cls_id, syn_type]))
+        else: synonyms[syn] = [tuple([cls_id, syn_type])]
 
-    return synonyms, synonym_type
+    return synonyms
 
 
 def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Tuple:
