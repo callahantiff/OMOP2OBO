@@ -14,7 +14,7 @@ Interacts with OWL Tools API
 import os
 import os.path
 from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
-from rdflib.namespace import RDF, OWL  # type: ignore
+from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 import subprocess
 
 from tqdm import tqdm  # type: ignore
@@ -185,16 +185,33 @@ def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
 
     Returns:
         class_list: A list of all of the deprecated OWL classes in the graph.
-
-    Raises:
-        ValueError: If the query returns zero nodes with type owl:Class.
     """
 
-    print('Querying Knowledge Graph to Obtain all Deprecated OWL:Class Nodes')
+    print('Querying Knowledge Graph to Obtain all Deprecated OWL:Classes')
 
     # find all deprecated classes in graph
     dep_classes = list(graph.subjects(OWL.deprecated, Literal('true', datatype=URIRef(schema + 'boolean'))))
     class_list = set([x for x in dep_classes if ont_id.lower() in str(x).lower()])
+
+    return class_list
+
+
+def gets_obsolete_ontology_classes(graph: Graph, ont_id: str) -> Set:
+    """Queries a knowledge graph and returns a list of all obsolete owl:Class objects in the graph.
+
+    Args:
+        graph: An rdflib Graph object.
+        ont_id: A string containing an ontology namespace.
+
+    Returns:
+        class_list: A list of all of the obsolete OWL classes in the graph.
+    """
+
+    print('Querying Knowledge Graph to Obtain all Obsolete OWL:Classes')
+
+    # find all deprecated classes in graph
+    obs_classes = list(graph.subjects(RDFS.subClassOf, oboinowl.ObsoleteClass))
+    class_list = set([x for x in obs_classes if ont_id.lower() in str(x).lower()])
 
     return class_list
 

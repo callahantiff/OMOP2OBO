@@ -136,13 +136,26 @@ class TestOntologyUtils(unittest.TestCase):
         """Tests the gets_deprecated_ontology_classes method."""
 
         # read in ontology
-        graph = Graph()
-        graph.parse(self.good_ontology_file_location)
+        graph = Graph().parse(self.good_ontology_file_location)
 
         # retrieve classes form graph with data
         classes = gets_deprecated_ontology_classes(graph, 'SO')
 
         self.assertIsInstance(classes, Set)
         self.assertEqual(239, len(classes))
+
+        return None
+
+    def test_gets_obsolete_ontology_classes(self):
+        """Tests the gets_deprecated_ontology_classes method."""
+
+        # read in ontology
+        graph = Graph().parse(self.good_ontology_file_location)
+
+        # retrieve classes form graph with data
+        classes = gets_obsolete_ontology_classes(graph, 'SO')
+
+        self.assertIsInstance(classes, Set)
+        self.assertEqual(0, len(classes))
 
         return None
