@@ -4,21 +4,32 @@
 """
 Ontology Utility Functions.
 
-Interacts with OWL Tools API
+Ontology Entity Retrieval Functions
 * gets_ontology_classes
+* gets_ontology_class_definitions
+* gets_ontology_class_synonyms
+* gets_ontology_class_dbxrefs
 * gets_deprecated_ontology_classes
+* gets_obsolete_ontology_classes
+
+Ontology Descriptive Statistics Functions
+* gets_ontology_statistics
+
+Ontology Search Functions
+* finds_entity_ancestors
 
 """
 
 # import needed libraries
 import os
 import os.path
-from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
-from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 import subprocess
 
+from more_itertools import unique_everseen  # type: ignore
+from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
+from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 from tqdm import tqdm  # type: ignore
-from typing import Dict, Set
+from typing import Dict, List, Optional, Set, Union
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -155,7 +166,7 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:
     dbx_uris: Dict = dict()
     for x in tqdm(dbxref_res):
         cls_id, dbx_type = str(x[0]), str(x[1]).split('/')[-1].replace('#', ':')
-        dbx, dbx_src = str(x[2]).lower().split(':')[1], str(x[2]).lower().split(':')[0]
+        dbx, dbx_src = str(x[2]).split(':')[1], str(x[2]).lower().split(':')[0]
         if cls_id in dbx_uris.keys(): dbx_uris[cls_id].append(tuple([dbx, dbx_type, dbx_src]))
         else: dbx_uris[cls_id] = [tuple([dbx, dbx_type, dbx_src])]
 
@@ -236,3 +247,34 @@ def gets_ontology_statistics(file_location: str, owltools_location: str = './omo
     print(sent.format(cls, axs, op, ind))
 
     return None
+
+
+def finds_entity_ancestors(graph: Graph, uris: List[Union[URIRef, str]], rel: Union[URIRef, str] = RDFS.subClassOf,
+                           cls_lst: Optional[List] = None) -> List:
+    """A method that recursively searches an ontology hierarchy to pull all ancestor concepts for an input entity.
+
+    Args:
+        graph: An RDFLib graph object assumed to contain ontology data.
+        uris: A list of at least one ontology RDFLib URIRef object or string.
+        rel: A string or RDFLib URI object containing a predicate.
+        cls_lst: A list of URIs representing the ancestor classes found for the input class_uris.
+
+    Returns:
+        An ordered (desc; root to leaf) list of ontology objects containing the input uris ancestor hierarchy.
+        Example:
+            input: [URIRef('http://purl.obolibrary.org/NCBITaxon_11157')]
+            output: ['http://purl.obolibrary.org/NCBITaxon_10239', 'http://purl.obolibrary.org/NCBITaxon_2559587',
+                'http://purl.obolibrary.org/NCBITaxon_2497569', 'http://purl.obolibrary.org/NCBITaxon_11157']
+    """
+
+    prop = rel if isinstance(rel, URIRef) else URIRef(rel)
+    cls_lst = [] if cls_lst is None else cls_lst
+    cls_lst = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in cls_lst]))
+    uris = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in uris]))
+    ancs = list(unique_everseen([j for k in [graph.objects(x, prop) for x in uris] for j in k]))
+    if len(ancs) == 0 or len(set(ancs).difference(set(cls_lst))) == 0:
+        return list(unique_everseen([str(x) for x in cls_lst]))
+    else:
+        uris = [x for x in ancs if x not in cls_lst]
+        cls_lst.insert(0, [x for x in uris][0])
+        return finds_entity_ancestors(graph, uris, prop, cls_lst)
