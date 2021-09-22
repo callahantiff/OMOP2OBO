@@ -121,7 +121,6 @@ class OntologyInfoExtractor(object):
             raise OSError('There are no ontology pickled data files in: {}'.format(self.ont_directory))
         else:
             ontology_data = {}
-
             for ont_file in tqdm(pickled_data):
                 if 'master' not in ont_file:  # ignore existing pickled master_ontology_dictionary files
                     with open(ont_file, 'rb') as _file:
