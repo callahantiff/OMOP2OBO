@@ -157,15 +157,12 @@ class TestOntologyUtils(unittest.TestCase):
 
         # load ontology
         graph = Graph().parse(self.good_ontology_file_location, format='xml')
-        so_class = [URIRef('http://purl.obolibrary.org/obo/SO_0000348')]
+        so_class = URIRef('http://purl.obolibrary.org/obo/SO_0000348')
 
         # get ancestors when a valid class is provided -- class is URIRef
-        ancestors1 = finds_entity_ancestors(graph, so_class, RDFS.subClassOf, so_class)
-        self.assertIsInstance(ancestors1, List)
-        self.assertEqual(sorted(list(ancestors1)),
-                         sorted(list({'http://purl.obolibrary.org/obo/SO_0000348',
-                                      'http://purl.obolibrary.org/obo/SO_0000400',
-                                      'http://purl.obolibrary.org/obo/SO_0000443'})))
+        ancestors1 = finds_entity_ancestors(graph, so_class, RDFS.subClassOf)
+        self.assertIsInstance(ancestors1, Dict)
+        self.assertEqual(ancestors1['0'], ['http://purl.obolibrary.org/obo/SO_0000443'])
 
         return None
 
@@ -174,16 +171,13 @@ class TestOntologyUtils(unittest.TestCase):
 
         # load ontology
         graph = Graph().parse(self.good_ontology_file_location, format='xml')
-        so_class = [URIRef('http://purl.obolibrary.org/obo/SO_0000348')]
+        so_class = URIRef('http://purl.obolibrary.org/obo/SO_0000348')
 
         # get ancestors when a valid class is provided -- class is not URIRef
-        class_uri = list(set([str(x).split('/')[-1] for x in so_class]))
-        ancestors1 = finds_entity_ancestors(graph, class_uri, RDFS.subClassOf, class_uri)
-        self.assertIsInstance(ancestors1, List)
-        self.assertEqual(sorted(list(ancestors1)),
-                         sorted(list({'http://purl.obolibrary.org/obo/SO_0000348',
-                                      'http://purl.obolibrary.org/obo/SO_0000400',
-                                      'http://purl.obolibrary.org/obo/SO_0000443'})))
+        class_uri = str(so_class)
+        ancestors1 = finds_entity_ancestors(graph, class_uri, RDFS.subClassOf)
+        self.assertIsInstance(ancestors1, Dict)
+        self.assertEqual(ancestors1['1'], ['http://purl.obolibrary.org/obo/SO_0000400'])
 
         return None
 
@@ -194,8 +188,7 @@ class TestOntologyUtils(unittest.TestCase):
         graph = Graph().parse(self.good_ontology_file_location, format='xml')
 
         # get ancestors when no class is provided
-        ancestors2 = finds_entity_ancestors(graph, [], RDFS.subClassOf, [])
-        self.assertIsInstance(ancestors2, List)
-        self.assertEqual(ancestors2, [])
+        ancestors2 = finds_entity_ancestors(graph, '', RDFS.subClassOf)
+        self.assertEqual(ancestors2, None)
 
         return None

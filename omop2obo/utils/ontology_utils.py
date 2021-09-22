@@ -29,7 +29,7 @@ from more_itertools import unique_everseen  # type: ignore
 from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
 from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 from tqdm import tqdm  # type: ignore
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, Optional, Set, Union
 
 # set up environment variables
 obo = Namespace('http://purl.obolibrary.org/obo/')
@@ -249,32 +249,81 @@ def gets_ontology_statistics(file_location: str, owltools_location: str = './omo
     return None
 
 
-def finds_entity_ancestors(graph: Graph, uris: List[Union[URIRef, str]], rel: Union[URIRef, str] = RDFS.subClassOf,
-                           cls_lst: Optional[List] = None) -> List:
+# def finds_entity_ancestors(graph: Graph, uris: List, rel: Union[URIRef, str] = RDFS.subClassOf,
+#                            cls_lst: Optional[List] = None) -> List:
+#     """A method that recursively searches an ontology hierarchy to pull all ancestor concepts for an input entity.
+#
+#     Args:
+#         graph: An RDFLib graph object assumed to contain ontology data.
+#         uris: A list of at least one ontology RDFLib URIRef object or string.
+#         rel: A string or RDFLib URI object containing a predicate.
+#         cls_lst: A list of URIs representing the ancestor classes found for the input class_uris.
+#
+#     Returns:
+#         An ordered (desc; root to leaf) list of ontology objects containing the input uris ancestor hierarchy.
+#         Example:
+#             input: [URIRef('http://purl.obolibrary.org/NCBITaxon_11157')]
+#             output: ['http://purl.obolibrary.org/NCBITaxon_10239', 'http://purl.obolibrary.org/NCBITaxon_2559587',
+#                 'http://purl.obolibrary.org/NCBITaxon_2497569', 'http://purl.obolibrary.org/NCBITaxon_11157']
+#     """
+#
+#     prop = rel if isinstance(rel, URIRef) else URIRef(rel)
+#     cls_lst = [[]] * 2 if cls_lst is None else cls_lst
+#     cls_lst[0] = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in cls_lst[0]]))
+#     uris = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in uris]))
+#     ancs = list(unique_everseen([j for k in [graph.objects(x, prop) for x in uris] for j in k]))
+#     if len(ancs) > 0:
+#         for x in ancs:
+#             if x in cls_lst[0]:
+#                 cls_lst[1].append(ancs)
+#     if len(ancs) == 0 or len(set(ancs).difference(set(cls_lst[0]))) == 0:
+#         return [cls_lst[0], cls_lst[1][::-1]]
+#     else:
+#         uris = [x for x in ancs if x not in cls_lst[0]]
+#         for i in uris: cls_lst[0].insert(0, i)
+#         return finds_entity_ancestors(graph, uris, prop, cls_lst)
+
+
+def finds_entity_ancestors(graph: Graph, uri: Union[URIRef, str], rel: Union[URIRef, str] = RDFS.subClassOf) -> \
+        Optional[Dict]:
     """A method that recursively searches an ontology hierarchy to pull all ancestor concepts for an input entity.
 
     Args:
         graph: An RDFLib graph object assumed to contain ontology data.
-        uris: A list of at least one ontology RDFLib URIRef object or string.
+        uri: A list of at least one ontology RDFLib URIRef object or string.
         rel: A string or RDFLib URI object containing a predicate.
-        cls_lst: A list of URIs representing the ancestor classes found for the input class_uris.
 
     Returns:
-        An ordered (desc; root to leaf) list of ontology objects containing the input uris ancestor hierarchy.
-        Example:
-            input: [URIRef('http://purl.obolibrary.org/NCBITaxon_11157')]
-            output: ['http://purl.obolibrary.org/NCBITaxon_10239', 'http://purl.obolibrary.org/NCBITaxon_2559587',
-                'http://purl.obolibrary.org/NCBITaxon_2497569', 'http://purl.obolibrary.org/NCBITaxon_11157']
+        ancestors: A dictionary where the keys are integers represented as strings and the values are lists of strings
+                  representing urls.
+
+    Example input/output:
+        input: [URIRef('http://purl.obolibrary.org/obo/HP_0100766')]
+        output: {'0': ['http://purl.obolibrary.org/obo/HP_0025015', 'http://purl.obolibrary.org/obo/HP_0100763'],
+                 '1': ['http://purl.obolibrary.org/obo/HP_0030680', 'http://purl.obolibrary.org/obo/HP_0002597',
+                 'http://purl.obolibrary.org/obo/HP_0002715'], '2': ['http://purl.obolibrary.org/obo/HP_0001626'],
+                 '3': ['http://purl.obolibrary.org/obo/HP_0000118'], '4': ['http://purl.obolibrary.org/obo/HP_0000001']}
     """
 
     prop = rel if isinstance(rel, URIRef) else URIRef(rel)
-    cls_lst = [] if cls_lst is None else cls_lst
-    cls_lst = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in cls_lst]))
-    uris = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in uris]))
-    ancs = list(unique_everseen([j for k in [graph.objects(x, prop) for x in uris] for j in k]))
-    if len(ancs) == 0 or len(set(ancs).difference(set(cls_lst))) == 0:
-        return list(unique_everseen([str(x) for x in cls_lst]))
+    uri = uri if isinstance(uri, URIRef) else URIRef(uri)
+    node_level, ancestors, master = dict(), dict(), set()
+    uris = [('0', x) for x in list(unique_everseen(list(graph.objects(uri, prop))))]
+
+    if len(uris) == 0: return None
     else:
-        uris = [x for x in ancs if x not in cls_lst]
-        cls_lst.insert(0, [x for x in uris][0])
-        return finds_entity_ancestors(graph, uris, prop, cls_lst)
+        while len(uris) != 0:
+            level, node = uris.pop(0)
+            master |= {node}
+            ancestor_ids = list(unique_everseen(list(graph.objects(node, prop))))
+            if node in node_level.keys(): node_level[node] += [level]
+            else: node_level[node] = [level]
+            uris = list(unique_everseen(uris + [(str(int(level) + 1), x) for x in ancestor_ids]))
+
+        # update levels
+        for k, v in node_level.items():
+            level = sorted(v)[-1]
+            if level in ancestors.keys(): ancestors[level].append(str(k))
+            else: ancestors[level] = [str(k)]
+
+        return ancestors
