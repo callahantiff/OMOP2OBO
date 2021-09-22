@@ -103,17 +103,13 @@ class TestOntologyInfoExtractor(TestCase):
         self.assertIn('label', results.keys())
         self.assertIn('definition', results.keys())
         self.assertIn('dbxref', results.keys())
-        self.assertIn('dbxref_type', results.keys())
         self.assertIn('synonym', results.keys())
-        self.assertIn('synonym_type', results.keys())
 
         # check lengths of sub-dictionaries
         self.assertTrue(len(results['label']) == 2237)
-        self.assertTrue(len(results['definition']) == 2004)
-        self.assertTrue(len(results['dbxref']) == 391)
-        self.assertTrue(len(results['dbxref_type']) == 391)
-        self.assertTrue(len(results['synonym']) == 3819)
-        self.assertTrue(len(results['synonym_type']) == 3819)
+        self.assertTrue(len(results['definition']) == 2022)
+        self.assertTrue(len(results['dbxref']) == 447)
+        self.assertTrue(len(results['synonym']) == 2109)
 
         return None
 
@@ -154,24 +150,20 @@ class TestOntologyInfoExtractor(TestCase):
 
         # make sure that output is correct
         self.assertTrue(len(pickled_dict.keys()) == 1)
-        self.assertTrue(len(pickled_dict['so']) == 6)
+        self.assertTrue(len(pickled_dict['so']) == 4)
         self.assertIsInstance(pickled_dict['so'], Dict)
 
         # check results content
         self.assertIn('label', pickled_dict['so'].keys())
         self.assertIn('definition', pickled_dict['so'].keys())
         self.assertIn('dbxref', pickled_dict['so'].keys())
-        self.assertIn('dbxref_type', pickled_dict['so'].keys())
         self.assertIn('synonym', pickled_dict['so'].keys())
-        self.assertIn('synonym_type', pickled_dict['so'].keys())
 
         # check lengths of sub-dictionaries
         self.assertTrue(len(pickled_dict['so']['label']) == 2237)
-        self.assertTrue(len(pickled_dict['so']['definition']) == 2004)
-        self.assertTrue(len(pickled_dict['so']['dbxref']) == 391)
-        self.assertTrue(len(pickled_dict['so']['dbxref_type']) == 391)
-        self.assertTrue(len(pickled_dict['so']['synonym']) == 3819)
-        self.assertTrue(len(pickled_dict['so']['synonym_type']) == 3819)
+        self.assertTrue(len(pickled_dict['so']['definition']) == 2022)
+        self.assertTrue(len(pickled_dict['so']['dbxref']) == 447)
+        self.assertTrue(len(pickled_dict['so']['synonym']) == 2109)
 
         # clean up environment
         os.remove(self.ontology_directory + '/so_without_imports_class_information.pickle')

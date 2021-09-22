@@ -65,8 +65,7 @@ class OntologyInfoExtractor(object):
         res: Dict = {
             'label': gets_ontology_class_labels(self.graph, filter_classes),
             'definition': gets_ontology_class_definitions(self.graph, filter_classes),
-            'dbxref': dbxrefs[0], 'dbxref_type': dbxrefs[1],
-            'synonym': syns[0], 'synonym_type': syns[1],
+            'dbxref': dbxrefs, 'synonym': syns
         }
 
         return res
@@ -125,7 +124,7 @@ class OntologyInfoExtractor(object):
                 if 'master' not in ont_file:  # ignore existing pickled master_ontology_dictionary files
                     with open(ont_file, 'rb') as _file:
                         ont_data = pickle.load(_file)
-                        ont_id = list(ont_data['label'].values())[0].split('/')[-1].split('_')[0].lower()
+                        ont_id = list(ont_data['label'].keys())[0].split('/')[-1].split('_')[0].lower()
                         ontology_data[ont_id] = ont_data
                     _file.close()
 
