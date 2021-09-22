@@ -272,7 +272,9 @@ def finds_entity_ancestors(graph: Graph, uri: Union[URIRef, str], rel: Union[URI
 
     prop = rel if isinstance(rel, URIRef) else URIRef(rel)
     uri = uri if isinstance(uri, URIRef) else URIRef(uri)
-    node_level, ancestors, master = dict(), dict(), set()
+    node_level: Dict = dict()
+    ancestors: Dict = dict()
+    master: Set = set()
     uris = [('0', x) for x in list(unique_everseen(list(graph.objects(uri, prop))))]
 
     if len(uris) == 0: return None
