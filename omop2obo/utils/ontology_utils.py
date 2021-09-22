@@ -249,41 +249,6 @@ def gets_ontology_statistics(file_location: str, owltools_location: str = './omo
     return None
 
 
-# def finds_entity_ancestors(graph: Graph, uris: List, rel: Union[URIRef, str] = RDFS.subClassOf,
-#                            cls_lst: Optional[List] = None) -> List:
-#     """A method that recursively searches an ontology hierarchy to pull all ancestor concepts for an input entity.
-#
-#     Args:
-#         graph: An RDFLib graph object assumed to contain ontology data.
-#         uris: A list of at least one ontology RDFLib URIRef object or string.
-#         rel: A string or RDFLib URI object containing a predicate.
-#         cls_lst: A list of URIs representing the ancestor classes found for the input class_uris.
-#
-#     Returns:
-#         An ordered (desc; root to leaf) list of ontology objects containing the input uris ancestor hierarchy.
-#         Example:
-#             input: [URIRef('http://purl.obolibrary.org/NCBITaxon_11157')]
-#             output: ['http://purl.obolibrary.org/NCBITaxon_10239', 'http://purl.obolibrary.org/NCBITaxon_2559587',
-#                 'http://purl.obolibrary.org/NCBITaxon_2497569', 'http://purl.obolibrary.org/NCBITaxon_11157']
-#     """
-#
-#     prop = rel if isinstance(rel, URIRef) else URIRef(rel)
-#     cls_lst = [[]] * 2 if cls_lst is None else cls_lst
-#     cls_lst[0] = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in cls_lst[0]]))
-#     uris = list(unique_everseen([x if isinstance(x, URIRef) else URIRef(obo + x) for x in uris]))
-#     ancs = list(unique_everseen([j for k in [graph.objects(x, prop) for x in uris] for j in k]))
-#     if len(ancs) > 0:
-#         for x in ancs:
-#             if x in cls_lst[0]:
-#                 cls_lst[1].append(ancs)
-#     if len(ancs) == 0 or len(set(ancs).difference(set(cls_lst[0]))) == 0:
-#         return [cls_lst[0], cls_lst[1][::-1]]
-#     else:
-#         uris = [x for x in ancs if x not in cls_lst[0]]
-#         for i in uris: cls_lst[0].insert(0, i)
-#         return finds_entity_ancestors(graph, uris, prop, cls_lst)
-
-
 def finds_entity_ancestors(graph: Graph, uri: Union[URIRef, str], rel: Union[URIRef, str] = RDFS.subClassOf) -> \
         Optional[Dict]:
     """A method that recursively searches an ontology hierarchy to pull all ancestor concepts for an input entity.
@@ -320,7 +285,7 @@ def finds_entity_ancestors(graph: Graph, uri: Union[URIRef, str], rel: Union[URI
             else: node_level[node] = [level]
             uris = list(unique_everseen(uris + [(str(int(level) + 1), x) for x in ancestor_ids]))
 
-        # update levels
+        # update hierarchy level for each node
         for k, v in node_level.items():
             level = sorted(v)[-1]
             if level in ancestors.keys(): ancestors[level].append(str(k))
