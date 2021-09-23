@@ -120,7 +120,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_dbxrefs(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(447, len(classes))
+        self.assertEqual(535, len(classes))
 
         return None
 

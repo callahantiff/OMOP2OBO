@@ -162,11 +162,17 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Dict:
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Object DbXRefs')
 
     dbxref_res = [x for x in tqdm(graph) if x[0] in cls and
-                  ('hasdbxref' in str(x[1]).lower() or 'exactmatch' in str(x[1]).lower())]
+                  ('hasdbxref' in str(x[1]).lower()
+                   or 'exactmatch' in str(x[1]).lower()
+                   or 'hasalternativeid' in str(x[1]).lower())]
+
     dbx_uris: Dict = dict()
     for x in tqdm(dbxref_res):
         cls_id, dbx_type = str(x[0]), str(x[1]).split('/')[-1].replace('#', ':')
-        dbx, dbx_src = str(x[2]).split(':')[1], str(x[2]).lower().split(':')[0]
+        if 'hasdbxref' in dbx_type.lower() or 'exactmatch' in dbx_type.lower():
+            dbx, dbx_src = str(x[2]).split(':')[1], str(x[2]).lower().split(':')[0]
+        else:
+            dbx, dbx_src = str(x[2]), str(x[2]).lower().split(':')[0]
         if cls_id in dbx_uris.keys(): dbx_uris[cls_id].append(tuple([dbx, dbx_type, dbx_src]))
         else: dbx_uris[cls_id] = [tuple([dbx, dbx_type, dbx_src])]
 

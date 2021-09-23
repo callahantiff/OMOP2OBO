@@ -108,7 +108,7 @@ class TestOntologyInfoExtractor(TestCase):
         # check lengths of sub-dictionaries
         self.assertTrue(len(results['label']) == 2237)
         self.assertTrue(len(results['definition']) == 2022)
-        self.assertTrue(len(results['dbxref']) == 447)
+        self.assertTrue(len(results['dbxref']) == 535)
         self.assertTrue(len(results['synonym']) == 2109)
 
         return None
@@ -162,7 +162,7 @@ class TestOntologyInfoExtractor(TestCase):
         # check lengths of sub-dictionaries
         self.assertTrue(len(pickled_dict['so']['label']) == 2237)
         self.assertTrue(len(pickled_dict['so']['definition']) == 2022)
-        self.assertTrue(len(pickled_dict['so']['dbxref']) == 447)
+        self.assertTrue(len(pickled_dict['so']['dbxref']) == 535)
         self.assertTrue(len(pickled_dict['so']['synonym']) == 2109)
 
         # clean up environment
