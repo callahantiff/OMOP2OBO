@@ -1,19 +1,19 @@
-*****
+********
 omop2obo
-*****
+********
 
-|github_action| |sonar_quality| |sonar_maintainability| |codacy|
+|logo|
 
-|coveralls| |sonar_coverage| |code_climate_coverage|
+|pip| |downloads|
 
-|ABRA|
+|github_action|  |ABRA|
 
-.. |pip| |downloads|
+|sonar_quality| |code_climate_maintainability| |sonar_maintainability| |coveralls| |code_climate_coverage|
 
 |
 
 What is OMOP2OBO?
-########
+#################
 
 ``omop2obo`` is a collection of health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBOs`_) foundry ontologies.
 
@@ -26,7 +26,7 @@ Common data models have solved many challenges of utilizing electronic health re
 To address these limitations, we have developed ``OMOP2OBO``, the first health system-wide integration and alignment between the Observational Health Data Sciences and Informatics' Observational Medical Outcomes Partnership (`OMOP`_) standardized clinical terminologies and eight OBO biomedical ontologies spanning diseases, phenotypes, anatomical entities, cell types, organisms, chemicals, metabolites, hormones, vaccines, and proteins. To verify that the mappings are both clinically and biologically meaningful, we have performed extensive experiments to verify the `accuracy <https://github.com/callahantiff/OMOP2OBO/wiki/Accuracy>`__, `generalizability <https://github.com/callahantiff/OMOP2OBO/wiki/Generalizability>`_, and `logical consistency <https://github.com/callahantiff/OMOP2OBO/wiki/Consistency>`_ of each released mapping set.
 
 What Does This Repository Provide?
-**********************
+**********************************
 
 Through this repository we provide the following:
 
@@ -40,7 +40,7 @@ Through this repository we provide the following:
     :alt: alternate text
 
 How do I Learn More?
-**********************
+********************
 
 - Join an existing or start a new `Discussion`_
 
@@ -51,7 +51,9 @@ How do I Learn More?
 Releases
 ########
 
-All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__
+- All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__  
+
+- We are working on a publishing this work, but if you'd like to use the validated mappings immediately, please `send us an email`_.
 
 **Current Release:**
  Release currently in preparation and planned for ***December 2020***!
@@ -60,14 +62,12 @@ All code and mappings for each release are free to download, see `Wiki <https://
 |
 
 Getting Started
-########
+###############
 
 Install Library
-**********************
+***************
 
-*NOT YET AVAILABLE - COMING SOON!!*
-
-This program requires Python version 3.6. To install the library from PyPI, run:
+This program requires Python version 3.6. To install the library from `PyPI <https://pypi.org/project/omop2obo/>`__, run:
 
 .. code:: shell
 
@@ -84,7 +84,7 @@ You can also clone the repository directly from GitHub by running:
 |
 
 Set-Up Environment
-**********************
+******************
 
 The ``omop2obo`` library requires a specific project directory structure. Please make sure that your project directory includes the following sub-directories:
 
@@ -126,7 +126,7 @@ Dependencies
 |
 
 Running the omop2obo Library
-**********************
+****************************
 
 There are a few ways to run ``omop2obo``. An example workflow is provided below.
 
@@ -255,21 +255,21 @@ If you follow the instructions for how to format clinical data (`here <https://g
 |
 
 Contributing
-########
+############
 
 Please read `CONTRIBUTING.md <https://github.com/callahantiff/biolater/blob/master/CONTRIBUTING.md>`__ for details on our code of conduct, and the process for submitting pull requests to us.
 
 |
 
 License
-########
+#######
 
 This project is licensed under MIT - see the `LICENSE.md <https://github.com/callahantiff/OMOP2OBO/blob/master/LICENSE>`__ file for details.
 
 |
 
 Citing this Work
-########
+################
 
 .. code:: shell
 
@@ -287,11 +287,13 @@ Citing this Work
 |
 
 Contact
-########
+#######
 
 We’d love to hear from you! To get in touch with us, please join or start a new `Discussion`_, `create an issue`_
 or `send us an email`_ 💌
 
+.. |logo| image:: https://user-images.githubusercontent.com/8030363/140855940-1aa2dcd5-a1b3-469a-97cf-a466d6e20b25.png
+   :width: 1500
 
 .. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/Domo%20Arigato%20CI%20Roboto/badge.svg
    :target: https://github.com/callahantiff/OMOP2OBO/actions?query=workflow%3A%22Domo+Arigato+CI+Roboto%22
@@ -314,11 +316,11 @@ or `send us an email`_ 💌
     :alt: Coveralls Coverage
 
 .. |pip| image:: https://badge.fury.io/py/omop2obo.svg
-    :target: https://badge.fury.io/py/omop2obo
+    :target: https://pypi.org/project/omop2obo/
     :alt: Pypi project
 
 .. |downloads| image:: https://pepy.tech/badge/omop2obo
-    :target: https://pepy.tech/project/omop2obo
+    :target: https://pepy.tech/badge/omop2obo
     :alt: Pypi total project downloads
 
 .. |codacy| image:: https://app.codacy.com/project/badge/Grade/a6b93723ccb2466bb20cdb9763c2f0c5

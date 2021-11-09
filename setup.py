@@ -50,8 +50,10 @@ setup(
                 "Open Biomedical Ontologies (OBO).",
     long_description=long_description,
     url="https://github.com/callahantiff/OMOP2OBO",
-    author="callahantiff@gmail.com",
-    author_email="callahantiff",
+    keywords='omop, omop-cdm, formal-logic, biomedical-applications, '
+             'open-biomedical-ontologies, obofoundry, clinical-terminologies, ',
+    author='Tiffany J. Callahan',
+    author_email='tiffany.callahan@cuanschutz.edu',
 
     # Choose your license
     license='MIT',
@@ -69,16 +71,17 @@ setup(
         'click==8.0.0a1',
         'lxml==4.6.2',
         'more-itertools==8.6.0',
-        'nltk==3.5',
+        'nltk==3.6.5',
         'oauth2client==4.1.3',
         'openpyxl==3.0.5',
         'pandas==1.1.5',
         'rdflib==5.0.0',
-        'regex==2020.11.13',
+        'regex>=2021.8.3',
         'responses==0.10.12',
         'scipy==1.5.4',
         'scikit-learn==0.23.2',
-        'tqdm==4.54.1'],
+        'tqdm==4.54.1',
+        'types-requests'],
     extras_require=extras,
     entry_points={
         "console_scripts": [
