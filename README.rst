@@ -2,11 +2,13 @@
 omop2obo
 *****
 
-|github_action| |sonar_quality| |sonar_maintainability| |coveralls| |code_climate_coverage|
+|logo|
 
-|ABRA|
+|pip| |downloads|
 
-.. |pip| |downloads|
+|github_action|  |ABRA|
+
+|sonar_quality| |code_climate_maintainability| |sonar_maintainability| |coveralls| |code_climate_coverage|
 
 |
 
@@ -292,6 +294,8 @@ Contact
 We’d love to hear from you! To get in touch with us, please join or start a new `Discussion`_, `create an issue`_
 or `send us an email`_ 💌
 
+.. |logo| image:: https://user-images.githubusercontent.com/8030363/140853067-cb8504a2-9b37-4662-a6a7-c3cdb4a04a2d.png
+   :width: 1200
 
 .. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/Domo%20Arigato%20CI%20Roboto/badge.svg
    :target: https://github.com/callahantiff/OMOP2OBO/actions?query=workflow%3A%22Domo+Arigato+CI+Roboto%22
@@ -318,7 +322,7 @@ or `send us an email`_ 💌
     :alt: Pypi project
 
 .. |downloads| image:: https://pepy.tech/badge/omop2obo
-    :target: https://pepy.tech/project/omop2obo
+    :target: https://pepy.tech/badge/omop2obo
     :alt: Pypi total project downloads
 
 .. |codacy| image:: https://app.codacy.com/project/badge/Grade/a6b93723ccb2466bb20cdb9763c2f0c5
