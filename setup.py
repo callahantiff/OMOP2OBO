@@ -74,7 +74,7 @@ setup(
         'openpyxl==3.0.5',
         'pandas==1.1.5',
         'rdflib==5.0.0',
-        'regex==2020.11.13',
+        'regex>=2021.8.3',
         'responses==0.10.12',
         'scipy==1.5.4',
         'scikit-learn==0.23.2',
