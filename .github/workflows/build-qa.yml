@@ -62,3 +62,28 @@ jobs:
         run: coveralls --service=github
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish_pypi_library:
+    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
+    needs: build
+    name: Publishes pkt_kg to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+        - name: Install Requirements and Dependencies
+          run: pip install --upgrade pip setuptools wheel
+        - name: Create Package Distribution
+          run: python setup.py sdist bdist_wheel
+        - name: Publish Package to PyPi
+          uses: pypa/gh-action-pypi-publish@master
+          with:
+            user: __token__
+            password: ${{ secrets.PYPI_API_TOKEN }}
+            verbose: true
+            skip_existing: true
