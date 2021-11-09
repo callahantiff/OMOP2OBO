@@ -50,8 +50,10 @@ setup(
                 "Open Biomedical Ontologies (OBO).",
     long_description=long_description,
     url="https://github.com/callahantiff/OMOP2OBO",
-    author="callahantiff@gmail.com",
-    author_email="callahantiff",
+    keywords='omop, omop-cdm, formal-logic, biomedical-applications, '
+             'open-biomedical-ontologies, obofoundry, clinical-terminologies, ',
+    author='Tiffany J. Callahan',
+    author_email='tiffany.callahan@cuanschutz.edu',
 
     # Choose your license
     license='MIT',
