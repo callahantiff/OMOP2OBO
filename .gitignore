@@ -8,6 +8,8 @@
 *.pyc
 __pycache__
 .ipynb_checkpoints/*
+build/*
+dist/*
 
 resources/analyses/.DS_Store
 resources/analyses/.ipynb_checkpoints/*
