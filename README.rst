@@ -294,8 +294,8 @@ Contact
 We’d love to hear from you! To get in touch with us, please join or start a new `Discussion`_, `create an issue`_
 or `send us an email`_ 💌
 
-.. |logo| image:: https://user-images.githubusercontent.com/8030363/140853067-cb8504a2-9b37-4662-a6a7-c3cdb4a04a2d.png
-   :width: 1200
+.. |logo| image:: https://user-images.githubusercontent.com/8030363/140855940-1aa2dcd5-a1b3-469a-97cf-a466d6e20b25.png
+   :width: 1500
 
 .. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/Domo%20Arigato%20CI%20Roboto/badge.svg
    :target: https://github.com/callahantiff/OMOP2OBO/actions?query=workflow%3A%22Domo+Arigato+CI+Roboto%22
