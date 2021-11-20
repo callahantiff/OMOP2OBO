@@ -35,16 +35,15 @@ Through this repository we provide the following:
 
 2. **A Mapping Framework:** An algorithm and mapping pipeline that enables one to construct their set of `omop2obo` mappings. The figure below provides a high-level overview of the algorithm workflow. The code provided in this repository facilitates all of the automatic steps shown in this figure except for the manual mapping (for now, although we are `currently <https://github.com/callahantiff/OMOP2OBO/issues/19>`__ working on a deep learning model to address this).
 
-.. image:: https://user-images.githubusercontent.com/8030363/99837291-972c1e00-2b24-11eb-826b-8141c6b7d1f0.png
-    :align: center
-    :alt: alternate text
 
 How do I Learn More?
 ********************
 
 - Join an existing or start a new `Discussion`_
 
-- The Project `Wiki`_ for more details on the ``omop2obo`` mappings, algorithm, and information on the experiments we ran to ensure each mapping set released is accurate, generalizable, and consistent!
+- The Project `Wiki`_ for more details on the ``omop2obo`` mappings, algorithm, and information on the experiments we ran to ensure each mapping set released is accurate, generalizable, and consistent!  
+
+- A `Zenodo Community <https://zenodo.org/communities/omop2obo>`__ has been established to provide access to software releases, presentations, and preprints related to this project 
 
 |
 
