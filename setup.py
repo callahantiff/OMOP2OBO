@@ -69,7 +69,7 @@ setup(
     # Add here the package dependencies
     install_requires=[
         'click==8.0.0a1',
-        'lxml==4.6.2',
+        'lxml==4.6.5',
         'more-itertools==8.6.0',
         'nltk==3.6.5',
         'oauth2client==4.1.3',
