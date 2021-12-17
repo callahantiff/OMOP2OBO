@@ -50,7 +50,7 @@ How do I Learn More?
 Releases
 ########
 
-- All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__  
+- All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/OMOP2OBO/wiki>`__  
 
 - We are working on a publishing this work, but if you'd like to use the validated mappings immediately, please `send us an email`_.
 
