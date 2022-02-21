@@ -34,14 +34,10 @@ class OntologyDownloader(object):
     def __init__(self, data_path: str) -> None:
 
         # read in data source file
-        if not isinstance(data_path, str):
-            raise TypeError('data_path must be type str.')
-        elif not os.path.exists(data_path):
-            raise OSError('The {} file does not exist!'.format(data_path))
-        elif os.stat(data_path).st_size == 0:
-            raise TypeError('Input file: {} is empty'.format(data_path))
-        else:
-            self.data_path: str = data_path
+        if not isinstance(data_path, str): raise TypeError('data_path must be type str.')
+        elif not os.path.exists(data_path): raise OSError('The {} file does not exist!'.format(data_path))
+        elif os.stat(data_path).st_size == 0: raise TypeError('Input file: {} is empty'.format(data_path))
+        else: self.data_path: str = data_path
 
         self.source_list: Dict[str, str] = {}
         self.data_files: Dict[str, str] = {}
