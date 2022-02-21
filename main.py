@@ -36,7 +36,7 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
 
     PARAMETERS:
 
-        ont_file: 'resources/oontology_source_list.txt'
+        ont_file: 'resources/ontology_source_list.txt'
         tfidf_mapping: "yes" if want to perform cosine similarity mapping using a TF-IDF matrix.
         clinical_domain: clinical domain of input data (i.e. "conditions", "drugs", or "measurements").
         onts: A comma-separated list of ontology prefixes that matches 'resources/oontology_source_list.txt'.
@@ -89,10 +89,10 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
                               concept_strings=concept_strings,
                               ancestor_codes=ancestor_codes,
                               ancestor_strings=ancestor_strings,
-                              umls_mrconso_file=glob.glob('resources/mappings/*MRCONSO*')[0]
-                              if len(glob.glob('resources/mappings/*MRCONSO*')) > 0 else None,
-                              umls_mrsty_file=glob.glob('resources/mappings/*MRSTY*')[0]
-                              if len(glob.glob('resources/mappings/*MRSTY*')) > 0 else None)
+                              umls_mrconso_file=glob.glob('resources/mappings/mapping_resources/*MRCONSO*')[0]
+                              if len(glob.glob('resources/mappings/mapping_resources/*MRCONSO*')) > 0 else None,
+                              umls_mrsty_file=glob.glob('resources/mappings/mapping_resources/*MRSTY*')[0]
+                              if len(glob.glob('resources/mappings/mapping_resources/*MRSTY*')) > 0 else None)
 
     mappings = mapper.clinical_concept_mapper()
 
