@@ -66,14 +66,8 @@ def main(ont_file: str, tfidf_mapping: str, clinical_domain: str, onts: list, cl
     # process ontologies
     ont_explorer = OntologyInfoExtractor('resources/ontologies', ont.data_files)
     ont_explorer.ontology_processor()
+    master_ont_dict = ont_explorer.master_ontology_dictionary
 
-    # create master dictionary of processed ontologies
-    ont_explorer.ontology_loader()
-
-    # read in ontology data
-    with open('resources/ontologies/master_ontology_dictionary.pickle', 'rb') as handle:
-        ont_data = pickle.load(handle)
-    handle.close()
 
     #########################
     # PROCESS CLINICAL DATA #

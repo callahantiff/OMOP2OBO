@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
 import os.path
+import pandas
 import pickle
 import shutil
 
@@ -108,8 +110,77 @@ class TestOntologyInfoExtractor(TestCase):
         # check lengths of sub-dictionaries
         self.assertTrue(len(results['label']) == 2237)
         self.assertTrue(len(results['definition']) == 2022)
-        self.assertTrue(len(results['dbxref']) == 535)
+        self.assertTrue(len(results['dbxref']) == 267)
         self.assertTrue(len(results['synonym']) == 2109)
+
+        return None
+
+    def test_creates_pandas_dataframe(self):
+        """Tests the creates_pandas_dataframe method."""
+
+        # load graph to enable testing
+        self.ontologies.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+
+        # run method
+        results = self.ontologies.get_ontology_information('so')
+        ont_df = self.ontologies.creates_pandas_dataframe(results, 'so')
+
+        # test method returned a Pandas DataFrame object
+        self.assertIsInstance(ont_df, pandas.DataFrame)
+        self.assertTrue(len(ont_df) == 8323)
+        cols = ['OBO_ontology_id', 'CODE', 'STRING', 'OBO_STRING_TYPE', 'DBXREF', 'OBO_DBXREF_TYPE',
+                'OBO_DBXREF_SAB_NAME', 'OBO_SAB', 'OBO_SAB_NAME', 'OBO_SEMANTIC_TYPE', 'OBO_DBXREF_SAB']
+        self.assertEqual(list(ont_df.columns), cols)
+
+        # check that pickled files were created
+        self.assertTrue(os.path.exists(self.ontology_directory + '/so_ontology_hierarchy_information.pkl'))
+
+        # clean up environment
+        os.remove(self.ontology_directory + '/so_ontology_hierarchy_information.pkl')
+
+        return None
+
+    def test_ontology_entity_finder(self):
+        """Tests the ontology_entity_finder method."""
+
+        # load graph to enable testing
+        self.ontologies.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+
+        # run method
+        results = self.ontologies.get_ontology_information('so')
+        ont_df = self.ontologies.creates_pandas_dataframe(results, 'so')
+        self.ontologies.ontology_entity_finder(ont_df, 'so')
+
+        # check that json files were created
+        anc = self.ontology_directory + '/so_ontology_ancestors.json'
+        kids = self.ontology_directory + '/so_ontology_children.json'
+        self.assertTrue(os.path.exists(anc))
+        self.assertTrue(os.path.exists(kids))
+
+        # read in data and check values
+        obo_anc = json.load(open(anc, 'r'))
+        obo_kid = json.load(open(kids, 'r'))
+        self.assertIsInstance(obo_anc, Dict)
+        self.assertIsInstance(obo_kid, Dict)
+        self.assertEqual(len(obo_anc), 2237)
+        self.assertEqual(len(obo_kid), 2237)
+
+        # obo ancs entry check
+        anc_ans = {'0': ['http://purl.obolibrary.org/obo/SO_0001999'],
+                   '1': ['http://purl.obolibrary.org/obo/SO_0000713'],
+                   '2': ['http://purl.obolibrary.org/obo/SO_0000714'],
+                   '3': ['http://purl.obolibrary.org/obo/SO_0001683'],
+                   '4': ['http://purl.obolibrary.org/obo/SO_0001411'],
+                   '5': ['http://purl.obolibrary.org/obo/SO_0000001'],
+                   '6': ['http://purl.obolibrary.org/obo/SO_0000110']}
+        self.assertEqual(obo_anc['http://purl.obolibrary.org/obo/SO_0002030'], anc_ans)
+
+        # obo kid entry check
+        self.assertEqual(len(obo_kid['http://purl.obolibrary.org/obo/SO_0000344']['0']), 2)
+
+        # clean up environment
+        os.remove(anc)
+        os.remove(kids)
 
         return None
 
@@ -119,54 +190,35 @@ class TestOntologyInfoExtractor(TestCase):
         # run method
         self.ontologies.ontology_processor()
 
-        # check that pickled files were created
-        self.assertTrue(os.path.exists(self.ontology_directory + '/so_without_imports_class_information.pickle'))
+        # check that files were created
+        obo = self.ontology_directory + '/so_ontology_hierarchy_information.pkl'
+        anc = self.ontology_directory + '/so_ontology_ancestors.json'
+        kids = self.ontology_directory + '/so_ontology_children.json'
+        self.assertTrue(os.path.exists(obo))
+        self.assertTrue(os.path.exists(anc))
+        self.assertTrue(os.path.exists(kids))
+
+        # read in the data
+        max_bytes = 2 ** 31 - 1; input_size = os.path.getsize(obo); bytes_in = bytearray(0)
+        with open(obo, 'rb') as f_in:
+            for _ in range(0, input_size, max_bytes): bytes_in += f_in.read(max_bytes)
+        obo_df = pickle.loads(bytes_in)
+        obo_anc = json.load(open(anc, 'r'))
+        obo_kid = json.load(open(kids, 'r'))
+
+        # make sure that Pandas DataFrame looks right
+        self.assertIsInstance(obo_df, pandas.DataFrame)
+        self.assertTrue(len(obo_df) == 8323)
+
+        # check results content of entity dictionaries
+        self.assertIsInstance(obo_anc, Dict)
+        self.assertIsInstance(obo_kid, Dict)
+        self.assertEqual(len(obo_anc), 2237)
+        self.assertEqual(len(obo_kid), 2237)
 
         # clean up environment
-        os.remove(self.ontology_directory + '/so_without_imports_class_information.pickle')
-
-        return None
-
-    def test_ontology_loader_no_pickled_data(self):
-        """Tests the ontology_loader method assuming no pickled data exists"""
-
-        # check if no pickled data is found
-        self.ontology_directory = self.dir_loc
-        self.assertRaises(OSError, self.ontologies.ontology_loader)
-
-        return None
-
-    def test_ontology_loader_pickled_data(self):
-        """Tests the ontology_loader method assuming pickled data exists."""
-
-        # test functionality assuming pickled data exists
-        self.ontologies.ontology_processor()
-        self.ontologies.ontology_loader()
-
-        # read back in data
-        with open(self.ontology_directory + '/master_ontology_dictionary.pickle', 'rb') as handle:
-            pickled_dict = pickle.load(handle)
-        handle.close()
-
-        # make sure that output is correct
-        self.assertTrue(len(pickled_dict.keys()) == 1)
-        self.assertTrue(len(pickled_dict['so']) == 4)
-        self.assertIsInstance(pickled_dict['so'], Dict)
-
-        # check results content
-        self.assertIn('label', pickled_dict['so'].keys())
-        self.assertIn('definition', pickled_dict['so'].keys())
-        self.assertIn('dbxref', pickled_dict['so'].keys())
-        self.assertIn('synonym', pickled_dict['so'].keys())
-
-        # check lengths of sub-dictionaries
-        self.assertTrue(len(pickled_dict['so']['label']) == 2237)
-        self.assertTrue(len(pickled_dict['so']['definition']) == 2022)
-        self.assertTrue(len(pickled_dict['so']['dbxref']) == 535)
-        self.assertTrue(len(pickled_dict['so']['synonym']) == 2109)
-
-        # clean up environment
-        os.remove(self.ontology_directory + '/so_without_imports_class_information.pickle')
-        os.remove(self.ontology_directory + '/master_ontology_dictionary.pickle')
+        os.remove(obo)
+        os.remove(anc)
+        os.remove(kids)
 
         return None
