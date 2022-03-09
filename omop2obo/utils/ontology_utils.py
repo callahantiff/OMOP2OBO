@@ -171,7 +171,7 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Optional[Dict]:
     dbxref_res = [x for x in tqdm(dbx1 | dbx2 | dbx3) if x[0] in cls]
 
     if len(dbxref_res) > 0:
-        dbx_uris: Dict = dict()
+        dbx_uris: Dict = dict(); k = str(list(cls)[0]).split('/')[-1].split('_')[0]
         for x in tqdm(dbxref_res):
             cls_id, dbx_type = str(x[0]), str(x[1]).split('/')[-1].replace('#', ':')
             if 'http' not in str(x[2]):
@@ -180,7 +180,8 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Optional[Dict]:
                 elif 'exactmatch' in dbx_type.lower():
                     dbx, dbx_src = str(x[2]).split(':')[1], str(x[2]).lower().split(':')[0]
                 elif 'hasalternativeid' in dbx_type.lower():
-                    dbx, dbx_src = str(x[2]).split(':')[1], str(x[2]).lower().split(':')[0]
+                    dbx = str(x[2]) if k in str(x[2]) else str(x[2]).split(':')[1]
+                    dbx_src = str(x[2]).lower().split(':')[0]
                 else: continue
                 # add identified cross-reference to dictionary
                 if cls_id in dbx_uris.keys(): dbx_uris[cls_id].append(tuple([dbx, dbx_type, dbx_src]))
