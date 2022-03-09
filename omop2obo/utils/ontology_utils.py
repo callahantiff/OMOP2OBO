@@ -165,10 +165,10 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Optional[Dict]:
 
     print('\nQuerying Knowledge Graph to Obtain all OWL:Class Object DbXRefs')
 
-    dbxref_res = [x for x in tqdm(graph) if x[0] in cls and
-                  ('hasdbxref' in str(x[1]).lower()
-                   or 'exactmatch' in str(x[1]).lower()
-                   or 'hasalternativeid' in str(x[1]).lower())]
+    dbx1 = set(graph.triples((None, oboinowl.hasDbXref, None)))
+    dbx2 = set(graph.triples((None, skos.exactMatch, None)))
+    dbx3 = set(graph.triples((None, oboinowl.hasAlternativeId, None)))
+    dbxref_res = [x for x in tqdm(dbx1 | dbx2 | dbx3) if x[0] in cls]
 
     if len(dbxref_res) > 0:
         dbx_uris: Dict = dict()
