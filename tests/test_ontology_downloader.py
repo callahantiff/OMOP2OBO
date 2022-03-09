@@ -69,10 +69,10 @@ class TestOntologyDownloader(TestCase):
 
         # checks that the file downloads
         self.ontologies.downloads_data_from_url(self.owltools_location)
-        self.assertTrue(os.path.exists(derived_path + 'hp_without_imports.owl'))
+        self.assertTrue(os.path.exists(derived_path + 'hp.owl'))
 
         # clean up environment
-        os.remove(self.dir_loc + '/ontologies/hp_without_imports.owl')
+        os.remove(self.dir_loc + '/ontologies/hp.owl')
         os.remove(self.dir_loc + '/ontologies/ontology_source_metadata.txt')
 
         return None
@@ -100,7 +100,7 @@ class TestOntologyDownloader(TestCase):
         self.assertTrue(os.path.exists(self.dir_loc + '/ontologies/ontology_source_metadata.txt'))
 
         # clean up environment
-        os.remove(self.dir_loc + '/ontologies/hp_without_imports.owl')
+        os.remove(self.dir_loc + '/ontologies/hp.owl')
         os.remove(self.dir_loc + '/ontologies/ontology_source_metadata.txt')
 
         return None
