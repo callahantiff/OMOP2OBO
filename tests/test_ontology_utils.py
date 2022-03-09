@@ -5,9 +5,9 @@ import os
 import os.path
 import unittest
 
-from typing import Dict, List, Set
+from typing import Dict, Set
 from rdflib import Graph, Namespace, URIRef  # type: ignore
-from rdflib.namespace import RDFS  # type: ignore
+from rdflib.namespace import OWL, RDF, RDFS  # type: ignore
 
 from omop2obo.utils import *
 
@@ -120,7 +120,7 @@ class TestOntologyUtils(unittest.TestCase):
         # retrieve classes form graph with data
         classes = gets_ontology_class_dbxrefs(graph, self.filter_classes)
         self.assertIsInstance(classes, Dict)
-        self.assertEqual(535, len(classes))
+        self.assertEqual(267, len(classes))
 
         return None
 
@@ -152,22 +152,52 @@ class TestOntologyUtils(unittest.TestCase):
 
         return None
 
-    def test_finds_entity_ancestors(self):
-        """Tests the finds_class_ancestors method."""
+    def test_clean_uri(self):
+        """Tests the clean_uri method."""
+
+        # read in ontology
+        graph = Graph().parse(self.good_ontology_file_location)
+
+        # create generator
+        test_data = graph.subjects(RDF.type, OWL.Class)
+
+        # test the method
+        result = clean_uri(test_data)
+        self.assertTrue(len(result) == 2573)
+
+        return None
+
+    def test_entity_search(self):
+        """Tests the entity_search method."""
 
         # load ontology
         graph = Graph().parse(self.good_ontology_file_location, format='xml')
         so_class = URIRef('http://purl.obolibrary.org/obo/SO_0000348')
 
         # get ancestors when a valid class is provided -- class is URIRef
-        ancestors1 = finds_entity_ancestors(graph, so_class, RDFS.subClassOf)
+        ancestors1 = entity_search(graph, so_class, 'ancestors', None, RDFS.subClassOf)
         self.assertIsInstance(ancestors1, Dict)
         self.assertEqual(ancestors1['0'], ['http://purl.obolibrary.org/obo/SO_0000443'])
+        self.assertEqual(ancestors1['1'], ['http://purl.obolibrary.org/obo/SO_0000400'])
 
         return None
 
-    def test_finds_entity_ancestors_bad_format(self):
-        """Tests the finds_class_ancestors method when badly formatted class_uris are passed."""
+    def test_entity_search_bad_format(self):
+        """Tests the entity_search method when badly formatted class_uris are passed."""
+
+        # load ontology
+        graph = Graph().parse(self.good_ontology_file_location, format='xml')
+        so_class = URIRef('http://purl.obolibrary.org/obo/SO_000034')
+
+        # get ancestors when a valid class is provided -- class is not URIRef
+        class_uri = str(so_class)
+        ancestors1 = entity_search(graph, class_uri, 'ancestors', None, RDFS.subClassOf)
+        self.assertEqual(ancestors1, None)
+
+        return None
+
+    def test_entity_search_bad_input(self):
+        """Tests the entity_search method when a bad value for search_type is passed."""
 
         # load ontology
         graph = Graph().parse(self.good_ontology_file_location, format='xml')
@@ -175,20 +205,34 @@ class TestOntologyUtils(unittest.TestCase):
 
         # get ancestors when a valid class is provided -- class is not URIRef
         class_uri = str(so_class)
-        ancestors1 = finds_entity_ancestors(graph, class_uri, RDFS.subClassOf)
-        self.assertIsInstance(ancestors1, Dict)
-        self.assertEqual(ancestors1['1'], ['http://purl.obolibrary.org/obo/SO_0000400'])
+        self.assertRaises(ValueError, entity_search, graph, class_uri, 'anc', None, RDFS.subClassOf)
 
         return None
 
-    def test_finds_entity_ancestors_none(self):
-        """Tests the finds_class_ancestors method when an empty set of class uris is passed."""
+    def test_entity_search_none(self):
+        """Tests the entity_search method when an empty set of class uris is passed."""
 
         # load ontology
         graph = Graph().parse(self.good_ontology_file_location, format='xml')
 
         # get ancestors when no class is provided
-        ancestors2 = finds_entity_ancestors(graph, '', RDFS.subClassOf)
+        ancestors2 = entity_search(graph, '', 'ancestors', None, RDFS.subClassOf)
         self.assertEqual(ancestors2, None)
+
+        return None
+
+    def test_entity_search_filtered(self):
+        """Tests the entity_search method when the method filters out all classes that are not from the core
+        ontology."""
+
+        # load ontology
+        graph = Graph().parse(self.good_ontology_file_location, format='xml')
+        so_class = URIRef('http://purl.obolibrary.org/obo/SO_0000348')
+
+        # get ancestors when no class is provided
+        ancestors3 = entity_search(graph, so_class, 'ancestors', 'SO', RDFS.subClassOf)
+        self.assertIsInstance(ancestors3, Dict)
+        self.assertEqual(ancestors3['0'], ['http://purl.obolibrary.org/obo/SO_0000443'])
+        self.assertEqual(ancestors3['1'], ['http://purl.obolibrary.org/obo/SO_0000400'])
 
         return None
