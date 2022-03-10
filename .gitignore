@@ -10,7 +10,6 @@ __pycache__
 .ipynb_checkpoints/*
 build/*
 dist/*
-
 resources/analyses/.DS_Store
 resources/analyses/.ipynb_checkpoints/*
 
@@ -29,13 +28,14 @@ releases/*
 !resources/analyses/*.py
 !resources/analyses/*.ipynb
 resources/clinical_data
+resources/*.zip
 !resources/clinical_data/README.md
 resources/documentation
 resources/mappings/
 !resources/mappings/condition_codes/.gitkeep
 !resources/mappings/laboratory_tests/.gitkeep
 !resources/mappings/medication_codes/.gitkeep
-!resources/mappings/source_code_vocab_map.csv
+!resources/vocabulary_aliases.csv
 resources/mapping_semantics
 !resources/mapping_semantics/*.md
 resources/ontologies/
