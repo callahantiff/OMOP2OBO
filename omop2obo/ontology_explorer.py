@@ -24,11 +24,26 @@ schema = Namespace('http://www.w3.org/2001/XMLSchema#')
 
 
 class OntologyInfoExtractor(object):
-    """Class creates an RDF graph from an OWL file and then performs queries to return DbXRefs, synonyms, and labels.
+    """Class processes downloaded OBO ontology OWL files. The data are processed in order to obtain important metadata
+    like labels, definitions, synonyms, and database cross-references and writes the data as a Pandas DataFrame
+    object. The class produces the following three files for each processed ontology (examples of the data stored in
+    each object are provided in the corresponding methods:
+        1. resources/ontologies/hp_ontology_hierarchy_information.pkl
+        2. resources/ontologies/hp_ontology_ancestors.json
+        3. resources/ontologies/hp_ontology_children.json
+
+    As each ontology is processed, the master_ontology_dictionary object is built, which is the primary output that
+    is utilized by the OMOP2OBO algorithm. An example of the data stored in this object is shown below.
+        {'hp': {
+                'df': 'resources/ontologies/hp_ontology_hierarchy_information.pkl',
+                'ancestors': 'resources/ontologies/hp_ontology_ancestors.json',
+                'children': 'resources/ontologies/hp_ontology_children.json'
+                }
+        }
 
     Attributes:
         graph: An rdflib graph object.
-        ont_dictionary: A dictionary, where keys are a string aliasing an ontology and values are a string pointing
+        ont_dictionary: A dictionary, where keys are an ontology alias (e.g., 'hp') and values are a string pointing
             the local location where the ontology was downloaded.
         ont_directory: A string containing the filepath to the ontology data directory.
 
@@ -43,154 +58,161 @@ class OntologyInfoExtractor(object):
         self.master_ontology_dictionary: Optional[Dict] = {}
 
         # check for ontology data
-        if not os.path.exists(ontology_directory):
-            raise OSError("Can't find 'ontologies/' directory, this directory is a required input")
-        elif len(glob.glob(ontology_directory + '/*.owl')) == 0:
-            raise TypeError('The ontologies directory is empty')
-        else:
-            self.ont_directory = ontology_directory
+        if not os.path.exists(ontology_directory): raise OSError("Can't find the 'resources/ontologies' directory")
+        elif len(glob.glob(ontology_directory + '/*.owl')) == 0: raise TypeError('The ontologies directory is empty')
+        else: self.ont_directory = ontology_directory
 
     def get_ontology_information(self, ont_id: str) -> Dict:
-        """Function queries an RDF graph and returns labels, definitions, dbXRefs, and synonyms for all
-        non-deprecated ontology classes.
+        """Function queries an rdflib Graph object and returns labels, definitions, dbXRefs, and synonyms for all
+        non-deprecated/obsolete ontology classes.
 
         Args:
-            ont_id: A string containing an ontology namespace.
+            ont_id: A string containing an ontology namespace (e.g., "hp").
 
-        Returns: A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
-            {'label': {'narrow naris': 'http://purl.obolibrary.org/obo/HP_0009933'},
-            'definition': {'agenesis of lower primary incisor.': 'http://purl.obolibrary.org/obo/HP_0011047'},
-            'dbxref': {'SNOMEDCT_US:88598008': 'http://purl.obolibrary.org/obo/HP_0000735'},
-            'synonyms': { 'open bite': 'http://purl.obolibrary.org/obo/HP_0010807'}}
+        Returns:
+            res: A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
+                    {'label': {'narrow naris': 'http://purl.obolibrary.org/obo/HP_0009933'},
+                    'definition': {'agenesis of lower primary incisor.': 'http://purl.obolibrary.org/obo/HP_0011047'},
+                    'dbxref': {'SNOMEDCT_US:88598008': 'http://purl.obolibrary.org/obo/HP_0000735'},
+                    'synonyms': { 'open bite': 'http://purl.obolibrary.org/obo/HP_0010807'}}
         """
 
-        # get class information
+        # identify current ontology classes in ont_id namespace
+        print('.Querying Ontology to Obtain all OWL:Class Objects')
+        ont_classes = gets_ontology_classes(self.graph, ont_id)
+        print('. .Querying Ontology to Obtain all Deprecated OWL:Class Objects')
         deprecated = gets_deprecated_ontology_classes(self.graph, ont_id)
+        print('. . .Querying Ontology to Obtain all Obsolete OWL:Class Objects')
         obsolete = gets_obsolete_ontology_classes(self.graph, ont_id)
-        filter_classes = set([x for x in gets_ontology_classes(self.graph, ont_id) if x not in deprecated | obsolete])
-
-        # filter results and add to dictionary
-        res: Dict = {
-            'label': gets_ontology_class_labels(self.graph, filter_classes),
-            'definition': gets_ontology_class_definitions(self.graph, filter_classes),
-            'dbxref': gets_ontology_class_dbxrefs(self.graph, filter_classes),
-            'synonym': gets_ontology_class_synonyms(self.graph, filter_classes)
-        }
+        filtered_classes = set([x for x in ont_classes if x not in deprecated | obsolete])
+        # obtain class-level metadata
+        print('. . . .Querying Ontology to Obtain all OWL:Class Object Labels')
+        ont_labels = gets_ontology_class_labels(self.graph, filtered_classes)
+        print('. . . . .Querying Ontology to Obtain all OWL:Class Object Definitions')
+        ont_definitions = gets_ontology_class_definitions(self.graph, filtered_classes)
+        print('. . . . . .Querying Ontology to Obtain all OWL:Class Object DbXRefs')
+        ont_dbx = gets_ontology_class_dbxrefs(self.graph, filtered_classes)
+        print('. . . . . . .Querying Ontology to Obtain all OWL:Class Object Synonyms')
+        ont_synonyms = gets_ontology_class_synonyms(self.graph, filtered_classes)
+        # store results as dictionary
+        res: Dict = {'label': ont_labels, 'definition': ont_definitions, 'dbxref': ont_dbx, 'synonym': ont_synonyms}
 
         return res
 
     def creates_pandas_dataframe(self, res: Dict, ont_id: str) -> pandas.DataFrame:
-        """Takes information about an ontology, processes it, adn then outputs it as a Pandas DataFrame object.
+        """Takes information about an ontology, processes it, and then outputs it as a Pandas DataFrame object,
+        which is also saved to the resources/ontologies directory.
 
         Args:
-            res: A dict mapping each DbXRef to a list containing the corresponding class ID and label. For example:
-                {'label': {'narrow naris': 'http://purl.obolibrary.org/obo/HP_0009933'},
-                'definition': {'agenesis of lower primary incisor.': 'http://purl.obolibrary.org/obo/HP_0011047'},
-                'dbxref': {'SNOMEDCT_US:88598008': 'http://purl.obolibrary.org/obo/HP_0000735'},
-                'synonyms': { 'open bite': 'http://purl.obolibrary.org/obo/HP_0010807'}}
-            ont_id: A string containing an ontology namespace.
+            res: A nested dictionary containing labels, definitions, dbxrefs, and synonyms for each ontology class.
+                For example:
+                    {'label': {'narrow naris': 'http://purl.obolibrary.org/obo/HP_0009933'},
+                    'definition': {'agenesis of lower primary incisor.': 'http://purl.obolibrary.org/obo/HP_0011047'},
+                    'dbxref': {'SNOMEDCT_US:88598008': 'http://purl.obolibrary.org/obo/HP_0000735'},
+                    'synonyms': { 'open bite': 'http://purl.obolibrary.org/obo/HP_0010807'}}
+            ont_id: A string containing an ontology namespace (e.g., "hp").
 
         Returns:
-             ont_df: A pandas DataFrame object containing ontology metadata.
+             ont_df: A Pandas DataFrame object containing ontology metadata. The DataFrame is written locally as a
+                pickled object. An example row of this DataFrame is shown below:
+                        obo_id                                  http://purl.obolibrary.org/obo/HP_0000552
+                        code                                                                   HP:0000552
+                        string                                                                tritanomaly
+                        string_type                                                           class label
+                        dbx                                                                       D003117
+                        dbx_type                                                       oboInOwl:hasDbXref
+                        dbx_source                                                                    msh
+                        dbx_source_name                                                               msh
+                        obo_source           http://purl.obolibrary.org/obo/hp/releases/2022-02-14/hp.owl
+                        obo_semantic_type                                                 human_phenotype
         """
 
-        # get needed ontology metadata
+        # get ontology metadata
         ns = list(self.graph.triples((None, URIRef(oboinowl + 'default-namespace'), None)))
         ns = str(ns[0][2]) if len(ns) > 0 else ont_id
         sab = str(list(self.graph.triples((None, OWL.versionIRI, None)))[0][2])
-
-        # convert data to mapping structure -- ontology labels
-        print('\nConverting Merged Data into Mapping Format')
-        ont_data = pandas.DataFrame({'ontology_id': k, 'CODE': k.split('/')[-1].replace('_', ':'), 'STRING': v,
-                                     'STRING_TYPE': 'class label'} for k, v in res['label'].items())
-        ont_defs = pandas.DataFrame({'ontology_id': k, 'CODE': k.split('/')[-1].replace('_', ':'), 'STRING': v,
-                                     'STRING_TYPE': 'class definition'} for k, v in res['definition'].items())
-        # merge ontology classes and definitions
-        ont_base = pandas.concat([ont_data, ont_defs]).drop_duplicates()
-        # process synonyms
-        ont_syn = pandas.DataFrame({'ontology_id': y[0], 'CODE': y[0].split('/')[-1].replace('_', ':'), 'STRING': x[0],
-                                    'STRING_TYPE': x[1]}
-                                   for y in [(k, v) for k, v in res['synonym'].items()] for x in y[1])
-        ont_base_syn = ont_base.merge(ont_syn, on=list(set(ont_base).intersection(set(ont_syn))),
-                                      how='outer').drop_duplicates()
+        # process labels, definitions, and synonyms
+        labs = pandas.DataFrame({'obo_id': k, 'code': k.split('/')[-1].replace('_', ':'), 'string': v,
+                                 'string_type': 'class label'} for k, v in res['label'].items())
+        defs = pandas.DataFrame({'obo_id': k, 'code': k.split('/')[-1].replace('_', ':'), 'string': v,
+                                 'string_type': 'class definition'} for k, v in res['definition'].items())
+        syn = pandas.DataFrame({'obo_id': y[0], 'code': y[0].split('/')[-1].replace('_', ':'), 'string': x[0],
+                                'string_type': x[1]} for y in [(k, v) for k, v in res['synonym'].items()] for x in y[1])
+        ont_df = pandas.concat([labs, defs, syn]).drop_duplicates()
         # process dbxrefs
-        ont_dbx = pandas.DataFrame({'ontology_id': y[0], 'CODE': y[0].split('/')[-1].replace('_', ':'), 'DBXREF': x[0],
-                                    'DBXREF_TYPE': x[1], 'DBXREF_SAB_NAME': x[2]}
-                                   for y in [(k, v) for k, v in res['dbxref'].items()] for x in y[1])
-        ont_base_syn_dbx = ont_base_syn.merge(ont_dbx, on=list(set(ont_base_syn).intersection(set(ont_dbx))),
-                                              how='outer').drop_duplicates()
+        dbx = pandas.DataFrame({'obo_id': y[0], 'code': y[0].split('/')[-1].replace('_', ':'), 'dbx': x[0],
+                                'dbx_type': x[1], 'dbx_source': x[2], 'dbx_source_name': x[2]}
+                               for y in [(k, v) for k, v in res['dbxref'].items()] for x in y[1])
+        ont_df = ont_df.merge(dbx, on=['obo_id', 'code'], how='left').drop_duplicates()
         # add metadata
-        ont_base_syn_dbx['SAB'] = sab; ont_base_syn_dbx['SAB_NAME'] = sab; ont_base_syn_dbx['SEMANTIC_TYPE'] = ns
-        # rename columns
-        ont_df = ont_base_syn_dbx
-        ont_df.rename(columns={'ontology_id': 'OBO_ontology_id', 'STRING_TYPE': 'OBO_STRING_TYPE',
-                               'SEMANTIC_TYPE': 'OBO_SEMANTIC_TYPE', 'SAB': 'OBO_SAB', 'SAB_NAME': 'OBO_SAB_NAME',
-                               'DBXREF_TYPE': 'OBO_DBXREF_TYPE', 'DBXREF_SAB_NAME': 'OBO_DBXREF_SAB_NAME'},
-                      inplace=True)
-        ont_df['OBO_DBXREF_SAB'] = ont_df['OBO_DBXREF_SAB_NAME']
+        ont_df['obo_source'] = sab; ont_df['obo_semantic_type'] = ns
         ont_df = ont_df.fillna('None').drop_duplicates()
-
-        # save data
-        file_str = '{}/{}_ontology_hierarchy_information.pkl'
+        # write data to local directory (resources/ontologies)
+        out = '{}/{}_ontology_hierarchy_information.pkl'.format(self.ont_directory, ont_id)
         max_bytes, bytes_out = 2 ** 31 - 1, pickle.dumps(ont_df); n_bytes = sys.getsizeof(bytes_out)
-        with open(file_str.format(self.ont_directory, ont_id), 'wb') as f_out:
-            for idx in range(0, n_bytes, max_bytes):
-                f_out.write(bytes_out[idx:idx + max_bytes])
+        with open(out, 'wb') as f_out:
+            for idx in range(0, n_bytes, max_bytes): f_out.write(bytes_out[idx:idx + max_bytes])
+        self.master_ontology_dictionary[ont_id]['df'] = out
+        print('.Wrote Pandas DataFrame to: {}'.format(out))
 
         return ont_df
 
     def ontology_entity_finder(self, ont_df: pandas.DataFrame, ont_id: str) -> None:
         """Function takes an ontology and finds all ancestors and children for each ontology class. The function
-        returns a separate dictionary for each entity type/
+        returns a separate dictionary for each entity type, for each class a dictionary is returned where keys are
+        numbers representing the number of levels below (children) or above (ancestors) that each concept is found. An
+        example of the output produced for each derived dictionary is shown below:
+            ancestors: {'http://purl.obolibrary.org/obo/HP_0003743':
+                            {'0':  ['http://purl.obolibrary.org/obo/HP_0000005'],
+                             '1': ['http://purl.obolibrary.org/obo/HP_0000001']}, ...}
+            children: {'http://purl.obolibrary.org/obo/HP_0003743':
+                            {'0': ['http://purl.obolibrary.org/obo/HP_0003744']}, ...}
 
         Args:
-            ont_df: A Pandas DataFrame containing information which has been processed to ensure ease of processing
-                in the current library.
-            ont_id: A string containing an ontology namespace.
+            ont_df: A Pandas DataFrame containing ontology data (see creates_pandas_dataframe() comment for details).
+            ont_id: A string containing an ontology namespace (e.g., "hp").
 
         Return:
             None.
         """
 
-        sab = str(list(self.graph.triples((None, OWL.versionIRI, None)))[0][2])
+        print('. Obtaining Ontology Concept Ancestors')
+        cls = set(ont_df['obo_id'])
+        obo_ancs = {x: entity_search(self.graph, x, 'ancestors', ont_id.upper(), RDFS.subClassOf) for x in tqdm(cls)}
+        print('. . Obtaining Ontology Descendants. Please be patient, this can take several minutes.')
+        obo_kids = {x: entity_search(self.graph, x, 'children', ont_id.upper(), RDFS.subClassOf) for x in tqdm(cls)}
 
-        # process ancestors
-        print('\t- Obtaining Concept Ancestors and Children. This Process Takes Several Minutes')
-        obo_ancs = {
-            x: entity_search(self.graph, x, 'ancestors', sab.split('/')[-1].split('.')[0].upper(), RDFS.subClassOf)
-            for x in tqdm(set(ont_df['OBO_ontology_id']))}
-        obo_kids = {
-            x: entity_search(self.graph, x, 'children', sab.split('/')[-1].split('.')[0].upper(), RDFS.subClassOf)
-            for x in tqdm(set(ont_df['OBO_ontology_id']))}
-
-        # write data
+        # write results to local directory (resources/ontologies)
         anc_file_str, kid_file_str = '{}/{}_ontology_ancestors.json', '{}/{}_ontology_children.json'
-        json.dump(obo_ancs, open(anc_file_str.format(self.ont_directory, ont_id), 'w'))
-        json.dump(obo_kids, open(kid_file_str.format(self.ont_directory, ont_id), 'w'))
+        self.master_ontology_dictionary[ont_id]['ancestors'] = anc_file_str.format(self.ont_directory, ont_id)
+        self.master_ontology_dictionary[ont_id]['children'] = kid_file_str.format(self.ont_directory, ont_id)
+        json.dump(obo_ancs, open(self.master_ontology_dictionary[ont_id]['ancestors'], 'w'))
+        json.dump(obo_kids, open(self.master_ontology_dictionary[ont_id]['children'], 'w'))
+        print('. . .Wrote Ancestor Dictionary to: {}'.format(self.master_ontology_dictionary[ont_id]['ancestors']))
+        print('. . . . Wrote Descendant Dictionary to: {}'.format(self.master_ontology_dictionary[ont_id]['children']))
 
         return None
 
     def ontology_processor(self) -> None:
-        """Using different information from the user, this function retrieves all class labels, definitions,
-        synonyms, and database cross-references (dbXref). The function expects a dictionary as input where the keys are
-        short nick-names or OBO abbreviations for ontologies and the values are lists, where the first item is a string
-        that contains the file path information to the downloaded ontology, the second item is a list of clinical
-        identifiers that can be used for filtering the dbXrefs. An example of this input is shown below.
-
-            {'CHEBI': ['resources/ontologies/chebi_without_imports.owl', ['DrugBank', 'ChEMBL', 'UniProt']]}
+        """This function retrieves metadata (i.e., labels, definitions, synonyms, and database cross-references) for
+        each ontology. Core metadata are converted to a Pandas DataFrame and two dictionaries are created to store all
+        ontology class ancestor and descendant concepts. The DataFrame and dictionaries are written to the
+        resources/ontologies directory.
 
         Returns:
             None.
         """
 
         for ont in self.ont_dictionary.items():
+            self.master_ontology_dictionary[ont[0]] = {'df': None, 'ancestors': None, 'children': None}
             print('\nPROCESSING ONTOLOGY: {0}'.format(ont[0]))
-            print('Loading RDF Graph ... Please be patient, this step can take several minutes for large files.')
+            print('STEP 1: Loading Data...Please be patient, this step can take several minutes.')
             self.graph = Graph().parse(ont[1], format='xml')
-
-            # get ontology information
+            print('\nSTEP 2: Obtaining Ontology Metadata')
             ont_dict = self.get_ontology_information(ont[0])
+            print('\nSTEP 3: Converting Metadata into Pandas DataFrame')
             ont_df = self.creates_pandas_dataframe(ont_dict, ont[0])
+            print('\nSTEP 4: Obtaining Ancestors and Descendants for each Ontology Class')
             self.ontology_entity_finder(ont_df, ont[0])
 
         return None

@@ -120,6 +120,7 @@ class TestOntologyInfoExtractor(TestCase):
 
         # load graph to enable testing
         self.ontologies.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+        self.ontologies.master_ontology_dictionary['so'] = {'df': None, 'ancestors': None, 'children': None}
 
         # run method
         results = self.ontologies.get_ontology_information('so')
@@ -128,15 +129,13 @@ class TestOntologyInfoExtractor(TestCase):
         # test method returned a Pandas DataFrame object
         self.assertIsInstance(ont_df, pandas.DataFrame)
         self.assertTrue(len(ont_df) == 8323)
-        cols = ['OBO_ontology_id', 'CODE', 'STRING', 'OBO_STRING_TYPE', 'DBXREF', 'OBO_DBXREF_TYPE',
-                'OBO_DBXREF_SAB_NAME', 'OBO_SAB', 'OBO_SAB_NAME', 'OBO_SEMANTIC_TYPE', 'OBO_DBXREF_SAB']
+        cols = ['obo_id', 'code', 'string', 'string_type', 'dbx', 'dbx_type', 'dbx_source', 'dbx_source_name',
+                'obo_source', 'obo_semantic_type']
         self.assertEqual(list(ont_df.columns), cols)
 
         # check that pickled files were created
         self.assertTrue(os.path.exists(self.ontology_directory + '/so_ontology_hierarchy_information.pkl'))
-
-        # clean up environment
-        os.remove(self.ontology_directory + '/so_ontology_hierarchy_information.pkl')
+        os.remove(self.ontology_directory + '/so_ontology_hierarchy_information.pkl')  # clean up environment
 
         return None
 
@@ -145,6 +144,7 @@ class TestOntologyInfoExtractor(TestCase):
 
         # load graph to enable testing
         self.ontologies.graph = Graph().parse(self.ontology_directory + '/so_without_imports.owl', format='xml')
+        self.ontologies.master_ontology_dictionary['so'] = {'df': None, 'ancestors': None, 'children': None}
 
         # run method
         results = self.ontologies.get_ontology_information('so')
@@ -215,6 +215,9 @@ class TestOntologyInfoExtractor(TestCase):
         self.assertIsInstance(obo_kid, Dict)
         self.assertEqual(len(obo_anc), 2237)
         self.assertEqual(len(obo_kid), 2237)
+
+        # check the output of the metadata dictionary
+        print(self.ontologies.master_ontology_dictionary)
 
         # clean up environment
         os.remove(obo)
