@@ -6,14 +6,14 @@
 import glob
 import json
 import os
-import pandas
+import pandas  # type: ignore
 import pickle
 import sys
 
 from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
 from rdflib.namespace import RDF, RDFS, OWL  # type: ignore
-from tqdm import tqdm
-from typing import Dict, Optional
+from tqdm import tqdm  # type: ignore
+from typing import Dict, List, Optional, Union
 
 from omop2obo.utils import *
 
@@ -53,9 +53,10 @@ class OntologyInfoExtractor(object):
     """
 
     def __init__(self, ontology_directory: str, ont_dictionary: Dict) -> None:
+
         self.graph: Graph = Graph()
         self.ont_dictionary = ont_dictionary
-        self.master_ontology_dictionary: Optional[Dict] = {}
+        self.master_ontology_dictionary: Dict = {}
 
         # check for ontology data
         if not os.path.exists(ontology_directory): raise OSError("Can't find the 'resources/ontologies' directory")
@@ -63,8 +64,8 @@ class OntologyInfoExtractor(object):
         else: self.ont_directory = ontology_directory
 
     def get_ontology_information(self, ont_id: str) -> Dict:
-        """Function queries an rdflib Graph object and returns labels, definitions, dbXRefs, and synonyms for all
-        non-deprecated/obsolete ontology classes.
+        """Queries an rdflib Graph object and returns labels, definitions, dbXRefs, and synonyms for all
+        non-deprecated and obsolete ontology classes.
 
         Args:
             ont_id: A string containing an ontology namespace (e.g., "hp").
@@ -100,8 +101,8 @@ class OntologyInfoExtractor(object):
         return res
 
     def creates_pandas_dataframe(self, res: Dict, ont_id: str) -> pandas.DataFrame:
-        """Takes information about an ontology, processes it, and then outputs it as a Pandas DataFrame object,
-        which is also saved to the resources/ontologies directory.
+        """Processes ontology information stored in a nested dictionary and then outputs it as a Pandas DataFrame
+        object, which is also saved to the resources/ontologies directory.
 
         Args:
             res: A nested dictionary containing labels, definitions, dbxrefs, and synonyms for each ontology class.
@@ -128,7 +129,7 @@ class OntologyInfoExtractor(object):
         """
 
         # get ontology metadata
-        ns = list(self.graph.triples((None, URIRef(oboinowl + 'default-namespace'), None)))
+        ns: Union[List, str] = list(self.graph.triples((None, URIRef(oboinowl + 'default-namespace'), None)))
         ns = str(ns[0][2]) if len(ns) > 0 else ont_id
         sab = str(list(self.graph.triples((None, OWL.versionIRI, None)))[0][2])
         # process labels, definitions, and synonyms
@@ -158,10 +159,10 @@ class OntologyInfoExtractor(object):
         return ont_df
 
     def ontology_entity_finder(self, ont_df: pandas.DataFrame, ont_id: str) -> None:
-        """Function takes an ontology and finds all ancestors and children for each ontology class. The function
-        returns a separate dictionary for each entity type, for each class a dictionary is returned where keys are
-        numbers representing the number of levels below (children) or above (ancestors) that each concept is found. An
-        example of the output produced for each derived dictionary is shown below:
+        """Finds all ancestors and children for each ontology class. The function returns a separate dictionary for
+        each entity type, for each class a dictionary is returned where keys are numbers representing the number of
+        levels below (children) or above (ancestors) that each concept is found. An example of the output produced
+        for each derived dictionary is shown below:
             ancestors: {'http://purl.obolibrary.org/obo/HP_0003743':
                             {'0':  ['http://purl.obolibrary.org/obo/HP_0000005'],
                              '1': ['http://purl.obolibrary.org/obo/HP_0000001']}, ...}
@@ -194,9 +195,9 @@ class OntologyInfoExtractor(object):
         return None
 
     def ontology_processor(self) -> None:
-        """This function retrieves metadata (i.e., labels, definitions, synonyms, and database cross-references) for
-        each ontology. Core metadata are converted to a Pandas DataFrame and two dictionaries are created to store all
-        ontology class ancestor and descendant concepts. The DataFrame and dictionaries are written to the
+        """Retrieves metadata (i.e., labels, definitions, synonyms, and database cross-references) for each ontology.
+        Core metadata are converted to a Pandas DataFrame and two dictionaries are created to store all ontology
+        class ancestor and descendant concepts. The DataFrame and dictionaries are written to the
         resources/ontologies directory.
 
         Returns:
@@ -205,7 +206,7 @@ class OntologyInfoExtractor(object):
 
         for ont in self.ont_dictionary.items():
             self.master_ontology_dictionary[ont[0]] = {'df': None, 'ancestors': None, 'children': None}
-            print('\nPROCESSING ONTOLOGY: {0}'.format(ont[0]))
+            print('===' * 15 + '\nPROCESSING ONTOLOGY: {}\n'.format(ont[0]) + '===' * 15)
             print('STEP 1: Loading Data...Please be patient, this step can take several minutes.')
             self.graph = Graph().parse(ont[1], format='xml')
             print('\nSTEP 2: Obtaining Ontology Metadata')
