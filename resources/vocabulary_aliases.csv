@@ -1,0 +1,1405 @@
+﻿data_source,primary_abbreviation,provided_acronym,full_name
+Other,aao,aao,
+Other,aao,AAO,
+Other,aba,aba,
+Other,aba,ABA,
+OMOP,abms,ABMS,Provider Specialty (American Board of Medical Specialties) (2018-06-26 ABMS)
+OMOP,abms,abms,Provider Specialty (American Board of Medical Specialties) (2018-06-26 ABMS)
+Other,aeo,aeo,
+Other,aeo,AEO,
+Other,aeo,aeo_retired,
+Other,aeo,AEO_RETIRED,
+Other,agr,agr,
+Other,agr,AGR,
+UMLS,air,AIR,"AI/RHEUM, 1993"
+UMLS,air,air,"AI/RHEUM, 1993"
+Other,air,air,
+Other,air,AIR,
+UMLS,alt,ALT,"Alternative Billing Concepts, 2009"
+UMLS,alt,alt,"Alternative Billing Concepts, 2009"
+Other,alt,ALT,
+Other,alt,alt,
+Other,alzforum_mut,alzforum_mut,
+Other,alzforum_mut,ALZFORUM_MUT,
+OMOP,amt,AMT,Australian Medicines Terminology (NEHTA) (AMT 01-SEP-17)
+OMOP,amt,amt,Australian Medicines Terminology (NEHTA) (AMT 01-SEP-17)
+Other,aniseed,aniseed,
+Other,aniseed,ANISEED,
+UMLS,aod,AOD,"Alcohol and Other Drug Thesaurus, 2000"
+UMLS,aod,aod,"Alcohol and Other Drug Thesaurus, 2000"
+Other,aod,AOD,
+Other,aod,aod,
+UMLS,aot,AOT,"Authorized Osteopathic Thesaurus, 2003"
+UMLS,aot,aot,"Authorized Osteopathic Thesaurus, 2003"
+Other,aot,AOT,
+Other,aot,aot,
+OMOP,apc,APC,Ambulatory Payment Classification (CMS) (2018-January-Addendum-A)
+OMOP,apc,apc,Ambulatory Payment Classification (CMS) (2018-January-Addendum-A)
+UMLS,atc,ATC,"Anatomical Therapeutic Chemical Classification System, ATC_2021"
+UMLS,atc,atc,"Anatomical Therapeutic Chemical Classification System, ATC_2021"
+OMOP,atc,ATC,WHO Anatomic Therapeutic Chemical Classification (RxNorm 20200504)
+OMOP,atc,atc,WHO Anatomic Therapeutic Chemical Classification (RxNorm 20200504)
+Other,atc,ATC,
+Other,atc,atc,
+Other,bams,bams,
+Other,bams,BAMS,
+OMOP,bdpm,BDPM,Public Database of Medications (Social-Sante) (BDPM 20191006)
+OMOP,bdpm,bdpm,Public Database of Medications (Social-Sante) (BDPM 20191006)
+Other,beilstein,beilstein,
+Other,beilstein,BEILSTEIN,
+UMLS,bi,BI,"Beth Israel Vocabulary, 1.0"
+UMLS,bi,bi,"Beth Israel Vocabulary, 1.0"
+Other,bi,BI,
+Other,bi,bi,
+Other,bila,bila,
+Other,bila,BILA,
+Other,bilado,bilado,
+Other,bilado,BILADO,
+Other,bils,bils,
+Other,bils,BILS,
+Other,birnlex,birnlex,
+Other,birnlex,BIRNLEX,
+Other,bm,bm,
+Other,bm,BM,
+Other,bpdb,bpdb,
+Other,bpdb,BPDB,
+Other,bsa,bsa,
+Other,bsa,BSA,
+Other,bto,bto,
+Other,bto,BTO,
+Other,caloha,caloha,
+Other,caloha,CALOHA,
+OMOP,cancer_modifier,Cancer Modifier,Diagnostic Modifiers of Cancer (OMOP) (Cancer Modifier 20201014)
+OMOP,cancer_modifier,CANCER MODIFIER,Diagnostic Modifiers of Cancer (OMOP) (Cancer Modifier 20201014)
+OMOP,cancer_modifier,cancer modifier,Diagnostic Modifiers of Cancer (OMOP) (Cancer Modifier 20201014)
+Other,caro,caro,
+Other,caro,CARO,
+Other,cas,cas,
+Other,cas,CAS,
+Other,cba,cba,
+Other,cba,CBA,
+OMOP,ccam,CCAM,Common Classification of Medical Acts (CCAM version 64)
+OMOP,ccam,ccam,Common Classification of Medical Acts (CCAM version 64)
+UMLS,ccc,CCC,"Clinical Care Classification, 2_5_2018"
+UMLS,ccc,ccc,"Clinical Care Classification, 2_5_2018"
+Other,ccc,CCC,
+Other,ccc,ccc,
+UMLS,ccpss,CCPSS,"Canonical Clinical Problem Statement System, 1999"
+UMLS,ccpss,ccpss,"Canonical Clinical Problem Statement System, 1999"
+Other,ccpss,CCPSS,
+Other,ccpss,ccpss,
+UMLS,ccs,CCS,"Clinical Classifications Software, 2005"
+UMLS,ccs,ccs,"Clinical Classifications Software, 2005"
+Other,ccs,ccs,
+Other,ccs,CCS,
+Other,ccs,CCS_10,
+Other,ccs,ccs_10,
+Other,ccsr,CCSR_10,
+Other,ccsr,ccsr_10,
+UMLS,ccsr,CCSR_ICD10CM,"Clinical Classifications Software Refined for ICD-10-CM, 2021"
+UMLS,ccsr,ccsr_icd10cm,"Clinical Classifications Software Refined for ICD-10-CM, 2021"
+UMLS,ccsr,CCSR_ICD10PCS,"Clinical Classifications Software Refined for ICD-10-PCS, 2021"
+UMLS,ccsr,ccsr_icd10pcs,"Clinical Classifications Software Refined for ICD-10-PCS, 2021"
+UMLS,cdc,NCI_CDC,"U.S. Centers for Disease Control and Prevention, 2009D"
+UMLS,cdc,nci_cdc,"U.S. Centers for Disease Control and Prevention, 2009D"
+UMLS,cdt,CDT,"Code on Dental Procedures and Nomenclature, 2021"
+UMLS,cdt,cdt,"Code on Dental Procedures and Nomenclature, 2021"
+Other,cdt,CDT,
+Other,cdt,cdt,
+OMOP,cgi,CGI,Cancer Genome Interpreter (Pompeu Fabra University) (CGI v20180117)
+OMOP,cgi,cgi,Cancer Genome Interpreter (Pompeu Fabra University) (CGI v20180117)
+Other,chemidplus,chemidplus,
+Other,chemidplus,CHEMIDPLUS,
+Other,chemspider,chemspider,
+Other,chemspider,CHEMSPIDER,
+UMLS,chv,CHV,"Consumer Health Vocabulary, 2011_02"
+UMLS,chv,chv,"Consumer Health Vocabulary, 2011_02"
+Other,chv,CHV,
+Other,chv,chv,
+OMOP,ciel,CIEL,Columbia International eHealth Laboratory (Columbia University) (Openmrs 1.11.0 20150227)
+OMOP,ciel,ciel,Columbia International eHealth Laboratory (Columbia University) (Openmrs 1.11.0 20150227)
+OMOP,cim10,CIM10,"International Classification of Diseases, Tenth Revision, French Edition (CIM10 2020)"
+OMOP,cim10,cim10,"International Classification of Diseases, Tenth Revision, French Edition (CIM10 2020)"
+OMOP,civic,CIViC,Clinical Interpretation of Variants in Cancer (civicdb.org) (CIViC v20170425)
+OMOP,civic,CIVIC,Clinical Interpretation of Variants in Cancer (civicdb.org) (CIViC v20170425)
+OMOP,civic,civic,Clinical Interpretation of Variants in Cancer (civicdb.org) (CIViC v20170425)
+Other,cl,cl,
+Other,cl,CL,
+OMOP,clinvar,ClinVar,ClinVar (NCBI) (ClinVar v20200901)
+OMOP,clinvar,CLINVAR,ClinVar (NCBI) (ClinVar v20200901)
+OMOP,clinvar,clinvar,ClinVar (NCBI) (ClinVar v20200901)
+OMOP,cms,CMS Place of Service,Place of Service Codes for Professional Claims (CMS) (2009-01-11)
+OMOP,cms,CMS PLACE OF SERVICE,Place of Service Codes for Professional Claims (CMS) (2009-01-11)
+OMOP,cms,cms place of service,Place of Service Codes for Professional Claims (CMS) (2009-01-11)
+OMOP,cms,Medicare Specialty,Medicare provider/supplier specialty codes (CMS) (2018-06-26 Specialty)
+OMOP,cms,MEDICARE SPECIALTY,Medicare provider/supplier specialty codes (CMS) (2018-06-26 Specialty)
+OMOP,cms,medicare specialty,Medicare provider/supplier specialty codes (CMS) (2018-06-26 Specialty)
+OMOP,cms,Revenue Code,UB04/CMS1450 Revenue Codes (CMS) (2010 Release)
+OMOP,cms,REVENUE CODE,UB04/CMS1450 Revenue Codes (CMS) (2010 Release)
+OMOP,cms,revenue code,UB04/CMS1450 Revenue Codes (CMS) (2010 Release)
+OMOP,cms,UB04 Point of Origin,UB04 Claim Source Inpatient Admission Code (CMS) (None)
+OMOP,cms,UB04 POINT OF ORIGIN,UB04 Claim Source Inpatient Admission Code (CMS) (None)
+OMOP,cms,ub04 point of origin,UB04 Claim Source Inpatient Admission Code (CMS) (None)
+OMOP,cms,UB04 Pri Typ of Adm,UB04 Claim Inpatient Admission Type Code (CMS) (None)
+OMOP,cms,UB04 PRI TYP OF ADM,UB04 Claim Inpatient Admission Type Code (CMS) (None)
+OMOP,cms,ub04 pri typ of adm,UB04 Claim Inpatient Admission Type Code (CMS) (None)
+OMOP,cms,UB04 Pt dis status,UB04 Patient Discharge Status Code (CMS) (None)
+OMOP,cms,UB04 PT DIS STATUS,UB04 Patient Discharge Status Code (CMS) (None)
+OMOP,cms,ub04 pt dis status,UB04 Patient Discharge Status Code (CMS) (None)
+OMOP,cms,UB04 Typ bill,UB04 Type of Bill - Institutional (USHIK) (None)
+OMOP,cms,UB04 TYP BILL,UB04 Type of Bill - Institutional (USHIK) (None)
+OMOP,cms,ub04 typ bill,UB04 Type of Bill - Institutional (USHIK) (None)
+OBO,cohd,cohd,cohd
+OBO,cohd,COHD,cohd
+Other,cohd,cohd,
+Other,cohd,COHD,
+OMOP,cohort,Cohort,Legacy OMOP HOI or DOI cohort (None)
+OMOP,cohort,COHORT,Legacy OMOP HOI or DOI cohort (None)
+OMOP,cohort,cohort,Legacy OMOP HOI or DOI cohort (None)
+Other,cohort,cohort,
+Other,cohort,COHORT,
+Other,come,come,
+Other,come,COME,
+UMLS,costar,COSTAR,"COSTAR, 1989-1995"
+UMLS,costar,costar,"COSTAR, 1989-1995"
+Other,costar,COSTAR,
+Other,costar,costar,
+Other,cp,cp,
+Other,cp,CP,
+UMLS,cpm,CPM,"Medical Entities Dictionary, 2003"
+UMLS,cpm,cpm,"Medical Entities Dictionary, 2003"
+Other,cpm,CPM,
+Other,cpm,cpm,
+UMLS,cpt,CPT,"Current Procedural Terminology, 2021"
+UMLS,cpt,cpt,"Current Procedural Terminology, 2021"
+Other,cpt,CPT,
+Other,cpt,cpt,
+Other,cptsp,CPTSP,
+Other,cptsp,cptsp,
+UMLS,csp,CSP,"CRISP Thesaurus, 2006"
+UMLS,csp,csp,"CRISP Thesaurus, 2006"
+Other,csp,csp,
+Other,csp,CSP,
+UMLS,cst,CST,"COSTART, 1995"
+UMLS,cst,cst,"COSTART, 1995"
+Other,cst,CST,
+Other,cst,cst,
+UMLS,ctcae,NCI_CTCAE,"Common Terminology Criteria for Adverse Events, 2009D"
+UMLS,ctcae,nci_ctcae,"Common Terminology Criteria for Adverse Events, 2009D"
+Other,ctcae,NCI_CTCAE,
+Other,ctcae,nci_ctcae,
+UMLS,ctcae,NCI_CTCAE_3,"Common Terminology Criteria for Adverse Events 3.0, 2009D"
+UMLS,ctcae,nci_ctcae_3,"Common Terminology Criteria for Adverse Events 3.0, 2009D"
+Other,ctcae,NCI_CTCAE_3,
+Other,ctcae,nci_ctcae_3,
+UMLS,ctcae,NCI_CTCAE_5,"Common Terminology Criteria for Adverse Events 5.0, 2009D"
+UMLS,ctcae,nci_ctcae_5,"Common Terminology Criteria for Adverse Events 5.0, 2009D"
+Other,ctcae,NCI_CTCAE_5,
+Other,ctcae,nci_ctcae_5,
+OMOP,ctd,CTD,Comparative Toxicogenomic Database (CTD 2020-02-19)
+OMOP,ctd,ctd,Comparative Toxicogenomic Database (CTD 2020-02-19)
+UMLS,ctep-sdc,NCI_CTEP-SDC,"Cancer Therapy Evaluation Program - Simple Disease Classification, 2009D"
+UMLS,ctep-sdc,nci_ctep-sdc,"Cancer Therapy Evaluation Program - Simple Disease Classification, 2009D"
+Other,ctep-sdc,NCI_CTEP-SDC,
+Other,ctep-sdc,nci_ctep-sdc,
+UMLS,ctv3,RCD,"Clinical Terms Version 3 (CTV3) (Read Codes), 1999"
+UMLS,ctv3,rcd,"Clinical Terms Version 3 (CTV3) (Read Codes), 1999"
+Other,ctv3,RCD,
+Other,ctv3,rcd,
+UMLS,ctv3,RCDAE,"Read thesaurus, American English Equivalents, 1999"
+UMLS,ctv3,rcdae,"Read thesaurus, American English Equivalents, 1999"
+Other,ctv3,RCDAE,
+Other,ctv3,rcdae,
+UMLS,ctv3,RCDSA,"Read thesaurus Americanized Synthesized Terms, 1999"
+UMLS,ctv3,rcdsa,"Read thesaurus Americanized Synthesized Terms, 1999"
+Other,ctv3,RCDSA,
+Other,ctv3,rcdsa,
+UMLS,ctv3,RCDSY,"Read thesaurus, Synthesized Terms, 1999"
+UMLS,ctv3,rcdsy,"Read thesaurus, Synthesized Terms, 1999"
+Other,ctv3,RCDSY,
+Other,ctv3,rcdsy,
+Other,ctx,ctx,
+Other,ctx,CTX,
+OMOP,cvx,CVX,CDC Vaccine Administered CVX (NCIRD) (CVX Code Set 2021-01-26)
+OMOP,cvx,cvx,CDC Vaccine Administered CVX (NCIRD) (CVX Code Set 2021-01-26)
+UMLS,cvx,CVX,"Vaccines Administered, 2017_02_08, 2021_01_29"
+UMLS,cvx,cvx,"Vaccines Administered, 2017_02_08, 2021_01_29"
+Other,cvx,CVX,
+Other,cvx,cvx,
+Other,dc,dc,
+Other,dc,DC,
+UMLS,dcp,NCI_DCP,"NCI Division of Cancer Prevention Program, 2009D"
+UMLS,dcp,nci_dcp,"NCI Division of Cancer Prevention Program, 2009D"
+Other,dcp,NCI_DCP,
+Other,dcp,nci_dcp,
+UMLS,ddb,DDB,"Diseases Database, 2000"
+UMLS,ddb,ddb,"Diseases Database, 2000"
+Other,ddb,DDB,
+Other,ddb,ddb,
+Other,dermo,dermo,
+Other,dermo,DERMO,
+Other,dhba,dhba,
+Other,dhba,DHBA,
+OMOP,dm+d,dm+d,Dictionary of Medicines and Devices (NHS) (dm+d Version 6.3.0 20210628)
+OMOP,dm+d,DM+D,Dictionary of Medicines and Devices (NHS) (dm+d Version 6.3.0 20210628)
+Other,dmba,dmba,
+Other,dmba,DMBA,
+Other,dmdicd10,DMDICD10,
+Other,dmdicd10,dmdicd10,
+Other,dmdumd,DMDUMD,
+Other,dmdumd,dmdumd,
+OBO,doid,doid,doid
+OBO,doid,DOID,doid
+Other,doid,doid,
+Other,doid,DOID,
+Other,doid,http://purl.obolibrary.org/obo/doid,
+Other,doid,http://purl.obolibrary.org/obo/DOID,
+Other,doid,HTTP://PURL.OBOLIBRARY.ORG/OBO/DOID,
+OMOP,dpd,DPD,Drug Product Database (Health Canada) (DPD 25-JUN-17)
+OMOP,dpd,dpd,Drug Product Database (Health Canada) (DPD 25-JUN-17)
+Other,drerdo,drerdo,
+Other,drerdo,DRERDO,
+OMOP,drg,DRG,Diagnosis-related group (CMS) (2011-18-02)
+OMOP,drg,drg,Diagnosis-related group (CMS) (2011-18-02)
+Other,drug_central,drug_central,
+Other,drug_central,DRUG_CENTRAL,
+UMLS,drugbank,DRUGBANK,"DrugBank, 5.0_2016_06_22, 5.0_2021_01_29"
+UMLS,drugbank,drugbank,"DrugBank, 5.0_2016_06_22, 5.0_2021_01_29"
+Other,drugbank,DRUGBANK,
+Other,drugbank,drugbank,
+UMLS,dsm-5,DSM-5,"Diagnostic and Statistical Manual of Mental Disorders, Fifth Edition (DSM-5), 2015"
+UMLS,dsm-5,dsm-5,"Diagnostic and Statistical Manual of Mental Disorders, Fifth Edition (DSM-5), 2015"
+Other,dsm-5,DSM-5,
+Other,dsm-5,dsm-5,
+Other,dto,dto,
+Other,dto,DTO,
+UMLS,dtp,NCI_DTP,"NCI Developmental Therapeutics Program, 2009D"
+UMLS,dtp,nci_dtp,"NCI Developmental Therapeutics Program, 2009D"
+Other,dtp,NCI_DTP,
+Other,dtp,nci_dtp,
+UMLS,dxp,DXP,"DXplain, 1994"
+UMLS,dxp,dxp,"DXplain, 1994"
+Other,dxp,DXP,
+Other,dxp,dxp,
+Other,ecmdb,ecmdb,
+Other,ecmdb,ECMDB,
+Other,ecocyc,ecocyc,
+Other,ecocyc,ECOCYC,
+OMOP,edi,EDI,Korean EDI (EDI 2019.10.01)
+OMOP,edi,edi,Korean EDI (EDI 2019.10.01)
+UMLS,edqm-hc,NCI_EDQM-HC,"European Directorate for the Quality of Medicines & Healthcare, 2009D"
+UMLS,edqm-hc,nci_edqm-hc,"European Directorate for the Quality of Medicines & Healthcare, 2009D"
+OBO,efo,efo,efo
+OBO,efo,EFO,efo
+Other,efo,efo,
+Other,efo,EFO,
+Other,ehda,ehda,
+Other,ehda,EHDA,
+Other,ehdaa,ehdaa,
+Other,ehdaa,EHDAA,
+Other,ehdaa,ehdaa2,
+Other,ehdaa,EHDAA2,
+Other,ehdaa,ehdaa2_retired,
+Other,ehdaa,EHDAA2_RETIRED,
+Other,ehdaa,retired_ehdaa2,
+Other,ehdaa,RETIRED_EHDAA2,
+Other,emapa,emapa,
+Other,emapa,EMAPA,
+Other,emapa,emapa_retired,
+Other,emapa,EMAPA_RETIRED,
+Other,emaps,emaps,
+Other,emaps,EMAPS,
+Other,envo,envo,
+Other,envo,ENVO,
+OBO,epcc,epcc,epcc
+OBO,epcc,EPCC,epcc
+Other,epcc,epcc,
+Other,epcc,EPCC,
+OMOP,ephmra,EphMRA ATC,Anatomical Classification of Pharmaceutical Products (EphMRA) (EphMRA ATC 2016)
+OMOP,ephmra,EPHMRA ATC,Anatomical Classification of Pharmaceutical Products (EphMRA) (EphMRA ATC 2016)
+OMOP,ephmra,ephmra atc,Anatomical Classification of Pharmaceutical Products (EphMRA) (EphMRA ATC 2016)
+Other,ev,ev,
+Other,ev,EV,
+Other,evm,evm,
+Other,evm,EVM,
+Other,fao,fao,
+Other,fao,FAO,
+Other,fao,fao/who_standards,
+Other,fao,FAO/WHO_STANDARDS,
+Other,fbbt,fbbt,
+Other,fbbt,FBBT,
+Other,fbbt,fbbt_root,
+Other,fbbt,FBBT_ROOT,
+Other,fbdv,fbdv,
+Other,fbdv,FBDV,
+UMLS,fd,NCI_FDA,"U.S. Food and Drug Administration, 2009D"
+UMLS,fd,nci_fda,"U.S. Food and Drug Administration, 2009D"
+UMLS,fma,FMA,"Foundational Model of Anatomy Ontology, 4_15"
+UMLS,fma,fma,"Foundational Model of Anatomy Ontology, 4_15"
+Other,fma,fma,
+Other,fma,FMA,
+Other,fma,fma_retired,
+Other,fma,FMA_RETIRED,
+Other,foodb,foodb,
+Other,foodb,FOODB,
+OBO,fyler,fyler,fyler
+OBO,fyler,FYLER,fyler
+Other,fyler,fyler,
+Other,fyler,FYLER,
+Other,gaid,gaid,
+Other,gaid,GAID,
+Other,galen,galen,
+Other,galen,GALEN,
+Other,gard,gard,
+Other,gard,GARD,
+Other,gardl,gardl,
+Other,gardl,GARDL,
+Other,garfd,garfd,
+Other,garfd,GARFD,
+Other,gc_id,gc_id,
+Other,gc_id,GC_ID,
+OMOP,gcn_seqno,GCN_SEQNO,Clinical Formulation ID (FDB) (20151119 Release)
+OMOP,gcn_seqno,gcn_seqno,Clinical Formulation ID (FDB) (20151119 Release)
+Other,genpept,genpept,
+Other,genpept,GENPEPT,
+OMOP,ggr,GGR,Commented Drug Directory (BCFI) (GGR 20200401)
+OMOP,ggr,ggr,Commented Drug Directory (BCFI) (GGR 20200401)
+Other,glytoucan,glytoucan,
+Other,glytoucan,GLYTOUCAN,
+Other,gmelin,gmelin,
+Other,gmelin,GMELIN,
+UMLS,go,GO,"Gene Ontology, 2020_05_02"
+UMLS,go,go,"Gene Ontology, 2020_05_02"
+Other,go,go,
+Other,go,GO,
+Other,go,http://purl.obolibrary.org/obo/go,
+Other,go,http://purl.obolibrary.org/obo/GO,
+Other,go,HTTP://PURL.OBOLIBRARY.ORG/OBO/GO,
+Other,goc,goc,
+Other,goc,GOC,
+UMLS,gs,GS,"Gold Standard Drug Database, 2021_02_09"
+UMLS,gs,gs,"Gold Standard Drug Database, 2021_02_09"
+Other,gs,GS,
+Other,gs,gs,
+Other,gtr,gtr,
+Other,gtr,GTR,
+UMLS,h17,HL7V2.5,"HL7 Vocabulary Version 2.5, 2003_08_30"
+UMLS,h17,hl7v2.5,"HL7 Vocabulary Version 2.5, 2003_08_30"
+UMLS,h17,HL7V3.0,"HL7 Vocabulary Version 3.0, 2020_11"
+UMLS,h17,hl7v3.0,"HL7 Vocabulary Version 3.0, 2020_11"
+Other,hao,hao,
+Other,hao,HAO,
+Other,hba,hba,
+Other,hba,HBA,
+UMLS,hcdt,HCDT,"HCPCS Version of Current Dental Terminology (CDT), 2021"
+UMLS,hcdt,hcdt,"HCPCS Version of Current Dental Terminology (CDT), 2021"
+Other,hcdt,HCDT,
+Other,hcdt,hcdt,
+OMOP,hcpcs,HCPCS,Healthcare Common Procedure Coding System (CMS) (2020 Alpha Numeric HCPCS File)
+OMOP,hcpcs,hcpcs,Healthcare Common Procedure Coding System (CMS) (2020 Alpha Numeric HCPCS File)
+UMLS,hcpcs,HCPCS,"Healthcare Common Procedure Coding System, 2021"
+UMLS,hcpcs,hcpcs,"Healthcare Common Procedure Coding System, 2021"
+Other,hcpcs,HCPCS,
+Other,hcpcs,hcpcs,
+UMLS,hcpt,HCPT,"HCPCS Version of Current Procedural Terminology (CPT), 2021"
+UMLS,hcpt,hcpt,"HCPCS Version of Current Procedural Terminology (CPT), 2021"
+Other,hcpt,HCPT,
+Other,hcpt,hcpt,
+OMOP,hemonc,HemOnc,HemOnc (HemOnc 20210126)
+OMOP,hemonc,HEMONC,HemOnc (HemOnc 20210126)
+OMOP,hemonc,hemonc,HemOnc (HemOnc 20210126)
+OMOP,hes,HES Specialty,Hospital Episode Statistics Specialty (NHS) (2018-06-26 HES Specialty)
+OMOP,hes,HES SPECIALTY,Hospital Episode Statistics Specialty (NHS) (2018-06-26 HES Specialty)
+OMOP,hes,hes specialty,Hospital Episode Statistics Specialty (NHS) (2018-06-26 HES Specialty)
+UMLS,hgnc,HGNC,"HUGO Gene Nomenclature Committee, 2020_05"
+UMLS,hgnc,hgnc,"HUGO Gene Nomenclature Committee, 2020_05"
+Other,hgnc,hgnc,
+Other,hgnc,HGNC,
+UMLS,hgnc,NCI_NCI-HGNC,"NCI HUGO Gene Nomenclature, 2009D"
+UMLS,hgnc,nci_nci-hgnc,"NCI HUGO Gene Nomenclature, 2009D"
+Other,hgnc,NCI_NCI-HGNC,
+Other,hgnc,nci_nci-hgnc,
+Other,hl7,HL7V2.5,
+Other,hl7,hl7v2.5,
+Other,hl7,HL7V3.0,
+Other,hl7,hl7v3.0,
+UMLS,hl7,NCI_NCI-HL7,"NCI Health Level 7, 2009D"
+UMLS,hl7,nci_nci-hl7,"NCI Health Level 7, 2009D"
+Other,hl7,NCI_NCI-HL7,
+Other,hl7,nci_nci-hl7,
+Other,hmdb,hmdb,
+Other,hmdb,HMDB,
+OBO,hp,hp,hp
+OBO,hp,HP,hp
+Other,hp,hp,
+Other,hp,HP,
+UMLS,hp,HPO,"Human Phenotype Ontology, 2020_10_12"
+UMLS,hp,hpo,"Human Phenotype Ontology, 2020_10_12"
+Other,hp,HPO,
+Other,hp,hpo,
+Other,hp,http://purl.obolibrary.org/obo/hp,
+Other,hp,http://purl.obolibrary.org/obo/HP,
+Other,hp,HTTP://PURL.OBOLIBRARY.ORG/OBO/HP,
+Other,hsapdv,hsapdv,
+Other,hsapdv,HSAPDV,
+OBO,icd10,icd-10,icd-10
+OBO,icd10,ICD-10,icd-10
+Other,icd10,icd-10,
+Other,icd10,ICD-10,
+OBO,icd10,icd10,icd10
+OBO,icd10,ICD10,icd10
+UMLS,icd10,ICD10,"ICD10, 1998"
+UMLS,icd10,icd10,"ICD10, 1998"
+UMLS,icd10,ICD10,"ICD10, 2016"
+UMLS,icd10,icd10,"ICD10, 2016"
+OMOP,icd10,ICD10,"International Classification of Diseases, Tenth Revision (WHO) (2021 Release)"
+OMOP,icd10,icd10,"International Classification of Diseases, Tenth Revision (WHO) (2021 Release)"
+Other,icd10,icd10,
+Other,icd10,ICD10,
+UMLS,icd10ae,ICD10AE,"ICD10, American English Equivalents, 1998"
+UMLS,icd10ae,icd10ae,"ICD10, American English Equivalents, 1998"
+Other,icd10ae,ICD10AE,
+Other,icd10ae,icd10ae,
+UMLS,icd10am,ICD10AM,"International Statistical Classification of Diseases and Related Health Problems, 10th Revision, Australian Modification, January 2000 Release"
+UMLS,icd10am,icd10am,"International Statistical Classification of Diseases and Related Health Problems, 10th Revision, Australian Modification, January 2000 Release"
+Other,icd10am,ICD10AM,
+Other,icd10am,icd10am,
+UMLS,icd10amae,ICD10AMAE,"International Statistical Classification of Diseases and Related Health Problems, Australian Modification, Americanized English Equivalents, 2000"
+UMLS,icd10amae,icd10amae,"International Statistical Classification of Diseases and Related Health Problems, Australian Modification, Americanized English Equivalents, 2000"
+Other,icd10amae,ICD10AMAE,
+Other,icd10amae,icd10amae,
+OMOP,icd10cn,ICD10CN,"International Classification of Diseases, Tenth Revision, Chinese Edition (2016 Release)"
+OMOP,icd10cn,icd10cn,"International Classification of Diseases, Tenth Revision, Chinese Edition (2016 Release)"
+Other,icd10,ICD10DUT,
+Other,icd10dut,icd10dut,
+OMOP,icd10gm,ICD10GM,"International Classification of Diseases, Tenth Revision, German Edition (ICD10GM 2021)"
+OMOP,icd10gm,icd10gm,"International Classification of Diseases, Tenth Revision, German Edition (ICD10GM 2021)"
+Other,icd10cm,icd-10cm,
+Other,icd10cm,ICD-10CM,
+UMLS,icd10cm,ICD10CM,"International Classification of Diseases, 10th Edition, Clinical Modification, 2021"
+UMLS,icd10cm,icd10cm,"International Classification of Diseases, 10th Edition, Clinical Modification, 2021"
+OMOP,icd10cm,ICD10CM,"International Classification of Diseases, Tenth Revision, Clinical Modification (NCHS) (ICD10CM FY2021 code descriptions)"
+OMOP,icd10cm,icd10cm,"International Classification of Diseases, Tenth Revision, Clinical Modification (NCHS) (ICD10CM FY2021 code descriptions)"
+Other,icd10cm,icd10cm,
+Other,icd10cm,ICD10CM,
+OMOP,icd10pcs,ICD10PCS,ICD-10 Procedure Coding System (CMS) (ICD10PCS 2021)
+OMOP,icd10pcs,icd10pcs,ICD-10 Procedure Coding System (CMS) (ICD10PCS 2021)
+UMLS,icd10pcs,ICD10PCS,"ICD-10-PCS, 2021"
+UMLS,icd10pcs,icd10pcs,"ICD-10-PCS, 2021"
+Other,icd10pcs,ICD10PCS,
+Other,icd10pcs,icd10pcs,
+Other,icd11,icd11,
+Other,icd11,ICD11,
+OBO,icd9,icd-9,icd-9
+OBO,icd9,ICD-9,icd-9
+Other,icd9,icd-9,
+Other,icd9,ICD-9,
+OBO,icd9,icd9,icd9
+OBO,icd9,ICD9,icd9
+Other,icd9,icd9,
+Other,icd9,ICD9,
+Other,icd9cm,icd-9cm,
+Other,icd9cm,ICD-9CM,
+UMLS,icd9cm,ICD9CM,"International Classification of Diseases, Ninth Revision, Clinical Modification, 2014"
+UMLS,icd9cm,icd9cm,"International Classification of Diseases, Ninth Revision, Clinical Modification, 2014"
+OMOP,icd9cm,ICD9CM,"International Classification of Diseases, Ninth Revision, Clinical Modification, Volume 1 and 2 (NCHS) (ICD9CM v32 master descriptions)"
+OMOP,icd9cm,icd9cm,"International Classification of Diseases, Ninth Revision, Clinical Modification, Volume 1 and 2 (NCHS) (ICD9CM v32 master descriptions)"
+Other,icd9cm,icd9cm,
+Other,icd9cm,ICD9CM,
+OMOP,icd9proc,ICD9Proc,"International Classification of Diseases, Ninth Revision, Clinical Modification, Volume 3 (NCHS) (ICD9CM v32 master descriptions)"
+OMOP,icd9proc,ICD9PROC,"International Classification of Diseases, Ninth Revision, Clinical Modification, Volume 3 (NCHS) (ICD9CM v32 master descriptions)"
+OMOP,icd9proc,icd9proc,"International Classification of Diseases, Ninth Revision, Clinical Modification, Volume 3 (NCHS) (ICD9CM v32 master descriptions)"
+OMOP,icd9proc,ICD9ProcCN,"International Classification of Diseases, Ninth Revision, Chinese Edition, Procedures (2017 Release)"
+OMOP,icd9proc,ICD9PROCCN,"International Classification of Diseases, Ninth Revision, Chinese Edition, Procedures (2017 Release)"
+OMOP,icd9proc,icd9proccn,"International Classification of Diseases, Ninth Revision, Chinese Edition, Procedures (2017 Release)"
+OBO,icdo,icd-o,icd-o
+OBO,icdo,ICD-O,icd-o
+Other,icdo,icd-o,
+Other,icdo,ICD-O,
+Other,icdo,icdo,
+Other,icdo,ICDO,
+OMOP,icdo,ICDO3,"International Classification of Diseases for Oncology, Third Edition (WHO) (ICDO3 SEER Site/Histology Released 06/2020)"
+OMOP,icdo,icdo3,"International Classification of Diseases for Oncology, Third Edition (WHO) (ICDO3 SEER Site/Histology Released 06/2020)"
+UMLS,icf,ICF,"International Classification of Functioning, Disability and Health, 2008_12_19"
+UMLS,icf,icf,"International Classification of Functioning, Disability and Health, 2008_12_19"
+Other,icf,ICF,
+Other,icf,icf,
+UMLS,icf,ICF-CY,"International Classification of Functioning, Disability and Health for Children and Youth, 2008"
+UMLS,icf,icf-cy,"International Classification of Functioning, Disability and Health for Children and Youth, 2008"
+Other,icf,ICF-CY,
+Other,icf,icf-cy,
+UMLS,ich,NCI_ICH,"International Conference on Harmonization, 2009D"
+UMLS,ich,nci_ich,"International Conference on Harmonization, 2009D"
+Other,ich,NCI_ICH,
+Other,ich,nci_ich,
+UMLS,icnp,ICNP,"International Classification for Nursing Practice, 2019"
+UMLS,icnp,icnp,"International Classification for Nursing Practice, 2019"
+Other,icnp,ICNP,
+Other,icnp,icnp,
+UMLS,icpc,ICPC,"International Classification of Primary Care, 1993"
+UMLS,icpc,icpc,"International Classification of Primary Care, 1993"
+Other,icpc,ICPC,
+Other,icpc,icpc,
+Other,icpc,ICPCBAQ,
+Other,icpc,icpcbaq,
+Other,icpc,ICPCDAN,
+Other,icpc,icpcdan,
+Other,icpc,ICPCDUT,
+Other,icpc,icpcdut,
+Other,icpc,ICPCFIN,
+Other,icpc,icpcfin,
+Other,icpc,ICPCFRE,
+Other,icpc,icpcfre,
+Other,icpc,ICPCGER,
+Other,icpc,icpcger,
+Other,icpc,ICPCHEB,
+Other,icpc,icpcheb,
+Other,icpc,ICPCHUN,
+Other,icpc,icpchun,
+Other,icpc,ICPCITA,
+Other,icpc,icpcita,
+Other,icpc,ICPCNOR,
+Other,icpc,icpcnor,
+Other,icpc,ICPCPOR,
+Other,icpc,icpcpor,
+Other,icpc,ICPCSPA,
+Other,icpc,icpcspa,
+Other,icpc,ICPCSWE,
+Other,icpc,icpcswe,
+Other,icpc-2,ICPC2EDUT,
+Other,icpc-2,icpc2edut,
+UMLS,icpc-2,ICPC2EENG,"International Classification of Primary Care 2nd Edition, Electronic, 2E, 200203"
+UMLS,icpc-2,icpc2eeng,"International Classification of Primary Care 2nd Edition, Electronic, 2E, 200203"
+Other,icpc-2,ICPC2EENG,
+Other,icpc-2,icpc2eeng,
+Other,icpc-2,ICPC2ICD10DUT,
+Other,icpc-2,icpc2icd10dut,
+UMLS,icpc-2,ICPC2ICD10ENG,"ICPC2 - ICD10 Thesaurus, 200412"
+UMLS,icpc-2,icpc2icd10eng,"ICPC2 - ICD10 Thesaurus, 200412"
+Other,icpc-2,ICPC2ICD10ENG,
+Other,icpc-2,icpc2icd10eng,
+UMLS,icpc-2,ICPC2P,ICPC-2 PLUS
+UMLS,icpc-2,icpc2p,ICPC-2 PLUS
+Other,icpc-2,ICPC2P,
+Other,icpc-2,icpc2p,
+Other,ido,ido,
+Other,ido,IDO,
+Other,iedb,iedb,
+Other,iedb,IEDB,
+Other,isbn,isbn,
+Other,isbn,ISBN,
+Other,iuphar,iuphar,
+Other,iuphar,IUPHAR,
+Other,iupharfam,iupharfam,
+Other,iupharfam,IUPHARFAM,
+Other,iupharobj,iupharobj,
+Other,iupharobj,IUPHAROBJ,
+UMLS,jabl,JABL,"Online Congenital Multiple Anomaly/Mental Retardation Syndromes, 1999"
+UMLS,jabl,jabl,"Online Congenital Multiple Anomaly/Mental Retardation Syndromes, 1999"
+Other,jabl,JABL,
+Other,jabl,jabl,
+OMOP,jax,JAX,The Clinical Knowledgebase (The Jackson Laboratory) (JAX v20200824)
+OMOP,jax,jax,The Clinical Knowledgebase (The Jackson Laboratory) (JAX v20200824)
+OMOP,jmdc,JMDC,Japan Medical Data Center Drug Code (JMDC) (JMDC 2020-04-30)
+OMOP,jmdc,jmdc,Japan Medical Data Center Drug Code (JMDC) (JMDC 2020-04-30)
+Other,kcd5,KCD5,
+Other,kcd5,kcd5,
+OMOP,kcd7,KCD7,"Korean Classification of Diseases, 7th Revision (7th revision)"
+OMOP,kcd7,kcd7,"Korean Classification of Diseases, 7th Revision (7th revision)"
+OMOP,kdc,KDC,Korean Drug Code (HIRA) (KDC 2020-07-31)
+OMOP,kdc,kdc,Korean Drug Code (HIRA) (KDC 2020-07-31)
+Other,kegg,kegg,
+Other,kegg,KEGG,
+Other,knapsack,knapsack,
+Other,knapsack,KNAPSACK,
+OMOP,knhis,KNHIS,Korean National Health Information System (None)
+OMOP,knhis,knhis,Korean National Health Information System (None)
+OMOP,krc,Korean Revenue Code,Korean Revenue Code (None)
+OMOP,krc,KOREAN REVENUE CODE,Korean Revenue Code (None)
+OMOP,krc,korean revenue code,Korean Revenue Code (None)
+Other,kupo,kupo,
+Other,kupo,KUPO,
+UMLS,lch,LCH,"Library of Congress Subject Headings, 1990"
+UMLS,lch,lch,"Library of Congress Subject Headings, 1990"
+Other,lch,LCH,
+Other,lch,lch,
+UMLS,lch,LCH_NW,"Library of Congress Subject Headings, Northwestern University subset, 2013"
+UMLS,lch,lch_nw,"Library of Congress Subject Headings, Northwestern University subset, 2013"
+Other,lch,LCH_NW,
+Other,lch,lch_nw,
+Other,lincs,lincs,
+Other,lincs,LINCS,
+Other,lipid_maps_class,lipid_maps_class,
+Other,lipid_maps_class,LIPID_MAPS_CLASS,
+Other,lipid_maps_instance,lipid_maps_instance,
+Other,lipid_maps_instance,LIPID_MAPS_INSTANCE,
+UMLS,loinc,LNC,"LOINC, 269"
+UMLS,loinc,lnc,"LOINC, 269"
+Other,loinc,LNC,
+Other,loinc,lnc,
+Other,loinc,LNC_SPECIAL_USE,
+Other,loinc,lnc_special_use,
+Other,loinc,LNC-DE-AT,
+Other,loinc,lnc-de-at,
+Other,loinc,LNC-DE-CH,
+Other,loinc,lnc-de-ch,
+Other,loinc,LNC-DE-DE,
+Other,loinc,lnc-de-de,
+Other,loinc,LNC-EL-GR,
+Other,loinc,lnc-el-gr,
+Other,loinc,LNC-ES-AR,
+Other,loinc,lnc-es-ar,
+Other,loinc,LNC-ES-CH,
+Other,loinc,lnc-es-ch,
+Other,loinc,LNC-ES-ES,
+Other,loinc,lnc-es-es,
+Other,loinc,LNC-ET-EE,
+Other,loinc,lnc-et-ee,
+Other,loinc,LNC-FR-BE,
+Other,loinc,lnc-fr-be,
+Other,loinc,LNC-FR-CA,
+Other,loinc,lnc-fr-ca,
+Other,loinc,LNC-FR-CH,
+Other,loinc,lnc-fr-ch,
+Other,loinc,LNC-FR-FR,
+Other,loinc,lnc-fr-fr,
+Other,loinc,LNC-IT-CH,
+Other,loinc,lnc-it-ch,
+Other,loinc,LNC-IT-IT,
+Other,loinc,lnc-it-it,
+Other,loinc,LNC-KO-KR,
+Other,loinc,lnc-ko-kr,
+Other,loinc,LNC-NL-NL,
+Other,loinc,lnc-nl-nl,
+Other,loinc,LNC-PT-BR,
+Other,loinc,lnc-pt-br,
+Other,loinc,LNC-RU-RU,
+Other,loinc,lnc-ru-ru,
+Other,loinc,LNC-TR-TR,
+Other,loinc,lnc-tr-tr,
+Other,loinc,LNC-ZH-CN,
+Other,loinc,lnc-zh-cn,
+OMOP,loinc,LOINC,Logical Observation Identifiers Names and Codes (Regenstrief Institute) (2.69)
+OMOP,loinc,loinc,Logical Observation Identifiers Names and Codes (Regenstrief Institute) (2.69)
+Other,loinc,loinc,
+Other,loinc,LOINC,
+Other,ma,ma,
+Other,ma,MA,
+Other,map,map,
+Other,map,MAP,
+Other,mat,mat,
+Other,mat,MAT,
+Other,mba,mba,
+Other,mba,MBA,
+UMLS,mcm,MCM,"McMaster University Epidemiology Terms, 1992"
+UMLS,mcm,mcm,"McMaster University Epidemiology Terms, 1992"
+Other,mcm,MCM,
+Other,mcm,mcm,
+OMOP,mdc,MDC,Major Diagnostic Categories (CMS) (2013-01-06)
+OMOP,mdc,mdc,Major Diagnostic Categories (CMS) (2013-01-06)
+UMLS,med-rt,MED-RT,"Medication Reference Terminology, 2021_03_01"
+UMLS,med-rt,med-rt,"Medication Reference Terminology, 2021_03_01"
+Other,med-rt,MED-RT,
+Other,med-rt,med-rt,
+UMLS,medcin,MEDCIN,"MEDCIN, 3_2020_12_15"
+UMLS,medcin,medcin,"MEDCIN, 3_2020_12_15"
+Other,medcin,MEDCIN,
+Other,medcin,medcin,
+Other,meddra,http://identifiers.org/meddra,
+Other,meddra,HTTP://IDENTIFIERS.ORG/MEDDRA,
+UMLS,meddra,MDR,"Medical Dictionary for Regulatory Activities Terminology (MedDRA), 23.1"
+UMLS,meddra,mdr,"Medical Dictionary for Regulatory Activities Terminology (MedDRA), 23.1"
+Other,meddra,MDR,
+Other,meddra,mdr,
+Other,meddra,MDRCZE,
+Other,meddra,mdrcze,
+Other,meddra,MDRDUT,
+Other,meddra,mdrdut,
+Other,meddra,MDRFRE,
+Other,meddra,mdrfre,
+Other,meddra,MDRGER,
+Other,meddra,mdrger,
+Other,meddra,MDRHUN,
+Other,meddra,mdrhun,
+Other,meddra,MDRITA,
+Other,meddra,mdrita,
+Other,meddra,MDRJPN,
+Other,meddra,mdrjpn,
+Other,meddra,MDRKOR,
+Other,meddra,mdrkor,
+Other,meddra,MDRPOR,
+Other,meddra,mdrpor,
+Other,meddra,MDRRUS,
+Other,meddra,mdrrus,
+Other,meddra,MDRSPA,
+Other,meddra,mdrspa,
+OBO,meddra,meddra,meddra
+OBO,meddra,MEDDRA,meddra
+Other,meddra,meddra,
+Other,meddra,MEDDRA,
+Other,medgen,http://identifiers.org/medgen,
+Other,medgen,HTTP://IDENTIFIERS.ORG/MEDGEN,
+Other,medgen,medgen,
+Other,medgen,MEDGEN,
+UMLS,medlineplus,MEDLINEPLUS,"MedlinePlus Health Topics, 20201125"
+UMLS,medlineplus,medlineplus,"MedlinePlus Health Topics, 20201125"
+Other,medlineplus,MEDLINEPLUS,
+Other,medlineplus,medlineplus,
+Other,metacyc,metacyc,
+Other,metacyc,METACYC,
+Other,mfmo,mfmo,
+Other,mfmo,MFMO,
+Other,mfmo,mfmo_0000064,
+Other,mfmo,MFMO_0000064,
+Other,mfmo,mfomd,
+Other,mfmo,MFOMD,
+Other,miaa,miaa,
+Other,miaa,MIAA,
+OMOP,mmi,MMI,Modernizing Medicine (MMI) (None)
+OMOP,mmi,mmi,Modernizing Medicine (MMI) (None)
+UMLS,mmsl,MMSL,"Multum MediSource Lexicon, 2021_02_01"
+UMLS,mmsl,mmsl,"Multum MediSource Lexicon, 2021_02_01"
+Other,mmsl,MMSL,
+Other,mmsl,mmsl,
+Other,mmusdv,mmusdv,
+Other,mmusdv,MMUSDV,
+UMLS,mmx,MMX,"Micromedex RED BOOK, 2021_02_08"
+UMLS,mmx,mmx,"Micromedex RED BOOK, 2021_02_08"
+Other,mmx,MMX,
+Other,mmx,mmx,
+Other,molbase,molbase,
+Other,molbase,MOLBASE,
+OBO,mondo,mondo,mondo
+OBO,mondo,MONDO,mondo
+Other,mondo,mondo,
+Other,mondo,MONDO,
+OBO,mp,mp,mp
+OBO,mp,MP,mp
+Other,mp,mp,
+Other,mp,MP,
+OBO,mpath,mpath,mpath
+OBO,mpath,MPATH,mpath
+Other,mpath,mpath,
+Other,mpath,MPATH,
+Other,mro,mro,
+Other,mro,MRO,
+Other,msh,http://identifiers.org/mesh,
+Other,msh,HTTP://IDENTIFIERS.ORG/MESH,
+OMOP,msh,MeSH,Medical Subject Headings (NLM) (2021 Release)
+OMOP,msh,MESH,Medical Subject Headings (NLM) (2021 Release)
+OMOP,msh,mesh,Medical Subject Headings (NLM) (2021 Release)
+Other,msh,mesh,
+Other,msh,MESH,
+UMLS,msh,MSH,"Medical Subject Headings, 2021_2021_01_25"
+UMLS,msh,msh,"Medical Subject Headings, 2021_2021_01_25"
+OBO,msh,msh,msh
+OBO,msh,MSH,msh
+Other,msh,MSH,
+Other,msh,msh,
+Other,msh,MSHCZE,
+Other,msh,mshcze,
+Other,msh,MSHDUT,
+Other,msh,mshdut,
+Other,msh,MSHFIN,
+Other,msh,mshfin,
+Other,msh,MSHFRE,
+Other,msh,mshfre,
+Other,msh,MSHGER,
+Other,msh,mshger,
+Other,msh,MSHITA,
+Other,msh,mshita,
+Other,msh,MSHJPN,
+Other,msh,mshjpn,
+Other,msh,MSHLAV,
+Other,msh,mshlav,
+Other,msh,MSHNOR,
+Other,msh,mshnor,
+Other,msh,MSHPOL,
+Other,msh,mshpol,
+Other,msh,MSHPOR,
+Other,msh,mshpor,
+Other,msh,MSHRUS,
+Other,msh,mshrus,
+Other,msh,MSHSCR,
+Other,msh,mshscr,
+Other,msh,MSHSPA,
+Other,msh,mshspa,
+Other,msh,MSHSWE,
+Other,msh,mshswe,
+UMLS,mth,MTH,UMLS Metathesaurus
+UMLS,mth,mth,UMLS Metathesaurus
+Other,mth,mth,
+Other,mth,MTH,
+Other,mth,MTHCMSFRF,
+Other,mth,mthcmsfrf,
+UMLS,mth,MTHICD9,"International Classification of Diseases, Ninth Revision, Clinical Modification, Metathesaurus additional entry terms, 2014"
+UMLS,mth,mthicd9,"International Classification of Diseases, Ninth Revision, Clinical Modification, Metathesaurus additional entry terms, 2014"
+Other,mth,MTHICD9,
+Other,mth,mthicd9,
+UMLS,mth,MTHICPC2EAE,"International Classification of Primary Care 2nd Edition, Electronic, 2E, American English Equivalents, 200203"
+UMLS,mth,mthicpc2eae,"International Classification of Primary Care 2nd Edition, Electronic, 2E, American English Equivalents, 200203"
+Other,mth,MTHICPC2EAE,
+Other,mth,mthicpc2eae,
+UMLS,mth,MTHICPC2ICD10AE,"ICPC2 - ICD10 Thesaurus, American English Equivalents, 0412"
+UMLS,mth,mthicpc2icd10ae,"ICPC2 - ICD10 Thesaurus, American English Equivalents, 0412"
+Other,mth,MTHICPC2ICD10AE,
+Other,mth,mthicpc2icd10ae,
+UMLS,mth,MTHMST,"Metathesaurus Version of Minimal Standard Terminology Digestive Endoscopy, 2001"
+UMLS,mth,mthmst,"Metathesaurus Version of Minimal Standard Terminology Digestive Endoscopy, 2001"
+Other,mth,MTHMST,
+Other,mth,mthmst,
+Other,mth,MTHMSTFRE,
+Other,mth,mthmstfre,
+Other,mth,MTHMSTITA,
+Other,mth,mthmstita,
+UMLS,mth,MTHSPL,"Metathesaurus FDA Structured Product Labels, 2021_02_19"
+UMLS,mth,mthspl,"Metathesaurus FDA Structured Product Labels, 2021_02_19"
+Other,mth,MTHSPL,
+Other,mth,mthspl,
+OMOP,multum,Multum,Cerner Multum (Cerner) (2013-07-10)
+OMOP,multum,MULTUM,Cerner Multum (Cerner) (2013-07-10)
+OMOP,multum,multum,Cerner Multum (Cerner) (2013-07-10)
+Other,murdoch,murdoch,
+Other,murdoch,MURDOCH,
+UMLS,mvx,MVX,"Manufacturers of Vaccines, 2021_02_23"
+UMLS,mvx,mvx,"Manufacturers of Vaccines, 2021_02_23"
+Other,mvx,MVX,
+Other,mvx,mvx,
+OMOP,naaccr,NAACCR,Data Standards & Data Dictionary Volume II (NAACCR) (NAACCR v18)
+OMOP,naaccr,naaccr,Data Standards & Data Dictionary Volume II (NAACCR) (NAACCR v18)
+UMLS,nanda-i,NANDA-I,"NANDA-I Taxonomy II, 2018-2020"
+UMLS,nanda-i,nanda-i,"NANDA-I Taxonomy II, 2018-2020"
+Other,nanda-i,NANDA-I,
+Other,nanda-i,nanda-i,
+UMLS,ncbi,NCBI,"NCBI Taxonomy, 2020_05_21"
+UMLS,ncbi,ncbi,"NCBI Taxonomy, 2020_05_21"
+Other,ncbi,NCBI,
+Other,ncbi,ncbi,
+OMOP,nccd,NCCD,Normalized Chinese Clinical Drug (NCCD_v02_2020)
+OMOP,nccd,nccd,Normalized Chinese Clinical Drug (NCCD_v02_2020)
+UMLS,nci-gloss,NCI_NCI-GLOSS,"NCI Dictionary of Cancer Terms, 2009D"
+UMLS,nci-gloss,nci_nci-gloss,"NCI Dictionary of Cancer Terms, 2009D"
+Other,nci-gloss,NCI_NCI-GLOSS,
+Other,nci-gloss,nci_nci-gloss,
+Other,ncit,http://purl.obolibrary.org/obo/ncit,
+Other,ncit,http://purl.obolibrary.org/obo/NCIT,
+Other,ncit,HTTP://PURL.OBOLIBRARY.ORG/OBO/NCIT,
+UMLS,ncit,NCI,"NCI Thesaurus, 2020_09D"
+UMLS,ncit,nci,"NCI Thesaurus, 2020_09D"
+Other,ncit,NCI,
+Other,ncit,nci,
+UMLS,ncit,NCI_ACC-AHA,"American College of Cardiology/American Heart Association Clinical Data Terminology, 2009D"
+UMLS,ncit,nci_acc-aha,"American College of Cardiology/American Heart Association Clinical Data Terminology, 2009D"
+UMLS,ncit,NCI_BioC,"BioCarta online maps of molecular pathways, adapted for NCI use, 2009D"
+UMLS,ncit,NCI_BIOC,"BioCarta online maps of molecular pathways, adapted for NCI use, 2009D"
+UMLS,ncit,nci_bioc,"BioCarta online maps of molecular pathways, adapted for NCI use, 2009D"
+Other,ncit,NCI_BioC,
+Other,ncit,NCI_BIOC,
+Other,ncit,nci_bioc,
+UMLS,ncit,NCI_BRIDG,"Biomedical Research Integrated Domain Group Model, 2009D"
+UMLS,ncit,nci_bridg,"Biomedical Research Integrated Domain Group Model, 2009D"
+Other,ncit,NCI_BRIDG,
+Other,ncit,nci_bridg,
+UMLS,ncit,NCI_BRIDG_3_0_3,"Biomedical Research Integrated Domain Group Model, 3.0.3, 2009D"
+UMLS,ncit,nci_bridg_3_0_3,"Biomedical Research Integrated Domain Group Model, 3.0.3, 2009D"
+Other,ncit,NCI_BRIDG_3_0_3,
+Other,ncit,nci_bridg_3_0_3,
+UMLS,ncit,NCI_BRIDG_5_3,"Biomedical Research Integrated Domain Group Model, 5.3, 2009D"
+UMLS,ncit,nci_bridg_5_3,"Biomedical Research Integrated Domain Group Model, 5.3, 2009D"
+UMLS,ncit,NCI_caDSR,"Cancer Data Standards Registry and Repository, 2009D"
+UMLS,ncit,NCI_CADSR,"Cancer Data Standards Registry and Repository, 2009D"
+UMLS,ncit,nci_cadsr,"Cancer Data Standards Registry and Repository, 2009D"
+UMLS,ncit,NCI_CareLex,"Content Archive Resource Exchange Lexicon, 2009D"
+UMLS,ncit,NCI_CARELEX,"Content Archive Resource Exchange Lexicon, 2009D"
+UMLS,ncit,nci_carelex,"Content Archive Resource Exchange Lexicon, 2009D"
+Other,ncit,NCI_CareLex,
+Other,ncit,NCI_CARELEX,
+Other,ncit,nci_carelex,
+UMLS,ncit,NCI_CBDD,"Chemical Biology and Drug Development Vocabulary, 2009D"
+UMLS,ncit,nci_cbdd,"Chemical Biology and Drug Development Vocabulary, 2009D"
+Other,ncit,NCI_CBDD,
+Other,ncit,nci_cbdd,
+Other,ncit,NCI_CDC,
+Other,ncit,nci_cdc,
+UMLS,ncit,NCI_CDISC,"Clinical Data Interchange Standards Consortium, 2009D"
+UMLS,ncit,nci_cdisc,"Clinical Data Interchange Standards Consortium, 2009D"
+Other,ncit,NCI_CDISC,
+Other,ncit,nci_cdisc,
+UMLS,ncit,NCI_CDISC-GLOSS,"CDISC Glossary Terminology, 2009D"
+UMLS,ncit,nci_cdisc-gloss,"CDISC Glossary Terminology, 2009D"
+Other,ncit,NCI_CDISC-GLOSS,
+Other,ncit,nci_cdisc-gloss,
+UMLS,ncit,NCI_CELLOSAURUS,"Cellosaurus, 2009D"
+UMLS,ncit,nci_cellosaurus,"Cellosaurus, 2009D"
+Other,ncit,NCI_CPTAC,
+Other,ncit,nci_cptac,
+UMLS,ncit,NCI_CRCH,"Cancer Research Center of Hawaii Nutrition Terminology, 2009D"
+UMLS,ncit,nci_crch,"Cancer Research Center of Hawaii Nutrition Terminology, 2009D"
+Other,ncit,NCI_CRCH,
+Other,ncit,nci_crch,
+UMLS,ncit,NCI_CTDC,"Clinical Trial Data Commons, 2009D"
+UMLS,ncit,nci_ctdc,"Clinical Trial Data Commons, 2009D"
+UMLS,ncit,NCI_CTRP,"Clinical Trials Reporting Program, 2009D"
+UMLS,ncit,nci_ctrp,"Clinical Trials Reporting Program, 2009D"
+Other,ncit,NCI_CTRP,
+Other,ncit,nci_ctrp,
+UMLS,ncit,NCI_DICOM,"Digital Imaging Communications in Medicine, 2009D"
+UMLS,ncit,nci_dicom,"Digital Imaging Communications in Medicine, 2009D"
+Other,ncit,NCI_DICOM,
+Other,ncit,nci_dicom,
+Other,ncit,NCI_EDQM-HC,
+Other,ncit,nci_edqm-hc,
+Other,ncit,NCI_FDA,
+Other,ncit,nci_fda,
+UMLS,ncit,NCI_GAIA,"Global Alignment of Immunization Safety Assessment in pregnancy, 2009D"
+UMLS,ncit,nci_gaia,"Global Alignment of Immunization Safety Assessment in pregnancy, 2009D"
+Other,ncit,NCI_GAIA,
+Other,ncit,nci_gaia,
+UMLS,ncit,NCI_GDC,"NCI Genomic Data Commons Terms, 2009D"
+UMLS,ncit,nci_gdc,"NCI Genomic Data Commons Terms, 2009D"
+UMLS,ncit,NCI_GENC,"Geopolitical Entities, Names, and Codes (GENC) Standard Edition 1, 2009D"
+UMLS,ncit,nci_genc,"Geopolitical Entities, Names, and Codes (GENC) Standard Edition 1, 2009D"
+Other,ncit,NCI_GENC,
+Other,ncit,nci_genc,
+UMLS,ncit,NCI_ICDC,"NCI Integrated Canine Data Commons Terms, 2009D"
+UMLS,ncit,nci_icdc,"NCI Integrated Canine Data Commons Terms, 2009D"
+UMLS,ncit,NCI_INC,"International Neonatal Consortium, 2009D"
+UMLS,ncit,nci_inc,"International Neonatal Consortium, 2009D"
+Other,ncit,NCI_INC,
+Other,ncit,nci_inc,
+UMLS,ncit,NCI_JAX,"Jackson Laboratories Mouse Terminology, adapted for NCI use, 2009D"
+UMLS,ncit,nci_jax,"Jackson Laboratories Mouse Terminology, adapted for NCI use, 2009D"
+Other,ncit,NCI_JAX,
+Other,ncit,nci_jax,
+UMLS,ncit,NCI_KEGG,"KEGG Pathway Database, 2009D"
+UMLS,ncit,nci_kegg,"KEGG Pathway Database, 2009D"
+Other,ncit,NCI_KEGG,
+Other,ncit,nci_kegg,
+UMLS,ncit,NCI_NCPDP,"National Council for Prescription Drug Programs, 2009D"
+UMLS,ncit,nci_ncpdp,"National Council for Prescription Drug Programs, 2009D"
+Other,ncit,NCI_NCPDP,
+Other,ncit,nci_ncpdp,
+UMLS,ncit,NCI_NICHD,"National Institute of Child Health and Human Development, 2009D"
+UMLS,ncit,nci_nichd,"National Institute of Child Health and Human Development, 2009D"
+Other,ncit,NCI_NICHD,
+Other,ncit,nci_nichd,
+UMLS,ncit,NCI_PCDC,"Pediatric Cancer Data Commons, 2009D"
+UMLS,ncit,nci_pcdc,"Pediatric Cancer Data Commons, 2009D"
+UMLS,ncit,NCI_PI-RADS,"Prostate Imaging Reporting and Data System, 2009D"
+UMLS,ncit,nci_pi-rads,"Prostate Imaging Reporting and Data System, 2009D"
+Other,ncit,NCI_PI-RADS,
+Other,ncit,nci_pi-rads,
+UMLS,ncit,NCI_PID,"National Cancer Institute Nature Pathway Interaction Database, 2009D"
+UMLS,ncit,nci_pid,"National Cancer Institute Nature Pathway Interaction Database, 2009D"
+Other,ncit,NCI_PID,
+Other,ncit,nci_pid,
+UMLS,ncit,NCI_RENI,"Registry Nomenclature Information System, 2009D"
+UMLS,ncit,nci_reni,"Registry Nomenclature Information System, 2009D"
+Other,ncit,NCI_RENI,
+Other,ncit,nci_reni,
+UMLS,ncit,NCI_UCUM,"Unified Code for Units of Measure, 2009D"
+UMLS,ncit,nci_ucum,"Unified Code for Units of Measure, 2009D"
+Other,ncit,NCI_UCUM,
+Other,ncit,nci_ucum,
+OMOP,ncit,NCIt,NCI Thesaurus (National Cancer Institute) (NCIt 20200820)
+OMOP,ncit,NCIT,NCI Thesaurus (National Cancer Institute) (NCIt 20200820)
+OMOP,ncit,ncit,NCI Thesaurus (National Cancer Institute) (NCIt 20200820)
+OBO,ncit,ncit,ncit
+OBO,ncit,NCIT,ncit
+Other,ncit,ncit,
+Other,ncit,NCIT,
+Other,ncit,ncithesaurus,
+Other,ncit,NCITHESAURUS,
+OMOP,ndc,NDC,National Drug Code (FDA and manufacturers) (NDC 20210829)
+OMOP,ndc,ndc,National Drug Code (FDA and manufacturers) (NDC 20210829)
+UMLS,nddf,NDDF,"FDB MedKnowledge (formerly NDDF Plus), 2021_02_10"
+UMLS,nddf,nddf,"FDB MedKnowledge (formerly NDDF Plus), 2021_02_10"
+Other,nddf,NDDF,
+Other,nddf,nddf,
+OMOP,ndfrt,NDFRT,National Drug File - Reference Terminology (VA) (RXNORM 2018-08-12)
+OMOP,ndfrt,ndfrt,National Drug File - Reference Terminology (VA) (RXNORM 2018-08-12)
+Other,ndfrt,ndfrt,
+Other,ndfrt,NDFRT,
+OMOP,nebraska_lexicon,Nebraska Lexicon,Nebraska Lexicon (Nebraska Lexicon 20190816)
+OMOP,nebraska_lexicon,NEBRASKA LEXICON,Nebraska Lexicon (Nebraska Lexicon 20190816)
+OMOP,nebraska_lexicon,nebraska lexicon,Nebraska Lexicon (Nebraska Lexicon 20190816)
+UMLS,neu,NEU,"Neuronames Brain Hierarchy, 2020_05_28"
+UMLS,neu,neu,"Neuronames Brain Hierarchy, 2020_05_28"
+Other,neu,NEU,
+Other,neu,neu,
+Other,neuronamescnid,neuronamescnid,
+Other,neuronamescnid,NEURONAMESCNID,
+OMOP,nfc,NFC,New Form Code (EphMRA) (NFC 20160704)
+OMOP,nfc,nfc,New Form Code (EphMRA) (NFC 20160704)
+UMLS,nic,NIC,"Nursing Interventions Classification (NIC), 7"
+UMLS,nic,nic,"Nursing Interventions Classification (NIC), 7"
+Other,nic,NIC,
+Other,nic,nic,
+Other,nif,nif_organism,
+Other,nif,NIF_ORGANISM,
+Other,nif,nif_subcellular,
+Other,nif,NIF_SUBCELLULAR,
+Other,nifstd,nifstd,
+Other,nifstd,NIFSTD,
+Other,nifstd,nifstd_retired,
+Other,nifstd,NIFSTD_RETIRED,
+Other,nlx,nlx,
+Other,nlx,NLX,
+Other,nlxanat,nlxanat,
+Other,nlxanat,NLXANAT,
+UMLS,noc,NOC,"Nursing Outcomes Classification (NOC), 6"
+UMLS,noc,noc,"Nursing Outcomes Classification (NOC), 6"
+Other,noc,NOC,
+Other,noc,noc,
+Other,noid,noid,
+Other,noid,NOID,
+OMOP,nucc,NUCC,National Uniform Claim Committee Health Care Provider Taxonomy Code Set (NUCC) (2018-06-26 NUCC)
+OMOP,nucc,nucc,National Uniform Claim Committee Health Care Provider Taxonomy Code Set (NUCC) (2018-06-26 NUCC)
+UMLS,nucc,NUCCHCPT,"National Uniform Claim Committee - Health Care Provider Taxonomy, 20.1"
+UMLS,nucc,nucchcpt,"National Uniform Claim Committee - Health Care Provider Taxonomy, 20.1"
+Other,nucc,NUCCPT,
+Other,nucc,nuccpt,
+Other,obi,obi,
+Other,obi,OBI,
+Other,ogem,ogem,
+Other,ogem,OGEM,
+Other,oges,oges,
+Other,oges,OGES,
+Other,ogms,ogms,
+Other,ogms,OGMS,
+Other,olatdv,olatdv,
+Other,olatdv,OLATDV,
+Other,oldneuronames,oldneuronames,
+Other,oldneuronames,OLDNEURONAMES,
+Other,omim,http://identifiers.org/omim,
+Other,omim,HTTP://IDENTIFIERS.ORG/OMIM,
+UMLS,omim,OMIM,"Online Mendelian Inheritance in Man, 2021_02_08"
+UMLS,omim,omim,"Online Mendelian Inheritance in Man, 2021_02_08"
+Other,omim,OMIM,
+Other,omim,omim,
+Other,omim,omimps,
+Other,omim,OMIMPS,
+UMLS,oms,OMS,"Omaha System, 2005"
+UMLS,oms,oms,"Omaha System, 2005"
+Other,oms,OMS,
+Other,oms,oms,
+OMOP,oncokb,OncoKB,Oncology Knowledge Base (MSK) (OncoKB v20210502)
+OMOP,oncokb,ONCOKB,Oncology Knowledge Base (MSK) (OncoKB v20210502)
+OMOP,oncokb,oncokb,Oncology Knowledge Base (MSK) (OncoKB v20210502)
+OMOP,oncotree,OncoTree,OncoTree (MSK) (OncoTree version 2020-10-01)
+OMOP,oncotree,ONCOTREE,OncoTree (MSK) (OncoTree version 2020-10-01)
+OMOP,oncotree,oncotree,OncoTree (MSK) (OncoTree version 2020-10-01)
+Other,oncotree,oncotree,
+Other,oncotree,ONCOTREE,
+OMOP,opcs4,OPCS4,OPCS Classification of Interventions and Procedures version 4 (NHS) (2021 Release)
+OMOP,opcs4,opcs4,OPCS Classification of Interventions and Procedures version 4 (NHS) (2021 Release)
+Other,opencyc,opencyc,
+Other,opencyc,OPENCYC,
+OMOP,ops,OPS,Operations and Procedures Classification (OPS) (OPS Version 2020)
+OMOP,ops,ops,Operations and Procedures Classification (OPS) (OPS Version 2020)
+Other,ordo,ordo,
+Other,ordo,ORDO,
+Other,ordo,orod,
+Other,ordo,OROD,
+Other,orpha,http://www.orpha.net/ordo/orphanet,
+Other,orpha,HTTP://WWW.ORPHA.NET/ORDO/ORPHANET,
+OBO,orpha,orpha,orpha
+OBO,orpha,ORPHA,orpha
+Other,orpha,orpha,
+Other,orpha,ORPHA,
+Other,orpha,orphanet,
+Other,orpha,ORPHANET,
+OMOP,osm,OSM,OpenStreetMap (OSM Release 2019-02-21)
+OMOP,osm,osm,OpenStreetMap (OSM Release 2019-02-21)
+OMOP,oxmis,OXMIS,Oxford Medical Information System (OCHP) (None)
+OMOP,oxmis,oxmis,Oxford Medical Information System (OCHP) (None)
+Other,panther,panther,
+Other,panther,PANTHER,
+Other,patent,patent,
+Other,patent,PATENT,
+Other,pato,pato,
+Other,pato,PATO,
+Other,pba,pba,
+Other,pba,PBA,
+UMLS,pcds,PCDS,"Patient Care Data Set, 1997"
+UMLS,pcds,pcds,"Patient Care Data Set, 1997"
+Other,pcds,PCDS,
+Other,pcds,pcds,
+OMOP,pcornet,PCORNet,National Patient-Centered Clinical Research Network (PCORI) (None)
+OMOP,pcornet,PCORNET,National Patient-Centered Clinical Research Network (PCORI) (None)
+OMOP,pcornet,pcornet,National Patient-Centered Clinical Research Network (PCORI) (None)
+Other,pdb,pdb,
+Other,pdb,PDB,
+Other,pdbechem,pdbechem,
+Other,pdbechem,PDBECHEM,
+UMLS,pdq,PDQ,"Physician Data Query, 2018_10_27"
+UMLS,pdq,pdq,"Physician Data Query, 2018_10_27"
+Other,pdq,PDQ,
+Other,pdq,pdq,
+Other,pdumdv,pdumdv,
+Other,pdumdv,PDUMDV,
+Other,pedsnet,pedsnet,
+Other,pedsnet,PEDSNET,
+Other,pesticides,pesticides,
+Other,pesticides,PESTICIDES,
+Other,phenoscape,phenoscape,
+Other,phenoscape,PHENOSCAPE,
+Other,pirsf,pirsf,
+Other,pirsf,PIRSF,
+Other,pmcid,pmcid,
+Other,pmcid,PMCID,
+OBO,pmid,pmid,pmid
+OBO,pmid,PMID,pmid
+Other,pmid,pmid,
+Other,pmid,PMID,
+UMLS,pnds,PNDS,"Perioperative Nursing Data Set, 4_2018"
+UMLS,pnds,pnds,"Perioperative Nursing Data Set, 4_2018"
+Other,pnds,PNDS,
+Other,pnds,pnds,
+UMLS,ppac,PPAC,"Pharmacy Practice Activity Classification, 1998"
+UMLS,ppac,ppac,"Pharmacy Practice Activity Classification, 1998"
+Other,ppac,PPAC,
+Other,ppac,ppac,
+Other,ppdb,ppdb,
+Other,ppdb,PPDB,
+OMOP,ppi,PPI,AllOfUs_PPI (Columbia) (Codebook Version 0.4.43 + COVID + MHWB + COVID_vaccines)
+OMOP,ppi,ppi,AllOfUs_PPI (Columbia) (Codebook Version 0.4.43 + COVID + MHWB + COVID_vaccines)
+Other,ppr,ppr,
+Other,ppr,PPR,
+UMLS,psy,PSY,"Thesaurus of Psychological Index Terms, 2004"
+UMLS,psy,psy,"Thesaurus of Psychological Index Terms, 2004"
+Other,psy,PSY,
+Other,psy,psy,
+Other,pubchem,pubchem,
+Other,pubchem,PUBCHEM,
+UMLS,qmr,QMR,"Quick Medical Reference (QMR), 1996"
+UMLS,qmr,qmr,"Quick Medical Reference (QMR), 1996"
+Other,qmr,QMR,
+Other,qmr,qmr,
+OMOP,race,Race,Race and Ethnicity Code Set (USBC) (Version 1.0)
+OMOP,race,RACE,Race and Ethnicity Code Set (USBC) (Version 1.0)
+OMOP,race,race,Race and Ethnicity Code Set (USBC) (Version 1.0)
+Other,radlex,radlex,
+Other,radlex,RADLEX,
+UMLS,ram,RAM,"QMR clinically related terms from Randolph A. Miller, 1999"
+UMLS,ram,ram,"QMR clinically related terms from Randolph A. Miller, 1999"
+Other,ram,RAM,
+Other,ram,ram,
+Other,reactome,reactome,
+Other,reactome,REACTOME,
+OMOP,read,Read,NHS UK Read Codes Version 2 (HSCIC) (NHS READV2 21.0.0 20160401000001 + DATAMIGRATION_25.0.0_20180403000001)
+OMOP,read,READ,NHS UK Read Codes Version 2 (HSCIC) (NHS READV2 21.0.0 20160401000001 + DATAMIGRATION_25.0.0_20180403000001)
+OMOP,read,read,NHS UK Read Codes Version 2 (HSCIC) (NHS READV2 21.0.0 20160401000001 + DATAMIGRATION_25.0.0_20180403000001)
+Other,reaxys,reaxys,
+Other,reaxys,REAXYS,
+Other,resid,resid,
+Other,resid,RESID,
+OMOP,rxnorm,RxNorm,RxNorm (NLM) (RxNorm 20210802)
+OMOP,rxnorm,RXNORM,RxNorm (NLM) (RxNorm 20210802)
+OMOP,rxnorm,rxnorm,RxNorm (NLM) (RxNorm 20210802)
+UMLS,rxnorm,RXNORM,"RxNorm Vocabulary, 20AA_210301F"
+UMLS,rxnorm,rxnorm,"RxNorm Vocabulary, 20AA_210301F"
+Other,rxnorm,RXNORM,
+Other,rxnorm,rxnorm,
+OMOP,rxnorm,RxNorm Extension,RxNorm Extension (OHDSI) (RxNorm Extension 2021-08-17)
+OMOP,rxnorm,RXNORM EXTENSION,RxNorm Extension (OHDSI) (RxNorm Extension 2021-08-17)
+OMOP,rxnorm,rxnorm extension,RxNorm Extension (OHDSI) (RxNorm Extension 2021-08-17)
+Other,sao,sao,
+Other,sao,SAO,
+Other,sctspa,SCTSPA,
+Other,sctspa,sctspa,
+Other,smid,smid,
+Other,smid,SMID,
+OMOP,smq,SMQ,Standardised MedDRA Queries (MSSO) (Version 14.0)
+OMOP,smq,smq,Standardised MedDRA Queries (MSSO) (Version 14.0)
+Other,snomed,http://identifiers.org/snomedct,
+Other,snomed,HTTP://IDENTIFIERS.ORG/SNOMEDCT,
+Other,snomed,http://www.snomedbrowser.com/codes/details,
+Other,snomed,HTTP://WWW.SNOMEDBROWSER.COM/CODES/DETAILS,
+Other,snomed,sctid,
+Other,snomed,SCTID,
+Other,snomed,sctid_2010_1_31,
+Other,snomed,SCTID_2010_1_31,
+UMLS,snomed,SNM,"SNOMED-2, 2"
+UMLS,snomed,snm,"SNOMED-2, 2"
+Other,snomed,SNM,
+Other,snomed,snm,
+UMLS,snomed,SNMI,"SNOMED International, 1998"
+UMLS,snomed,snmi,"SNOMED International, 1998"
+Other,snomed,SNMI,
+Other,snomed,snmi,
+OMOP,snomed,SNOMED,Systematic Nomenclature of Medicine - Clinical Terms (IHTSDO) (2020-07-31 SNOMED CT International Edition; 2020-09-01 SNOMED CT US Edition; 2020-10-28 SNOMED CT UK Edition)
+OMOP,snomed,snomed,Systematic Nomenclature of Medicine - Clinical Terms (IHTSDO) (2020-07-31 SNOMED CT International Edition; 2020-09-01 SNOMED CT US Edition; 2020-10-28 SNOMED CT UK Edition)
+Other,snomed,snomed,
+Other,snomed,SNOMED,
+OBO,snomed,snomed_ct,snomed_ct
+OBO,snomed,SNOMED_CT,snomed_ct
+Other,snomed,snomed_ct,
+Other,snomed,SNOMED_CT,
+Other,snomed,snomed_ct_us_2018_03_01,
+Other,snomed,SNOMED_CT_US_2018_03_01,
+Other,snomed,snomedct_2020_03_01,
+Other,snomed,SNOMEDCT_2020_03_01,
+OBO,snomed,snomedct_us,snomedct_us
+OBO,snomed,SNOMEDCT_US,snomedct_us
+UMLS,snomed,SNOMEDCT_US,"US Edition of SNOMED CT, 2021_03_01"
+UMLS,snomed,snomedct_us,"US Edition of SNOMED CT, 2021_03_01"
+Other,snomed,SNOMEDCT_US,
+Other,snomed,snomedct_us,
+Other,snomed,snomedct_us_2018_03_01,
+Other,snomed,SNOMEDCT_US_2018_03_01,
+Other,snomed,snomedct_us_2019_09_01,
+Other,snomed,SNOMEDCT_US_2019_09_01,
+Other,snomed,snomedct_us_2020_03_01,
+Other,snomed,SNOMEDCT_US_2020_03_01,
+Other,snomed,snomedct_us_2020_09_01,
+Other,snomed,SNOMEDCT_US_2020_09_01,
+Other,snomed_vet,SNOMEDCT_VET,
+Other,snomed_vet,snomedct_vet,
+UMLS,sopt,SOP,"Source of Payment Typology, 9.2"
+UMLS,sopt,sop,"Source of Payment Typology, 9.2"
+Other,sopt,SOP,
+Other,sopt,sop,
+OMOP,sopt,SOPT,Source of Payment Typology (PHDSC) (SOPT Version 9.2)
+OMOP,sopt,sopt,Source of Payment Typology (PHDSC) (SOPT Version 9.2)
+Other,spd,spd,
+Other,spd,SPD,
+OMOP,spl,SPL,Structured Product Labeling (FDA) (NDC 20210829)
+OMOP,spl,spl,Structured Product Labeling (FDA) (NDC 20210829)
+Other,spl,spl,
+Other,spl,SPL,
+UMLS,spn,SPN,"Standard Product Nomenclature, 2003"
+UMLS,spn,spn,"Standard Product Nomenclature, 2003"
+Other,spn,SPN,
+Other,spn,spn,
+UMLS,src,SRC,Metathesaurus Source Terminology Names
+UMLS,src,src,Metathesaurus Source Terminology Names
+Other,src,SRC,
+Other,src,src,
+Other,stedman,stedman,
+Other,stedman,STEDMAN,
+Other,stid,stid,
+Other,stid,STID,
+Other,tads,tads,
+Other,tads,TADS,
+Other,talairach,talairach,
+Other,talairach,TALAIRACH,
+Other,tao,tao,
+Other,tao,TAO,
+Other,tao,tao_retired,
+Other,tao,TAO_RETIRED,
+Other,tdr,tdr,
+Other,tdr,TDR,
+Other,te,te,
+Other,te,TE,
+Other,tgma,tgma,
+Other,tgma,TGMA,
+Other,tkmt,TKMT,
+Other,tkmt,tkmt,
+Other,uberontemp,uberontemp,
+Other,uberontemp,UBERONTEMP,
+OMOP,ucum,UCUM,Unified Code for Units of Measure (Regenstrief Institute) (Version 1.8.2)
+OMOP,ucum,ucum,Unified Code for Units of Measure (Regenstrief Institute) (Version 1.8.2)
+OMOP,uk_biobank,UK BioBank,UK Biobank (version 2020-10-15)
+OMOP,uk_biobank,UK BIOBANK,UK Biobank (version 2020-10-15)
+OMOP,uk_biobank,uk biobank,UK Biobank (version 2020-10-15)
+UMLS,ult,ULT,"UltraSTAR, 1993"
+UMLS,ult,ult,"UltraSTAR, 1993"
+Other,ult,ULT,
+Other,ult,ult,
+Other,um-bbd_compid,um-bbd_compid,
+Other,um-bbd_compid,UM-BBD_COMPID,
+Other,umd,UMD,
+Other,umd,umd,
+UMLS,umdns,UMD,"UMDNS: product category thesaurus, 2021"
+UMLS,umdns,umd,"UMDNS: product category thesaurus, 2021"
+Other,umls,http://linkedlifedata.com/resource/umls/id,
+Other,umls,HTTP://LINKEDLIFEDATA.COM/RESOURCE/UMLS/ID,
+OBO,umls,umls,umls
+OBO,umls,UMLS,umls
+Other,umls,umls,
+Other,umls,UMLS,
+Other,umls,umls_cui,
+Other,umls,UMLS_CUI,
+Other,uniprotkb,uniprotkb,
+Other,uniprotkb,UNIPROTKB,
+Other,uniprotkb,uniprotkb_var,
+Other,uniprotkb,UNIPROTKB_VAR,
+Other,url,url,
+Other,url,URL,
+UMLS,usp,USP,"USP Compendial Nomenclature, 2021_02_15"
+UMLS,usp,usp,"USP Compendial Nomenclature, 2021_02_15"
+Other,usp,USP,
+Other,usp,usp,
+UMLS,uspmg,USPMG,"USP Medicare Model Guidelines, 2020"
+UMLS,uspmg,uspmg,"USP Medicare Model Guidelines, 2020"
+Other,uspmg,USPMG,
+Other,uspmg,uspmg,
+UMLS,uwda,UWDA,"University of Washington Digital Anatomist, 1.7.3"
+UMLS,uwda,uwda,"University of Washington Digital Anatomist, 1.7.3"
+Other,uwda,UWDA,
+Other,uwda,uwda,
+OMOP,va,VA Class,VA National Drug File Class (VA) (RXNORM 2018-08-12)
+OMOP,va,VA CLASS,VA National Drug File Class (VA) (RXNORM 2018-08-12)
+OMOP,va,va class,VA National Drug File Class (VA) (RXNORM 2018-08-12)
+Other,va,va class,
+Other,va,VA CLASS,
+OMOP,va,VA Product,VA National Drug File Product (VA) (RXNORM 2018-08-12)
+OMOP,va,VA PRODUCT,VA National Drug File Product (VA) (RXNORM 2018-08-12)
+OMOP,va,va product,VA National Drug File Product (VA) (RXNORM 2018-08-12)
+UMLS,vandf,VANDF,"Veterans Health Administration National Drug File, 2021_01_29"
+UMLS,vandf,vandf,"Veterans Health Administration National Drug File, 2021_01_29"
+Other,vandf,VANDF,
+Other,vandf,vandf,
+Other,vhog,vhog,
+Other,vhog,VHOG,
+Other,vhog,vhog_retired,
+Other,vhog,VHOG_RETIRED,
+Other,vsao,vsao,
+Other,vsao,VSAO,
+Other,vsao,vsao_retired,
+Other,vsao,VSAO_RETIRED,
+Other,vsdb,vsdb,
+Other,vsdb,VSDB,
+Other,wbbt,wbbt,
+Other,wbbt,WBBT,
+Other,wbls,wbls,
+Other,wbls,WBLS,
+Other,webelements,webelements,
+Other,webelements,WEBELEMENTS,
+UMLS,who,WHO,"WHO Adverse Reaction Terminology, 1997"
+UMLS,who,who,"WHO Adverse Reaction Terminology, 1997"
+Other,who,WHO,
+Other,who,who,
+Other,who,WHOFRE,
+Other,who,whofre,
+Other,who,WHOGER,
+Other,who,whoger,
+Other,who,WHOPOR,
+Other,who,whopor,
+Other,who,WHOSPA,
+Other,who,whospa,
+Other,wikidata,wikidata,
+Other,wikidata,WIKIDATA,
+Other,wikipedia,wikipedia,
+Other,wikipedia,WIKIPEDIA,
+Other,wikipediacategory,wikipediacategory,
+Other,wikipediacategory,WIKIPEDIACATEGORY,
+Other,xao,xao,
+Other,xao,XAO,
+Other,xtrodo,xtrodo,
+Other,xtrodo,XTRODO,
+Other,ymdb,ymdb,
+Other,ymdb,YMDB,
+Other,zfa,zfa,
+Other,zfa,ZFA,
+Other,zfa,zfa_retired,
+Other,zfa,ZFA_RETIRED,
+UMLS,zfin,NCI_ZFin,"Zebrafish Model Organism Database, 2009D"
+UMLS,zfin,NCI_ZFIN,"Zebrafish Model Organism Database, 2009D"
+UMLS,zfin,nci_zfin,"Zebrafish Model Organism Database, 2009D"
+Other,zfin,NCI_ZFin,
+Other,zfin,NCI_ZFIN,
+Other,zfin,nci_zfin,
+Other,zfs,zfs,
+Other,zfs,ZFS,
