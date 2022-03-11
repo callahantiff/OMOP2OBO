@@ -1,0 +1,17 @@
+vocabulary_id	vocabulary_name	vocabulary_reference	vocabulary_version	vocabulary_concept_id
+Sponsor	Sponsor - institution or individual financing healthcare transactions	OMOP generated		32472
+Procedure Type	OMOP Procedure Occurrence Type	OMOP generated		44819128
+ICD10CM	International Classification of Diseases, Tenth Revision, Clinical Modification (NCHS)	http://www.cdc.gov/nchs/icd/icd10cm.htm	ICD10CM FY2021 code descriptions	44819098
+CPT4	Current Procedural Terminology version 4 (AMA)	http://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html	2020 Release	44819100
+CVX	CDC Vaccine Administered CVX (NCIRD)	https://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx	CVX Code Set 2021-01-26	581400
+Provider	OMOP Provider	OMOP generated		32573
+Device Type	OMOP Device Type	OMOP generated		44819151
+ICD10	International Classification of Diseases, Tenth Revision (WHO)	http://www.who.int/classifications/icd/icdonlineversions/en/	2021 Release	44819124
+Currency	International Currency Symbol (ISO 4217)	http://www.iso.org/iso/home/standards/currency_codes.htm	2008	44819153
+Meas Type	OMOP Measurement Type	OMOP generated		44819152
+GCN_SEQNO	Clinical Formulation ID (FDB)	FDB US distribution package	20151119 Release	44819141
+Revenue Code	UB04/CMS1450 Revenue Codes (CMS)	http://www.mpca.net/?page=ERC_finance	2010 Release	44819133
+LOINC	Logical Observation Identifiers Names and Codes (Regenstrief Institute)	http://loinc.org/downloads/loinc	2.69	44819102
+NDFRT	National Drug File - Reference Terminology (VA)	http://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html	RXNORM 2018-08-12	44819103
+Cohort Type	OMOP Cohort Type	OMOP generated		44819234
+OncoKB	Oncology Knowledge Base (MSK)	https://www.oncokb.org/	OncoKB v20210502	32999

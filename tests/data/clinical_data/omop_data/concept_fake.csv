@@ -1,0 +1,13 @@
+concept_id	concept_name	domain_id	vocabulary_id	concept_class_id	standard_concept	concept_code	valid_start_date	valid_end_date	invalid_reason
+45756805	Pediatric Cardiology	Provider	ABMS	Physician Specialty	S	OMOP4821938	19700101	20991231
+45756804	Pediatric Anesthesiology	Provider	ABMS	Physician Specialty	S	OMOP4821939	19700101	20991231
+45756803	Pathology-Anatomic / Pathology-Clinical	Provider	ABMS	Physician Specialty	S	OMOP4821940	19700101	20991231
+45756802	Pathology - Pediatric	Provider	ABMS	Physician Specialty	S	OMOP4821941	19700101	20991231
+45756801	Pathology - Molecular Genetic	Provider	ABMS	Physician Specialty	S	OMOP4821942	19700101	20991231
+45756800	Microbiology	Provider	ABMS	Physician Specialty	S	OMOP4821943	19700101	20991231
+45756799	Pathology - Hematology	Provider	ABMS	Physician Specialty	S	OMOP4821944	19700101	20991231
+45756798	Pathology - Forensic	Provider	ABMS	Physician Specialty	S	OMOP4821945	19700101	20991231
+45756797	Pathology - Clinical	Provider	ABMS	Physician Specialty	S	OMOP4821946	19700101	20991231
+45756796	Pathology - Chemical	Provider	ABMS	Physician Specialty	S	OMOP4821947	19700101	20991231
+45756795	Pathology - Anatomic	Provider	ABMS	Physician Specialty	S	OMOP4821948	19700101	20991231
+45756794	Orthopaedic Sports Medicine	Provider	ABMS	Physician Specialty	S	OMOP4821949	19700101	20991231

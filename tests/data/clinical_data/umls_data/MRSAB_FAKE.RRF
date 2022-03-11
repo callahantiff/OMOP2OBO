@@ -1,0 +1,5 @@
+C98765432|C1215623|LCH90|SNM|SNOMED FULL NAME, date|SNOMED|Date|||9999AA||;;;;;;;;;;;;http://www.fakeurl.gov|;;;;;;;;;;;;|0|1234|5678||PT||ENG|UTF-8|Y|Y|SNOMED SOURCE NAME|;;;;SNOMED;;;nth ed.;Place;SNOMED CT;DATE;;;;;;;;|
+C1234567|C1215623|LCH90|SNM|SNOMED FULL NAME, date|SNOMED|Date|||9999AA||;;;;;;;;;;;;http://www.fakeurl.gov|;;;;;;;;;;;;|0|1234|5678||PT||ENG|UTF-8|Y|Y|SNOMED SOURCE NAME|;;;;SNOMED;;;nth ed.;Place;SNOMED CT;DATE;;;;;;;;|
+C98765432|C1215623|LCH90|RXN|RXNORM FULL NAME, date|RXNORM|Date|||9999AA||;;;;;;;;;;;;http://www.fakeurl.gov|;;;;;;;;;;;;|0|1234|5678||PT||ENG|UTF-8|Y|Y|RXNORM SOURCE NAME|;;;;RXNORM;;;nth ed.;Place;RXNORM;DATE;;;;;;;;|
+C1234567|C1215623|LCH90|RXN|RXNORM FULL NAME, date|RXNORM|Date|||9999AA||;;;;;;;;;;;;http://www.fakeurl.gov|;;;;;;;;;;;;|0|1234|5678||PT||ENG|UTF-8|Y|Y|RXNORM SOURCE NAME|;;;;RXNORM;;;nth ed.;Place;RXNORM;DATE;;;;;;;;|
+C98765432|C1215623|LCH90|HP|HPO FULL NAME, date|SNOMED|Date|||9999AA||;;;;;;;;;;;;http://www.fakeurl.gov|;;;;;;;;;;;;|0|1234|5678||PT||ENG|UTF-8|Y|Y|HPO SOURCE NAME|;;;;HPO;;;nth ed.;Place;HPO;DATE;;;;;;;;|
