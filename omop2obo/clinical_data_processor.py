@@ -10,58 +10,57 @@ import pandas as pd
 import pickle
 import sys
 
+from typing import Dict, List, Optional
+
 from omop2obo.utils import *
 
 
 class ClinicalDataProcessor(object):
-    """An annotator to map clinical codes to ontology terms. This workflow consists of four steps that are performed
-    on data from a single clinical domain:
-        1 - UMLS CUI and Semantic Type Annotation
-        2 - Ontology DbXRef Mapping
-        3 - Exact String Mapping to concept labels and/or synonyms
-        4 - Similarity distance mapping
+    """Class is designed to process and prepare specific UMLS and OMOP tables needed to support the mapping
+    framework. This class assumes that at minimum, there is a directory of UMLS data files (i.e., MRCONSO.RRF,
+    MRDEF.RRF, MRSTY.RRF, MRMAP.RRF, MRSAB.RRF, and MRHIER.RRF) and while optional, although optional, when provided,
+    a directory of OMOP tables (i.e., concept.csv, vocabulary.csv, concept_relationship.csv,
+    and concept_synonyms.csv). Similar to the processes performed on ontology data by the OntologyInfoExtractor()
+    class, this class processes the clinical data to create a Pandas DataFrame and dictionaries which contain the
+    ancestor and descendant concepts for all concepts.
 
     Attributes:
-        clinical_data: A Pandas DataFrame containing clinical data.
-        ontology_dictionary: A nested dictionary containing ontology data, where outer keys are ontology identifiers
-            (e.g. "hp", "mondo"), inner keys are data types (e.g. "label", "definition", "dbxref", and "synonyms").
-            For each inner key, there is a third dictionary keyed by a string of that item type and with values that
-            are the ontology URI for that string type.
-        primary_key: A string containing the column name of the primary key.
-        concept_codes: A list of column names containing concept-level codes (optional).
-        concept_strings: A list of column names containing concept-level labels and synonyms (optional).
-        ancestor_codes: A list of column names containing ancestor concept-level codes (optional).
-        ancestor_strings: A list of column names containing ancestor concept-level labels and synonyms (optional).
-        umls_cui_data: A Pandas DataFrame containing UMLS CUI data from MRCONSO.RRF.
-        umls_tui_data: A Pandas DataFrame containing UMLS CUI data from MRSTY.RRF.
-        source_code_map: A dictionary containing clinical vocabulary source code abbreviations.
-        umls_double_merge: A bool specifying whether to merge UMLS SAB codes with OMOP source codes once or twice.
-            Merging once will only align OMOP source codes to UMLS SAB, twice with take the CUIs from the first merge
-            and merge them again with the full UMLS SAB set resulting in a larger set of matches. The default value
-            is True, which means that the merge will be performed twice.
+        umls_data_files: A list of strings that represent file paths.
+        omop_data_files: A list of strings that represent file paths.
+        master_data_dictionary: A string containing the filepath to the ontology data directory.
 
     Raises:
-        TypeError:
-            If clinical_file is not type str or if clinical_file is empty.
-            If source_codes is not type str or if source_codes is empty.
-            If ontology_dictionary is not type dict.
-            If umls_mrconso_file is not type str or if umls_mrconso_file is empty.
-            If umls_mrsty_file is not type str or if umls_mrsty_file is empty.
-            if primary_key is not type str.
-            if concept_codes, concept_strings, ancestor_codes, and ancestor_strings (if provided) are not type list.
         OSError:
-            If the clinical_file does not exist.
-            If the source_codes does not  exist.
-            If umls_mrconso_file does not exist.
-            If umls_mrsty_file does not exist.
+            If the umls_data directory exists.
+            If the omop_data directory exists.
+        TypeError:
+            If umls_data is not a string.
+            If omop_data is not a string.
+        IndexError:
+            If umls_data directory is empty.
+            If omop_data directory is empty.
     """
 
-    def __init__(self, clinical_file: str, ontology_dictionary: Dict, primary_key: str, concept_codes: Tuple,
-                 concept_strings: Tuple = None, ancestor_codes: Tuple = None, ancestor_strings: Tuple = None,
-                 umls_mrconso_file: str = None, umls_mrsty_file: str = None, umls_expand: bool = True,
-                 source_codes: str = None) -> None:
+    def __init__(self, umls_data: str, omop_data: Optional[str]) -> None:
 
-        print('#### GENERATING EXACT MATCH MAPPINGS ####')
-        print('*** Setting up Environment')
+        self.master_data_dictionary: Dict = {}
 
-        self.umls_double_merge: bool = umls_expand
+        # check umls data
+        if not isinstance(umls_data, str):
+            raise TypeError('umls_data is not type str')
+        elif not os.path.exists(umls_data):
+            raise OSError('The {} directory does not exist'.format(umls_data))
+        elif len(glob.glob(umls_data + '/**/*.RRF', recursive=True)) == 0:
+            raise IndexError('The {} directory is empty'.format(umls_data))
+        else:
+            self.umls_data_files: List = glob.glob(umls_data + '/**/*.RRF', recursive=True)
+
+        # check umls data
+        if not isinstance(omop_data, str):
+            raise TypeError('omop_data is not type str')
+        elif not os.path.exists(omop_data):
+            raise OSError('The {} directory does not exist'.format(omop_data))
+        elif len(glob.glob(omop_data + '/**/*.RRF', recursive=True)) == 0:
+            raise IndexError('The {} directory is empty'.format(omop_data))
+        else:
+            self.omop_data_files: List = glob.glob(omop_data + '/**/*.RRF', recursive=True)
