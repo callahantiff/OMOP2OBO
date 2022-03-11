@@ -45,7 +45,7 @@ class TestOntologyInfoExtractor(TestCase):
         self.assertRaises(OSError, OntologyInfoExtractor, 'ontologies', self.ont_dictionary)
 
         # test if file is empty
-        self.assertRaises(TypeError, OntologyInfoExtractor, self.ontology_directory, self.ont_dictionary)
+        self.assertRaises(IndexError, OntologyInfoExtractor, self.ontology_directory, self.ont_dictionary)
 
         # move files back
         shutil.copyfile(self.dir_loc + '/empty_hp_without_imports.owl',

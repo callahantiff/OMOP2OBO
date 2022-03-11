@@ -35,7 +35,7 @@ class TestOntologyDownloader(TestCase):
         self.assertRaises(OSError, OntologyDownloader, self.dir_loc + '/ontology_sources_lists.txt')
 
         # test if file is empty
-        self.assertRaises(TypeError, OntologyDownloader, self.dir_loc + '/ontology_source_list_empty.txt')
+        self.assertRaises(IndexError, OntologyDownloader, self.dir_loc + '/ontology_source_list_empty.txt')
 
         return None
 

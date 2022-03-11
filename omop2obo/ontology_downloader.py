@@ -29,14 +29,14 @@ class OntologyDownloader(object):
     Raises:
         TypeError: If the file pointed to by data_path is not type str.
         IOError: If the file pointed to by data_path does not exist.
-        TypeError: If the file pointed to by data_path is empty.
+        IndexError: If the file pointed to by data_path is empty.
     """
 
     def __init__(self, data_path: str) -> None:
 
         if not isinstance(data_path, str): raise TypeError('data_path must be type str.')
         elif not os.path.exists(data_path): raise OSError('The {} file does not exist!'.format(data_path))
-        elif os.stat(data_path).st_size == 0: raise TypeError('Input file: {} is empty'.format(data_path))
+        elif os.stat(data_path).st_size == 0: raise IndexError('Input file: {} is empty'.format(data_path))
         else: self.data_path: str = data_path
 
         self.source_list: Dict[str, str] = {}

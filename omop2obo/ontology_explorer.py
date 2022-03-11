@@ -45,11 +45,11 @@ class OntologyInfoExtractor(object):
         graph: An rdflib graph object.
         ont_dictionary: A dictionary, where keys are an ontology alias (e.g., 'hp') and values are a string pointing
             the local location where the ontology was downloaded.
-        ont_directory: A string containing the filepath to the ontology data directory.
+        master_ontology_dictionary: A string containing the filepath to the ontology data directory.
 
     Raises:
         OSError: If the ontology_dictionary cannot be found.
-        TypeError: If ontology_dictionary is empty.
+        IndexError: If ontology_dictionary is empty.
     """
 
     def __init__(self, ontology_directory: str, ont_dictionary: Dict) -> None:
@@ -60,7 +60,7 @@ class OntologyInfoExtractor(object):
 
         # check for ontology data
         if not os.path.exists(ontology_directory): raise OSError("Can't find the 'resources/ontologies' directory")
-        elif len(glob.glob(ontology_directory + '/*.owl')) == 0: raise TypeError('The ontologies directory is empty')
+        elif len(glob.glob(ontology_directory + '/*.owl')) == 0: raise IndexError('The ontologies directory is empty')
         else: self.ont_directory = ontology_directory
 
     def get_ontology_information(self, ont_id: str) -> Dict:
