@@ -146,7 +146,7 @@ class ConceptAnnotator(object):
         # check for UMLS MRCONSO file
         # assumption (line 154) currently filtering to only keep 'ENG' codes, remove this constraint if too specific
         if not umls_mrconso_file:
-            self.umls_data: Optional[pd.DataFrame] = None
+            self.umls_cui_data: Optional[pd.DataFrame] = None
         else:
             if not isinstance(umls_mrconso_file, str):
                 raise TypeError('umls_mrconso_file must be type str.')
