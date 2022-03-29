@@ -13,7 +13,7 @@ import sys
 from rdflib import Graph, Literal, Namespace, URIRef  # type: ignore
 from rdflib.namespace import RDF, RDFS, OWL  # type: ignore
 from tqdm import tqdm  # type: ignore
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 from omop2obo.utils import *
 
