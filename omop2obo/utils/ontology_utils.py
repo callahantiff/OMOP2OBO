@@ -157,8 +157,9 @@ def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Optional[Dict]:
 
     dbx1 = set(graph.triples((None, oboinowl.hasDbXref, None)))
     dbx2 = set(graph.triples((None, skos.exactMatch, None)))
-    dbx3 = set(graph.triples((None, oboinowl.hasAlternativeId, None)))
-    dbxref_res = [x for x in (dbx1 | dbx2 | dbx3) if x[0] in cls]
+    dbx3 = set(graph.triples((None, skos.closeMatch, None)))
+    dbx4 = set(graph.triples((None, oboinowl.hasAlternativeId, None)))
+    dbxref_res = [x for x in (dbx1 | dbx2 | dbx3 | dbx4) if x[0] in cls]
 
     if len(dbxref_res) > 0:
         dbx_uris: Dict = dict(); k = str(list(cls)[0]).split('/')[-1].split('_')[0]

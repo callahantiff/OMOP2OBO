@@ -51,7 +51,7 @@ class TestOntologyUtils(unittest.TestCase):
         self.assertRaises(ValueError, gets_ontology_statistics, self.empty_ontology_file_location)
 
         # test good file
-        self.assertIsNone(gets_ontology_statistics(self.good_ontology_file_location, self.owltools_location))
+        self.assertIsInstance(gets_ontology_statistics(self.good_ontology_file_location, self.owltools_location), str)
 
         return None
 
