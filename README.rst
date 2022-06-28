@@ -55,8 +55,14 @@ Releases
 - We are working on a publishing this work, but if you'd like to use the validated mappings immediately, please `send us an email`_.
 
 **Current Release:**
- Release currently in preparation and planned for ***December 2020***!
+ Release currently in preparation and planned for ***December 2020***  
+ 
  - ``v1.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/OMOP2OBO/wiki/V1.0>`__.
+ 
+   - Condition Mappings: https://zenodo.org/record/6774364#.Yrt79uzMLUI 
+   - Drug Exposure Ingredient Mappings: https://zenodo.org/record/6774402#.Yrt8ZOzMLUI 
+   - Measurement Mappings: https://zenodo.org/record/6774444#.Yrt71uzMLUI 
+
 
 |
 
