@@ -59,9 +59,9 @@ Releases
  
  - ``v1.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/OMOP2OBO/wiki/V1.0>`__.
  
-   - Condition Mappings: https://zenodo.org/record/6774364#.Yrt79uzMLUI 
-   - Drug Exposure Ingredient Mappings: https://zenodo.org/record/6774402#.Yrt8ZOzMLUI 
-   - Measurement Mappings: https://zenodo.org/record/6774444#.Yrt71uzMLUI 
+   - Condition Occurrence Mappings: https://doi.org/10.5281/zenodo.6774363 
+   - Drug Exposure Ingredient Mappings: https://doi.org/10.5281/zenodo.6774401 
+   - Measurement Mappings: https://doi.org/10.5281/zenodo.6774443
 
 
 |
