@@ -52,10 +52,11 @@ Releases
 
 - All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/OMOP2OBO/wiki>`__  
 
-- We are working on a publishing this work, but if you'd like to use the validated mappings immediately, please `send us an email`_.
+- Please see our `dashboard <http://tiffanycallahan.com/OMOP2OBO_Dashboard>`__ to get current stats on available mappings and for links to download them.
 
-**Current Release:**
- Release currently in preparation and planned for ***December 2020***  
+|dashboard1| |dashboard2|
+
+**Current Release:** 
  
  - ``v1.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/OMOP2OBO/wiki/V1.0>`__.
  
@@ -299,6 +300,13 @@ or `send us an email`_ 💌
 
 .. |logo| image:: https://user-images.githubusercontent.com/8030363/140855940-1aa2dcd5-a1b3-469a-97cf-a466d6e20b25.png
    :width: 1500
+
+.. |dashboard1| image:: https://github.com/callahantiff/OMOP2OBO_Dashboard/blob/master/figures/summary.png
+   :width: 500
+   
+.. |dashboard2| image:: https://user-images.githubusercontent.com/8030363/181682085-c03c90b0-6103-4ec3-8e32-08189241469f.png
+   :width: 500
+   :height: 300
 
 .. |github_action| image:: https://github.com/callahantiff/OMOP2OBO/workflows/Domo%20Arigato%20CI%20Roboto/badge.svg
    :target: https://github.com/callahantiff/OMOP2OBO/actions?query=workflow%3A%22Domo+Arigato+CI+Roboto%22
