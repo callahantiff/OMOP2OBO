@@ -304,7 +304,7 @@ or `send us an email`_ 💌
 .. |dashboard1| image:: https://github.com/callahantiff/OMOP2OBO_Dashboard/blob/master/figures/summary.png
    :width: 500
    
-.. |dashboard2| image:: https://user-images.githubusercontent.com/8030363/181682085-c03c90b0-6103-4ec3-8e32-08189241469f.png
+.. |dashboard2| image:: https://github.com/callahantiff/OMOP2OBO_Dashboard/blob/master/figures/data.png
    :width: 500
    :height: 300
 
