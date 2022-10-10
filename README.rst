@@ -25,6 +25,11 @@ Common data models have solved many challenges of utilizing electronic health re
 
 To address these limitations, we have developed ``OMOP2OBO``, the first health system-wide integration and alignment between the Observational Health Data Sciences and Informatics' Observational Medical Outcomes Partnership (`OMOP`_) standardized clinical terminologies and eight OBO biomedical ontologies spanning diseases, phenotypes, anatomical entities, cell types, organisms, chemicals, metabolites, hormones, vaccines, and proteins. To verify that the mappings are both clinically and biologically meaningful, we have performed extensive experiments to verify the `accuracy <https://github.com/callahantiff/OMOP2OBO/wiki/Accuracy>`__, `generalizability <https://github.com/callahantiff/OMOP2OBO/wiki/Generalizability>`_, and `logical consistency <https://github.com/callahantiff/OMOP2OBO/wiki/Consistency>`_ of each released mapping set.
 
+📢 Manuscript preprint is available 👉 `https://doi.org/10.48550/arXiv.2209.04732 <https://doi.org/10.48550/arXiv.2209.04732>`__ 
+
+
+
+
 What Does This Repository Provide?
 **********************************
 
