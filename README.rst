@@ -303,7 +303,7 @@ Contact
 We’d love to hear from you! To get in touch with us, please join or start a new `Discussion`_, `create an issue`_
 or `send us an email`_ 💌
 
-.. |logo| image:: https://user-images.githubusercontent.com/8030363/140855940-1aa2dcd5-a1b3-469a-97cf-a466d6e20b25.png
+.. |logo| image:: https://user-images.githubusercontent.com/8030363/195584249-1c77ac6c-ca23-470e-8f4a-d742bff4325a.png
    :width: 1500
 
 .. |dashboard1| image:: https://github.com/callahantiff/OMOP2OBO_Dashboard/blob/master/figures/summary.png
