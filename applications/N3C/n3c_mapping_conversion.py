@@ -106,6 +106,7 @@ def omop_concept_set_exp(concept_id: int, dict_entry: Dict, desc: bool = False) 
             'labels': dict_entry[concept_id]['ONTOLOGY_LABEL']
                                              },
         'ONTOLOGY_CONCEPT_MAPPING_LOGIC': dict_entry[concept_id]['MAP_LOGIC'],
+        'MAPPING_CATEGORY': dict_entry[concept_id]['MAP_CATEGORY'],
         'MAPPING_EVIDENCE': dict_entry[concept_id]['MAP_EVIDENCE']
     }
 
