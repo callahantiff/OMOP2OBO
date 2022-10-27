@@ -10,7 +10,6 @@ __pycache__
 .ipynb_checkpoints/*
 build/*
 dist/*
-
 resources/analyses/.DS_Store
 resources/analyses/.ipynb_checkpoints/*
 
@@ -28,7 +27,7 @@ coverage.xml
 releases/*
 !resources/analyses/*.py
 !resources/analyses/*.ipynb
-resources/clinical_data
+resources/clinical_data*
 !resources/clinical_data/README.md
 resources/documentation
 resources/mappings/
