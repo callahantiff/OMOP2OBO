@@ -12,7 +12,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.6.7
       - name: Install Requirements and Dependencies
         run: |
           pip install --upgrade pip setuptools
