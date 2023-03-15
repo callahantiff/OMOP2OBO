@@ -1,11 +1,15 @@
 # WorkFlow Do: install Python dependencies, run tests, linter, and return code coverage
 name: Domo Arigato CI Roboto
-on: [push, pull_request]
+on:
+  push:
+    branches:
+          - master
+          - development
 jobs:  
   
   build:
     name: Quality Check
-    runs-on: ubuntu-latest
+    runs-on: Ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
