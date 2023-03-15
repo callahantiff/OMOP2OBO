@@ -4,7 +4,7 @@
 import pandas as pd
 import unittest
 
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from omop2obo.utils import *
 
 
@@ -595,5 +595,42 @@ class TestDataUtils(unittest.TestCase):
         self.assertEqual(results.at[0, 'SIMILARITY_HP_LABEL'], None)
         self.assertEqual(results.at[0, 'SIMILARITY_HP_MAPPING'], None)
         self.assertEqual(results.at[0, 'SIMILARITY_HP_EVIDENCE'], None)
+
+        return None
+
+    # def tests_dataframe_difference(self):
+    #     """tests the dataframe_difference function."""
+    #
+    #
+    #     return None
+    #
+    # def tests_recursively_updates_dataframe(self):
+    #     """tests the recursively_update_dataframe function."""
+    #
+    #
+    #     return None
+    #
+    # def tests_merges_dataframes(self):
+    #     """tests the merges_dataframes function."""
+    #
+    #
+    #     return None
+
+    def tests_finds_umls_descendants(self):
+        """tests the finds_umls_descendants function."""
+
+        # create fake data
+        paths = [['A10801494']]
+        df = pd.DataFrame({
+            'CUI': ['C0010308', 'C0266283', 'C0342153', 'C0749420'],
+            'AUI': ['A7578046', 'A27924709', 'A10801495', 'A10801493'],
+            'PAUI': ['A7578046', 'A27924709', 'A10801493', 'A10801495'],
+        })
+        desc_set = {'A7578046', 'A27924709', 'A10801493', 'A10801495'}
+
+        # test method
+        res = finds_umls_descendants(df, paths, desc_set, None)
+        self.assertIsInstance(res, List)
+        self.assertEqual(len(res), 1)
 
         return None
