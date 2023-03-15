@@ -12,6 +12,7 @@ build/*
 dist/*
 resources/analyses/.DS_Store
 resources/analyses/.ipynb_checkpoints/*
+venv/*
 
 ## testing resources ##
 #################################
