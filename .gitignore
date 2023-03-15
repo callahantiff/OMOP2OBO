@@ -36,12 +36,13 @@ resources/mappings/
 !resources/mappings/condition_codes/.gitkeep
 !resources/mappings/laboratory_tests/.gitkeep
 !resources/mappings/medication_codes/.gitkeep
-!resources/vocabulary_aliases.csv
 resources/mapping_semantics
 !resources/mapping_semantics/*.md
 resources/ontologies/
 !resources/ontologies/ontology_source_metadata.txt
 resources/programming/
+resources/umls_data/*
+!resources/vocabulary_aliases.csv
 
 ## scripts ##
 #################################
