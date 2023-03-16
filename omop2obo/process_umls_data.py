@@ -36,7 +36,7 @@ class UMLSDataProcessor(object):
         self.umls_data_files: list = glob.glob('resources/umls_data/*AA/META/*.RRF', recursive=True)
         self.umls_merged: Optional[pd.DataFrame] = None
 
-        # check umls data directory for needed mappping files
+        # check umls data directory for needed mapping files
         if len(self.umls_data_files) == 0: raise IndexError('The "resources/umls_data" directory is empty')
         else:
             if len(self.umls_data_files) == 0:
@@ -75,10 +75,6 @@ class UMLSDataProcessor(object):
 
         Returns:
             None
-
-        Raises:
-            OSError: if the MRDOC.RRF file is missing.
-            IndexError: if the MRDOC.RRF file is empty.
         """
 
         headers = ['CUI', 'LANG', 'AUI', 'SAB', 'TTY', 'CODE', 'LABEL', 'SUPPRESS']
