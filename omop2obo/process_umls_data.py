@@ -67,16 +67,19 @@ class UMLSDataProcessor(object):
 
     def _processes_mrconso(self) -> None:
         """Function reads in and processes data in the MRCONSO.RRF file. The data are filtered and output as a Pandas
-        DataFrame. Example output is shown below.
-            CUI        AUI        SAB        CODE      LABEL                                 TTY
-            C0000005   A2663426   MSH        D012711   (131)I-Macroaggregated Albumin        Preferred entry term
-            C0000005   A26634266  MSH        D012711   (131)I-MAA                            Entry term
-            C0000039   A28315139  RXNORM     1926948   1,2-dipalmitoylphosphatidylcholine    Name for an ingredient
+        DataFrame. An example row from the output DataFrame is shown below.
+            CUI                                C0000783
+            AUI                                A0092778
+            SAB                                     MSH
+            CODE                                D000020
+            LABEL    Non-Steroidal Abortifacient Agents
+            TTY                     Machine permutation
 
         Returns:
             None
         """
 
+        print('\t- Creating DataFrame and Processing Data')
         headers = ['CUI', 'LANG', 'AUI', 'SAB', 'TTY', 'CODE', 'LABEL', 'SUPPRESS']
         self.mrconso = pd.read_csv(self.mrconso, sep='|', names=headers, low_memory=False, header=None,
                                    usecols=[0, 1, 7, 11, 12, 13, 14, 16]).drop_duplicates()
@@ -96,60 +99,79 @@ class UMLSDataProcessor(object):
 
     def _processes_mrdef(self) -> None:
         """Function reads in and processes data in the MRDEF.RRF file. The data are filtered and output as a Pandas
-        DataFrame. The resulting Pandas DataFrame is then merged with other processed UMLS data. Example output is shown
-        below.
-            CUI          AUI            SAB        DEF
-            C0002404     A19049381      NCI        The sulfate salt of amantadine, a synthetic tr...
-            C0002395     A1702699       JABL       A disabling degenerative disease of the nervou...
-            C0002386     A0022316       MSH        The thickest and spongiest part of the maxilla...
+        DataFrame. TAn example row from the output DataFrame is shown below.
+            CUI                                               C0000039
+            AUI                                               A0016515
+            SAB                                                    MSH
+            CODE                                               D015060
+            LABEL                   1,2-Dipalmitoylphosphatidylcholine
+            TTY                                           Main heading
+            DEF      Synthetic phospholipid used in liposomes and lipid bilayers to study biological membranes. It is
+                     also a major constituent of PULMONARY SURFACTANTS.
 
         Returns:
             None.
         """
 
+        print('\t- Creating DataFrame and Processing Data')
         headers = ['CUI', 'AUI', 'SAB', 'DEF']
         self.mrdef = pd.read_csv(self.mrdef, sep='|', names=headers, low_memory=False, header=None,
                                  usecols=[0, 1, 4, 5]).drop_duplicates()
         self.umls_merged = self.mrconso.merge(self.mrdef, on=['CUI', 'AUI', 'SAB'], how='left')
+        self.umls_merged = self.umls_merged.fillna('None').astype(str)
 
         return None
 
     def _processes_mrsty(self) -> None:
         """Function reads in and processes data in the MRSTY.RRF file. The data are filtered and output as a Pandas
-        DataFrame. The resulting Pandas DataFrame is then merged with other processed UMLS data. Example output is shown
-        below.
-              CUI              SEMANTIC_TYPE
-              C0000005         Amino Acid, Peptide, or Protein|Pharmacologic ...
-              C0000039         Organic Chemical|Pharmacologic Substance
-              C0000052         Amino Acid, Peptide, or Protein|Enzyme
+        DataFrame. An example row from the output DataFrame is shown below.
+            CUI                                                       C0000005
+            AUI                                                      A26634265
+            SAB                                                            MSH
+            CODE                                                       D012711
+            LABEL                               (131)I-Macroaggregated Albumin
+            TTY                                           Preferred entry term
+            DEF                                                           None
+            SEMANTIC_TYPE        Amino Acid, Peptide, or Protein|Pharmacologic
+                                 Substance|Indicator, Reagent, or Diagnostic Aid
 
         Returns:
             None.
         """
 
+        print('\t- Creating DataFrame and Processing Data')
         headers = ['CUI', 'SEMANTIC_TYPE']
-        self.mrsty = pd.read_csv(self.mrsty, sep='|', names=headers, low_memory=False, header=None, usecols=[0, 3]).drop_duplicates()
+        self.mrsty = pd.read_csv(self.mrsty, sep='|', names=headers, low_memory=False, header=None, usecols=[0, 3])
+        self.mrsty = self.mrsty.drop_duplicates()
         # aggregate semantic types by CUI
+        print('\t- Aggregating Semantic Types by CUI (this process takes several minutes)')
         mrsty_agg = aggregates_column_values(self.mrsty, 'CUI', ['SEMANTIC_TYPE'], '|')
         # merge data and aggregate semantic types by
         self.umls_merged = self.umls_merged.merge(mrsty_agg, on=['CUI'], how='left')
+        self.umls_merged = self.umls_merged.fillna('None').astype(str)
 
         return None
 
     def _processes_mrmap(self) -> None:
         """Function reads in and processes data in the MRMAP.RRF file. The data are filtered and output as a Pandas
-        DataFrame. The resulting Pandas DataFrame is then merged with other processed UMLS data. Example output is shown
-        below.
-            MAP_CUI    SAB           FROMID      RELA        TO_CODE   STATUS
-            C5441275   SNOMEDCT_US   31820007    mapped_to   E34.9     ALWAYS E34.9
-            C5441275   SNOMEDCT_US   269476000   mapped_to   C85.80    ALWAYS C85.80
-            C5441275   SNOMEDCT_US   424416009   mapped_to   H27.10    ALWAYS H27.10
-            C5441275   SNOMEDCT_US   126517004   mapped_to   D49.2     ALWAYS D49.2
+        DataFrame. An example row from the output DataFrame is shown below.
+            CUI                                  C0000727
+            AUI                                  A2988568
+            SAB                               SNOMEDCT_US
+            CODE                                  9209005
+            LABEL                           Acute abdomen
+            TTY                 Designated preferred name
+            DEF                                      None
+            SEMANTIC_TYPE                 Sign or Symptom
+            RELA                                mapped_to
+            TO_CODE                                 R10.0
+            TO_CODE_SAB_NAME                 ICD10CM_2021
 
         Returns:
             None.
         """
 
+        print('\t- Creating DataFrame and Processing Data')
         headers = ['MAP_CUI', 'SAB', 'FROMID', 'RELA', 'TO_CODE', 'STATUS']
         self.mrmap = pd.read_csv(self.mrmap, sep='|', names=headers, low_memory=False, header=None,
                                  usecols=[0, 1, 6, 13, 14, 21])
@@ -163,13 +185,14 @@ class UMLSDataProcessor(object):
         # merge full mrconso with mrmap
         self.umls_merged = self.umls_merged.merge(conso_map, left_on=['CODE', 'SAB'], right_on=['FROMID', 'SAB'], how='left')
         self.umls_merged = self.umls_merged.drop(['FROMID'], axis=1).drop_duplicates()
+        self.umls_merged = self.umls_merged.fillna('None').astype(str)
 
         return None
 
     def _processes_mrsab(self) -> None:
         """Function reads in and processes data in the MRSAB.RRF file. The data are filtered and output as a Pandas
-        DataFrame. The resulting Pandas DataFrame is then merged with other processed UMLS data. Example output is shown
-        below.
+        DataFrame. The resulting Pandas DataFrame is then merged with other processed UMLS data. An example row from the
+        output DataFrame is shown below.
                SAB     SAB_NAME
                AIR     AI/RHEUM, 1993
                CST     COSTART, 1995
@@ -180,6 +203,7 @@ class UMLSDataProcessor(object):
             None.
         """
 
+        print('\t- Creating DataFrame and Processing Data')
         headers = ['SAB_REF', 'SAB', 'SAB_NAME', 'LANG', 'CURVER']
         self.mrsab = pd.read_csv(self.mrsab, sep='|', names=headers, low_memory=False, header=None, usecols=[2, 3, 4, 19, 21])
         self.mrsab = self.mrsab[(self.mrsab.CURVER == 'Y') & (self.mrsab.LANG == 'ENG')]
@@ -199,10 +223,14 @@ class UMLSDataProcessor(object):
                     'ANCS': {'3': 'A3684559', '2': 'A2895444', '1': 'A3647338', '0': 'A3253161'}}
             }
 
+        In the 'ANCS' dict, the keys are string-ints representing location in hierarchy where '0' is the immediate
+        parent node of the AUI listed as the primary key. The largest number in the list is the root node.
+
         Returns:
             None.
         """
 
+        print('\t- Creating DataFrame and Processing Data')
         headers = ['CUI', 'AUI', 'CXN', 'SAB', 'RELA', 'PATH']
         self.mrhier = pd.read_csv(self.mrhier, sep='|', names=headers, low_memory=False, header=None,
                                   usecols=[0, 1, 2, 4, 5, 6]).drop_duplicates()
@@ -235,7 +263,8 @@ class UMLSDataProcessor(object):
             UMLS_DBXREF_TYPE                                                mapped_to
             DBXREF                                                              R10.0
             UMLS_DBXREF_SAB                                                   ICD10CM
-            UMLS_DBXREF_SAB_NAME    International Classification of Diseases, 10th...
+            UMLS_DBXREF_SAB_NAME       International Classification of Diseases, 10th
+                                       Edition, Clinical Modification, 2021
 
         Returns:
             None.
@@ -248,17 +277,21 @@ class UMLSDataProcessor(object):
         def_columns = self.umls_merged[['CUI', 'AUI', 'CODE', 'DEF', 'SAB', 'SAB_NAME', 'SEMANTIC_TYPE']]
         def_columns['STRING_TYPE'] = 'Definition'
         def_columns.rename(columns={'DEF': 'STRING'}, inplace=True)
-        dbxref_columns = self.umls_merged[['CUI', 'AUI', 'CODE', 'RELA', 'TO_CODE', 'TO_CODE_SAB_NAME', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME']]
-        dbxref_columns.rename(columns={'TO_CODE': 'DBXREF', 'RELA': 'DBXREF_TYPE', 'TO_CODE_SAB_NAME': 'DBXREF_SAB_NAME'}, inplace=True)
+        col_list = ['CUI', 'AUI', 'CODE', 'RELA', 'TO_CODE', 'TO_CODE_SAB_NAME', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME']
+        dbxref_columns = self.umls_merged[col_list]
+        col_v = {'TO_CODE': 'DBXREF', 'RELA': 'DBXREF_TYPE', 'TO_CODE_SAB_NAME': 'DBXREF_SAB_NAME'}
+        dbxref_columns.rename(columns=col_v, inplace=True)
         # merge them back together
-        umls_map_df = label_columns.merge(def_columns, on=[
-            'CUI', 'AUI', 'CODE', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME', 'STRING', 'STRING_TYPE'], how='left')
-        umls_map_df = umls_map_df.merge(dbxref_columns, on=['CUI', 'AUI', 'CODE', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME'], how='left')
+        col_list1 = ['CUI', 'AUI', 'CODE', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME', 'STRING', 'STRING_TYPE']
+        col_list2 = ['CUI', 'AUI', 'CODE', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME']
+        umls_map_df = label_columns.merge(def_columns, on=col_list1, how='left')
+        umls_map_df = umls_map_df.merge(dbxref_columns, on=col_list2, how='left')
         umls_map_df['STRING'] = umls_map_df['STRING'].str.lower()
         # update column labels and values
-        umls_map_df.rename(columns={'CUI': 'UMLS_CUI', 'AUI': 'UMLS_AUI', 'STRING_TYPE': 'UMLS_STRING_TYPE', 'SAB': 'UMLS_SAB',
-                                    'SEMANTIC_TYPE': 'UMLS_SEMANTIC_TYPE', 'SAB_NAME': 'UMLS_SAB_NAME', 'DBXREF_TYPE': 'UMLS_DBXREF_TYPE',
-                                    'DBXREF_SAB_NAME': 'UMLS_DBXREF_SAB_NAME'}, inplace=True)
+        col_v1 = {'CUI': 'UMLS_CUI', 'AUI': 'UMLS_AUI', 'STRING_TYPE': 'UMLS_STRING_TYPE', 'SAB': 'UMLS_SAB',
+                  'SEMANTIC_TYPE': 'UMLS_SEMANTIC_TYPE', 'SAB_NAME': 'UMLS_SAB_NAME', 'DBXREF_TYPE': 'UMLS_DBXREF_TYPE',
+                  'DBXREF_SAB_NAME': 'UMLS_DBXREF_SAB_NAME'}
+        umls_map_df.rename(columns=col_v1, inplace=True)
         # remove veterinary concepts and remove codes that are a range of codes
         umls_map_df = umls_map_df[umls_map_df['UMLS_SAB'] != 'SNOMEDCT_VET']
         rm_codes = list(umls_map_df[(umls_map_df['CODE'].str.contains('-')) & (umls_map_df['CODE'].str.contains(':'))].index)
@@ -280,7 +313,7 @@ class UMLSDataProcessor(object):
         processes_mrhier function for more detail). The second object is a Pandas DataFrame that contains the remaining
         UMLS tables merged into a single object (see the tidy_and_filter function for more detail). These two objects
         are added to a dictionary and pickled to: resources/umls_data/UMLS_MAP_PANEL.pkl. The internal dictionary is
-        stored using the following keys: {'conso_full': umls_merged, 'aui_ancestors': mrhier}.
+        stored using the following keys: {'umls_full': umls_merged, 'aui_ancestors': mrhier}.
 
         Returns:
             None.
@@ -306,7 +339,7 @@ class UMLSDataProcessor(object):
 
         # write data to disc --  defensive way to write pickle.write, allowing for very large files on all platforms
         print('--> Saving UMLS Mapping Data')
-        umls_data_dict = {'conso_full': self.umls_merged, 'aui_ancestors': self.mrhier}
+        umls_data_dict = {'umls_full': self.umls_merged, 'aui_ancestors': self.mrhier}
         max_bytes, bytes_out = 2 ** 31 - 1, pickle.dumps(umls_data_dict); n_bytes = sys.getsizeof(bytes_out)
         with open('resources/umls_data/UMLS_MAP_PANEL.pkl', 'wb') as f_out:
             for idx in range(0, n_bytes, max_bytes):
