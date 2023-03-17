@@ -5,8 +5,6 @@
 # import needed libraries
 import glob
 import pandas as pd
-import pickle
-import sys
 
 from tqdm import tqdm
 from typing import Optional, Union
@@ -312,8 +310,9 @@ class UMLSDataProcessor(object):
         and output as a single data structure. The first object is a dictionary which is keyed by UMLS AUI (see the
         processes_mrhier function for more detail). The second object is a Pandas DataFrame that contains the remaining
         UMLS tables merged into a single object (see the tidy_and_filter function for more detail). These two objects
-        are added to a dictionary and pickled to: resources/umls_data/UMLS_MAP_PANEL.pkl. The internal dictionary is
-        stored using the following keys: {'umls_full': umls_merged, 'aui_ancestors': mrhier}.
+        are pickled to: resources/umls_data/UMLS_MAP_PANEL.pkl (self.umls_merged) and
+        resources/umls_data/UMLS_MAP_Ancestor_Dictionary.pkl (self.mrhier). These two objects are returned as a
+        dictionary using the following keys: {'umls_full': umls_merged, 'aui_ancestors': mrhier}.
 
         Returns:
             None.
@@ -339,10 +338,13 @@ class UMLSDataProcessor(object):
 
         # write data to disc --  defensive way to write pickle.write, allowing for very large files on all platforms
         print('--> Saving UMLS Mapping Data')
+        filepath = 'resources/umls_data/'
+        print('\t- Writing Pandas DataFrame containing processed UMLS concepts')
+        pickle_large_data_structure(self.umls_merged, filepath + 'UMLS_MAP_PANEL.pkl')
+        print('\t- Writing UMLS CUI ancestor dictionary')
+        pickle_large_data_structure(self.mrhier, filepath + 'UMLS_MAP_Ancestor_Dictionary.pkl')
+
+        # combine objects into single dictionary
         umls_data_dict = {'umls_full': self.umls_merged, 'aui_ancestors': self.mrhier}
-        max_bytes, bytes_out = 2 ** 31 - 1, pickle.dumps(umls_data_dict); n_bytes = sys.getsizeof(bytes_out)
-        with open('resources/umls_data/UMLS_MAP_PANEL.pkl', 'wb') as f_out:
-            for idx in range(0, n_bytes, max_bytes):
-                f_out.write(bytes_out[idx:idx + max_bytes])
 
         return umls_data_dict
