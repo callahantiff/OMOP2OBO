@@ -32,7 +32,7 @@ class UMLSDataProcessor(object):
 
     def __init__(self) -> None:
         self.umls_data_files: list = glob.glob('resources/umls_data/*AA/META/*.RRF', recursive=True)
-        self.umls_merged: Optional[pd.DataFrame] = None
+        self.umls_merge: Optional[pd.DataFrame] = None
 
         # check umls data directory for needed mapping files
         if len(self.umls_data_files) == 0: raise IndexError('The "resources/umls_data" directory is empty')
@@ -115,8 +115,8 @@ class UMLSDataProcessor(object):
         headers = ['CUI', 'AUI', 'SAB', 'DEF']
         self.mrdef = pd.read_csv(self.mrdef, sep='|', names=headers, low_memory=False, header=None,
                                  usecols=[0, 1, 4, 5]).drop_duplicates()
-        self.umls_merged = self.mrconso.merge(self.mrdef, on=['CUI', 'AUI', 'SAB'], how='left')
-        self.umls_merged = self.umls_merged.fillna('None').astype(str)
+        self.umls_merge = self.mrconso.merge(self.mrdef, on=['CUI', 'AUI', 'SAB'], how='left')
+        self.umls_merge = self.umls_merge.fillna('None').astype(str)
 
         return None
 
@@ -145,8 +145,8 @@ class UMLSDataProcessor(object):
         print('\t- Aggregating Semantic Types by CUI (this process takes several minutes)')
         mrsty_agg = aggregates_column_values(self.mrsty, 'CUI', ['SEMANTIC_TYPE'], '|')
         # merge data and aggregate semantic types by
-        self.umls_merged = self.umls_merged.merge(mrsty_agg, on=['CUI'], how='left')
-        self.umls_merged = self.umls_merged.fillna('None').astype(str)
+        self.umls_merge = self.umls_merge.merge(mrsty_agg, on=['CUI'], how='left')
+        self.umls_merge = self.umls_merge.fillna('None').astype(str)
 
         return None
 
@@ -181,9 +181,9 @@ class UMLSDataProcessor(object):
         conso_map['TO_CODE_SAB_NAME'] = conso_map['LABEL'].apply(lambda x: x.split('to ')[-1].strip(' Mappings'))
         conso_map = conso_map.drop(['STATUS', 'LABEL', 'MAP_CUI', 'CUI'], axis=1).drop_duplicates()
         # merge full mrconso with mrmap
-        self.umls_merged = self.umls_merged.merge(conso_map, left_on=['CODE', 'SAB'], right_on=['FROMID', 'SAB'], how='left')
-        self.umls_merged = self.umls_merged.drop(['FROMID'], axis=1).drop_duplicates()
-        self.umls_merged = self.umls_merged.fillna('None').astype(str)
+        self.umls_merge = self.umls_merge.merge(conso_map, left_on=['CODE', 'SAB'], right_on=['FROMID', 'SAB'], how='left')
+        self.umls_merge = self.umls_merge.drop(['FROMID'], axis=1).drop_duplicates()
+        self.umls_merge = self.umls_merge.fillna('None').astype(str)
 
         return None
 
@@ -206,8 +206,8 @@ class UMLSDataProcessor(object):
         self.mrsab = pd.read_csv(self.mrsab, sep='|', names=headers, low_memory=False, header=None, usecols=[2, 3, 4, 19, 21])
         self.mrsab = self.mrsab[(self.mrsab.CURVER == 'Y') & (self.mrsab.LANG == 'ENG')]
         mrsab_filtered = self.mrsab.drop(['SAB_REF', 'LANG', 'CURVER'], axis=1).drop_duplicates()
-        self.umls_merged = self.umls_merged.merge(mrsab_filtered, on='SAB', how='left')
-        self.umls_merged = self.umls_merged.fillna('None').astype(str)
+        self.umls_merge = self.umls_merge.merge(mrsab_filtered, on='SAB', how='left')
+        self.umls_merge = self.umls_merge.fillna('None').astype(str)
 
         return None
 
@@ -269,14 +269,13 @@ class UMLSDataProcessor(object):
         """
 
         # subset data into better structure for mapping
-        print('\nConverting Merged Data into Mapping Format')
-        label_columns = self.umls_merged[['CUI', 'AUI', 'CODE', 'LABEL', 'TTY', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME']]
+        label_columns = self.umls_merge[['CUI', 'AUI', 'CODE', 'LABEL', 'TTY', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME']]
         label_columns.rename(columns={'LABEL': 'STRING', 'TTY': 'STRING_TYPE'}, inplace=True)
-        def_columns = self.umls_merged[['CUI', 'AUI', 'CODE', 'DEF', 'SAB', 'SAB_NAME', 'SEMANTIC_TYPE']]
+        def_columns = self.umls_merge[['CUI', 'AUI', 'CODE', 'DEF', 'SAB', 'SAB_NAME', 'SEMANTIC_TYPE']]
         def_columns['STRING_TYPE'] = 'Definition'
         def_columns.rename(columns={'DEF': 'STRING'}, inplace=True)
         col_list = ['CUI', 'AUI', 'CODE', 'RELA', 'TO_CODE', 'TO_CODE_SAB_NAME', 'SEMANTIC_TYPE', 'SAB', 'SAB_NAME']
-        dbxref_columns = self.umls_merged[col_list]
+        dbxref_columns = self.umls_merge[col_list]
         col_v = {'TO_CODE': 'DBXREF', 'RELA': 'DBXREF_TYPE', 'TO_CODE_SAB_NAME': 'DBXREF_SAB_NAME'}
         dbxref_columns.rename(columns=col_v, inplace=True)
         # merge them back together
@@ -299,9 +298,9 @@ class UMLSDataProcessor(object):
         dbxref_codes = self.mrsab[['SAB_REF', 'SAB', 'SAB_NAME']]
         dbxref_codes.rename(columns={'SAB': 'UMLS_DBXREF_SAB', 'SAB_NAME': 'UMLS_DBXREF_SAB_NAME'}, inplace=True)
         umls_map_df.rename(columns={'UMLS_DBXREF_SAB_NAME': 'SAB_REF'}, inplace=True)
-        self.umls_merged = umls_map_df.merge(dbxref_codes, on='SAB_REF', how='left')
-        self.umls_merged = self.umls_merged.drop(['SAB_REF'], axis=1)
-        self.umls_merged = self.umls_merged.fillna('None').drop_duplicates()
+        self.umls_merge = umls_map_df.merge(dbxref_codes, on='SAB_REF', how='left')
+        self.umls_merge = self.umls_merge.drop(['SAB_REF'], axis=1)
+        self.umls_merge = self.umls_merge.fillna('None').drop_duplicates()
 
         return None
 
@@ -310,9 +309,9 @@ class UMLSDataProcessor(object):
         and output as a single data structure. The first object is a dictionary which is keyed by UMLS AUI (see the
         processes_mrhier function for more detail). The second object is a Pandas DataFrame that contains the remaining
         UMLS tables merged into a single object (see the tidy_and_filter function for more detail). These two objects
-        are pickled to: resources/umls_data/UMLS_MAP_PANEL.pkl (self.umls_merged) and
+        are pickled to: resources/umls_data/UMLS_MAP_PANEL.pkl (self.umls_merge) and
         resources/umls_data/UMLS_MAP_Ancestor_Dictionary.pkl (self.mrhier). These two objects are returned as a
-        dictionary using the following keys: {'umls_full': umls_merged, 'aui_ancestors': mrhier}.
+        dictionary using the following keys: {'umls_full': umls_merge, 'aui_ancestors': mrhier}.
 
         Returns:
             None.
@@ -334,17 +333,20 @@ class UMLSDataProcessor(object):
         self._processes_mrhier()
 
         # clean up final data set
+        print('--> Finalizing Processed Data')
         self._tidy_and_filter()
 
         # write data to disc --  defensive way to write pickle.write, allowing for very large files on all platforms
         print('--> Saving UMLS Mapping Data')
         filepath = 'resources/umls_data/'
-        print('\t- Writing Pandas DataFrame containing processed UMLS concepts')
-        pickle_large_data_structure(self.umls_merged, filepath + 'UMLS_MAP_PANEL.pkl')
-        print('\t- Writing UMLS CUI ancestor dictionary')
-        pickle_large_data_structure(self.mrhier, filepath + 'UMLS_MAP_Ancestor_Dictionary.pkl')
+        f1 = filepath + 'UMLS_MAP_PANEL.pkl'
+        print('\t- Writing Pandas DataFrame Containing Processed UMLS CUIs: "{}"'.format(f1))
+        pickle_large_data_structure(self.umls_merge, f1)
+        f2 = filepath + 'UMLS_MAP_Ancestor_Dictionary.pkl'
+        print('\t- Writing UMLS CUI Ancestor Dictionary: "{}"'.format(f2))
+        pickle_large_data_structure(self.mrhier, f2)
 
         # combine objects into single dictionary
-        umls_data_dict = {'umls_full': self.umls_merged, 'aui_ancestors': self.mrhier}
+        umls_data_dict = {'umls_full': self.umls_merge, 'aui_ancestors': self.mrhier}
 
         return umls_data_dict

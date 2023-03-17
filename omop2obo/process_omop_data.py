@@ -323,17 +323,20 @@ class OMOPDataProcessor(object):
         self._processes_concept_ancestor()
 
         # clean up final data set
+        print('--> Adding OMOP Domain Information and Standard Concept Flag')
         self._tidy_and_filter()
 
         # write data to disc --  defensive way to write pickle.write, allowing for very large files on all platforms
         print('--> Saving OMOP Mapping Data')
         filepath = 'resources/clinical_data/'
-        print('\t- Writing Pandas DataFrame containing processed OMOP concepts')
-        pickle_large_data_structure(self.omop_merge, filepath + 'OMOP_MAP_PANEL.pkl')
-        print('\t- Writing OMOP concept ancestor dictionary')
-        pickle_large_data_structure(self.concept_anc, filepath + 'OMOP_MAP_Ancestor_Dictionary.pkl')
+        f1 = filepath + 'OMOP_MAP_PANEL.pkl'
+        print('\t- Writing Pandas DataFrame Containing Processed OMOP Concepts to: "{}"'.format(f1))
+        pickle_large_data_structure(self.omop_merge, f1)
+        f2 = filepath + 'OMOP_MAP_Ancestor_Dictionary.pkl'
+        print('\t- Writing OMOP Concept Ancestor Dictionary: "{}"'.format(f2))
+        pickle_large_data_structure(self.concept_anc, f2)
 
         # combine objects into single dictionary
-        omop_data_dict = {'umls_full': self.omop_merge, 'aui_ancestors': self.concept_anc}
+        omop_data_dict = {'omop_full': self.omop_merge, 'concept_ancestors': self.concept_anc}
 
         return omop_data_dict
