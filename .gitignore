@@ -39,6 +39,7 @@ resources/mappings/
 resources/mapping_semantics
 !resources/mapping_semantics/*.md
 resources/ontologies/
+!resources/ontologies/README.md
 !resources/ontologies/ontology_source_metadata.txt
 resources/programming/
 resources/umls_data/*
