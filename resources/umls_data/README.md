@@ -36,7 +36,11 @@ Pandas `DataFrame` that contains the remaining OMOP CDM tables merged into a sin
 pickled to: `resources/umls_data/UMLS_MAP_Ancestor_Dictionary.pkl` and `resources/umls_data/UMLS_MAP_PANEL.pkl`.
 An example of what the data within each object looks like is shown below.  
 
+<br>
+
 #### `UMLS_MAP_Ancestor_Dictionary.pkl`  
+For each AUI's ancestor dictionary, the keys are string-ints representing location in hierarchy where '0' is the
+immediate parent node of the AUI listed as the primary key. The largest number in the list is the root node. 
 ```python
 {'A32648871': {
                 'UMLS_CUI': 'C5441266',
@@ -44,6 +48,8 @@ An example of what the data within each object looks like is shown below.
                 'ANCS': {'3': 'A3684559', '2': 'A2895444', '1': 'A3647338', '0': 'A3253161'}}
             }
 ```
+
+<br>
 
 #### `UMLS_MAP_PANEL.pkl`
 ```python

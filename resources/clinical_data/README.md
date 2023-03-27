@@ -35,7 +35,11 @@ Pandas `DataFrame` that contains the remaining OMOP CDM tables merged into a sin
 pickled to: `resources/clinical_data/OMOP_MAP_Ancestor_Dictionary.pkl` and `resources/clinical_data/OMOP_MAP_PANEL.pkl`.
 An example of what the data within each object looks like is shown below.  
 
+<br>
+
 #### `OMOP_MAP_Ancestor_Dictionary.pkl`  
+For each concept_id's ancestor dictionary, the keys are string-ints representing location in hierarchy where '0' is the
+immediate parent node of the AUI listed as the primary key. The largest number in the list is the root node.
 ```python
 {'35619487': {
                 '0': {'35619484', '37209200'},
@@ -44,6 +48,8 @@ An example of what the data within each object looks like is shown below.
                 '3': {'4126705'}}
             }
 ```
+
+<br>
 
 #### `OMOP_MAP_PANEL.pkl`
 ```python
