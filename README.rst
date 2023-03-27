@@ -17,6 +17,9 @@ What is OMOP2OBO?
 terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical
 Ontologies (`OBOs`_) foundry ontologies.
 
+Please see the ``v2.0 -- beta`` `Wiki`_ page for a detailed description of what is included in this release and how the
+scripts and the resulting mappings differ from the `v1.0` release.
+
 
 What Does This Repository Provide?
 **********************
@@ -27,7 +30,7 @@ Conditions, Drug Exposures, and Measurements. These mappings are available in se
 ontologies, available as an edge list (``.txt``) and as an ``.owl`` file. See current release for more details.
 
 
-2. **A Mapping Framework:** An algorithm and mapping pipeline that enables one to construct their set of `omop2obo`
+2. **A Mapping Framework:** An algorithm and mapping pipeline that enables one to construct their set of ``omop2obo``
 mappings. The figure below provides a high-level overview of the algorithm workflow. The code provided in this
 repository facilitates all of the automatic steps shown in this figure except for the manual mapping (for now, although
 we are `currently <https://github.com/callahantiff/OMOP2OBO/issues/19>`__ working on a deep learning model to address
