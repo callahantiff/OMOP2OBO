@@ -51,7 +51,7 @@ def gets_ontology_classes(graph: Graph, ont_id: str) -> Set:
         ont_id: A string containing an ontology namespace.
 
     Returns:
-        class_list: A set of all of the classes in the graph.
+        class_list: A set of all the classes in the graph.
 
     Raises:
         ValueError: If the query returns zero nodes with type owl:ObjectProperty.
@@ -138,7 +138,7 @@ def gets_ontology_class_synonyms(graph: Graph, cls: Set) -> Dict:
 
 def gets_ontology_class_dbxrefs(graph: Graph, cls: Set) -> Optional[Dict]:
     """Queries an ontology and returns a dictionary that contains all owl:Class objects and their database
-    cross references (dbxrefs) in the graph. This function will also include concepts that have been identified as
+    cross-references (dbxrefs) in the graph. This function will also include concepts that have been identified as
     exact matches. The query returns a tuple of dictionaries where the first dictionary contains the dbxrefs and
     exact matches (URIs and labels) and the second dictionary contains the dbxref/exactmatch uris and a string
     indicating the type (i.e. dbxref or exact match).
@@ -190,7 +190,7 @@ def gets_deprecated_ontology_classes(graph: Graph, ont_id: str) -> Set:
         ont_id: A string containing an ontology namespace (e.g., "hp").
 
     Returns:
-        class_list: A list of all of the deprecated OWL classes in the graph.
+        class_list: A list of all the deprecated OWL classes in the graph.
     """
 
     # find all deprecated classes in graph
@@ -208,7 +208,7 @@ def gets_obsolete_ontology_classes(graph: Graph, ont_id: str) -> Set:
         ont_id: A string containing an ontology namespace (e.g., "hp").
 
     Returns:
-        class_list: A list of all of the obsolete OWL classes in the graph.
+        class_list: A list of all the obsolete OWL classes in the graph.
     """
 
     # find all deprecated classes in graph
@@ -268,13 +268,13 @@ def entity_search(graph: Graph, uri: Union[URIRef, str], search_type: str = 'anc
     """Recursively searches an ontology hierarchy to pull all ancestor or children concepts for an input entity. The
     function returns a nested dictionary where the outer keys are ontology URIs and the inner dictionary keys are
     string levels, where each level is a number (0-N) that represents the distance in the hierarchy from the class
-    and the values contain lists of URLs for for classes at that level.
+    and the values contain lists of URLs for classes at that level.
 
     Args:
         graph: An RDFLib graph object assumed to contain ontology data.
         uri: A list of at least one ontology RDFLib URIRef object or string.
-        search_type: A string specifying whether or not ancestors (ancestors) or children (children should be returned.
-        filtered_search: A value that specifies whether or not the search should remove classes that are not from the
+        search_type: A string specifying whether ancestors or children should be returned.
+        filtered_search: A value that specifies whether the search should remove classes that are not from the
             ontology namespace (i.e., only include HP concepts when search HPO). If None (default), all ontology
             classes ancestors/descendants will be returned.
         rel: A string or RDFLib URI object containing a predicate.

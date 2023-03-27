@@ -4,18 +4,22 @@
 """
 Data PreProcessing Utility Functions.
 
-Pandas DataFrame manipulations
+Pandas DataFrame Manipulations
 * data_frame_subsetter
 * data_frame_supersetter
 * column_splitter
-* aggregates_column_values
 * data_frame_grouper
 * normalizes_source_codes
+* aggregates_column_values
+* dataframe_difference
+* recursively_update_dataframe
+* merges_dataframes
+* finds_umls_descendants
 
-Dictionary manipulations
+Dictionary Manipulations
 * merge_dictionaries
 
-Mapping Result Aggregation
+Mapping Result Processing
 * ohdsi_ananke
 * normalizes_clinical_source_codes
 * filters_mapping_content
@@ -23,22 +27,32 @@ Mapping Result Aggregation
 * formats_mapping_evidence
 * assigns_mapping_category
 * aggregates_mapping_results
+* finds_ancestor_mappings
+
+Writing and Saving Data Objects
+* pickle_large_data_structure
 
 """
 
 # import needed libraries
+import itertools
 import pandas as pd  # type: ignore
-import re
+import pickle
+# import re
+import sys
 
 from functools import reduce
 from more_itertools import unique_everseen
 from tqdm import tqdm  # type: ignore
-from typing import Any, Callable, Dict, List, Optional, Tuple  # type: ignore
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union  # type: ignore
 
 # ENVIRONMENT WARNINGS
 # WARNING 1 - Pandas: disable chained assignment warning rationale:
 # https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
 pd.options.mode.chained_assignment = None
+
+# reset recursion limit to be a bit less conservative in order to handle terminologies with deep hierarchies
+sys.setrecursionlimit(1500)
 
 
 def data_frame_subsetter(data: pd.DataFrame, primary_key: str, subset_columns: List) -> pd.DataFrame:
@@ -173,8 +187,8 @@ def aggregates_column_values(data: pd.DataFrame, primary_key: str, agg_cols: Lis
     """
 
     # create list of aggregated GroupBy DataFrames
-    combo = [data.groupby([primary_key])[col].apply(lambda x: delimiter.join(list(unique_everseen(x))))
-             for col in agg_cols]
+    grouped_data = data.groupby([primary_key])
+    combo = [grouped_data[col].apply(lambda x: delimiter.join(list(unique_everseen(x)))) for col in agg_cols]
 
     # merge data frames by primary key and reset index
     merged_combo = reduce(lambda x, y: pd.merge(x, y, on=primary_key, how='outer'), combo)
@@ -190,10 +204,10 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str, c
     Examples of the input and output data are shown below.
 
     INPUT_DATA:
-                   CONCEPT_ID         CONCEPT_DBXREF_ONT_URI  CONCEPT_DBXREF_ONT_TYPE         CONCEPT_DBXREF_EVIDENCE
+                   CONCEPT_ID        CONCEPT_DBXREF_ONT_URI  CONCEPT_DBXREF_ONT_TYPE          CONCEPT_DBXREF_EVIDENCE
             0         442264        http://...MONDO_0100010                     MONDO   CONCEPT_DBXREF_sctid:68172002
-            2        4029098        http://...MONDO_0045014                     MONDO  CONCEPT_DBXREF_sctid:237913008
-            4        4141365           http://...HP_0000964                        HP  CONCEPT_DBXREF_sctid:426768001
+            2        4029098        http://...MONDO_0045014                     MONDO   CONCEPT_DBXREF_sctid:237913008
+            4        4141365        http://...HP_0000964                        HP      CONCEPT_DBXREF_sctid:426768001
 
     OUTPUT DATA:
     Columns: ['CONCEPT_ID', 'HP_CONCEPT_DBXREF_ONT_URI', 'HP_CONCEPT_DBXREF_ONT_LABEL', 'HP_CONCEPT_DBXREF_EVIDENCE',
@@ -233,46 +247,46 @@ def data_frame_grouper(data: pd.DataFrame, primary_key: str, type_column: str, c
     return grouped_data_full.drop_duplicates()
 
 
-def normalizes_source_codes(data: pd.DataFrame, source_code_dict: Dict) -> pd.Series:
-    """Takes a Pandas DataFrame column containing source code values that need normalization and normalizes them
-    using values from a pre-built dictionary (resources/mappings/source_code_vocab_map.csv). The function is designed
-    to normalize identifier prefixes according to the specifications in the source_code_dict. It provides some light
-    regex support for the following scenarios:
-        - ICD10CM:C85.92 --> icd10:c85.92
-        - http://www.snomedbrowser.com/codes/details/12132356564 --> snomed_12132356564
-        - http://www.orpha.net/ordo/orphanet_1920 --> orphanet_1920
-
-    Assumption: assumes that the column to normalize is always the 0th index.
-
-    Args:
-        data: A column from a Pandas DataFrame containing unstacked identifiers that need normalization (e.g.
-            umls:c123456, http://www.snomedbrowser.com/codes/details/12132356564, rxnorm:12345).
-        source_code_dict: A dictionary keyed by input prefix with values reflecting the preferred prefixes in the
-            source_code_dict file. For example:
-                {'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
-
-    Returns:
-        A Pandas Series that has been normalized.
-    """
-
-    # split prefix from number in each identifier
-    prefix = data[data.columns[0]].apply(
-        lambda j: j.rstrip([x for x in re.split('[_:|/]', j) if x != ''][-1])[:-1] if 'http' in j and '_' in j else
-        j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1]
-    )
-
-    id_num = data[data.columns[0]].apply(
-        lambda j: [x for x in re.split('[_:|/]', j) if x != ''][-1] if 'http' in j and '_' in j else
-        [x for x in re.split('[:|/]', j) if x != ''][-1]
-    ).str.lower()
-
-    # normalize prefix to dictionary and clean up urls
-    norm_prefix = prefix.apply(lambda j: source_code_dict[j] if j in source_code_dict.keys() else j)
-
-    # concat normalized identifier and number back together
-    updated_source_codes = norm_prefix + ':' + id_num
-
-    return updated_source_codes
+# def normalizes_source_codes(data: pd.DataFrame, source_code_dict: Dict) -> pd.Series:
+#     """Takes a Pandas DataFrame column containing source code values that need normalization and normalizes them
+#     using values from a pre-built dictionary (resources/mappings/source_code_vocab_map.csv). The function is designed
+#     to normalize identifier prefixes according to the specifications in the source_code_dict. It provides some light
+#     regex support for the following scenarios:
+#         - ICD10CM:C85.92 --> icd10:c85.92
+#         - http://www.snomedbrowser.com/codes/details/12132356564 --> snomed_12132356564
+#         - http://www.orpha.net/ordo/orphanet_1920 --> orphanet_1920
+#
+#     Assumption: assumes that the column to normalize is always the 0th index.
+#
+#     Args:
+#         data: A column from a Pandas DataFrame containing unstacked identifiers that need normalization (e.g.
+#             umls:c123456, http://www.snomedbrowser.com/codes/details/12132356564, rxnorm:12345).
+#         source_code_dict: A dictionary keyed by input prefix with values reflecting the preferred prefixes in the
+#             source_code_dict file. For example:
+#                 {'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
+#
+#     Returns:
+#         A Pandas Series that has been normalized.
+#     """
+#
+#     # split prefix from number in each identifier
+#     prefix = data[data.columns[0]].apply(
+#         lambda j: j.rstrip([x for x in re.split('[_:|/]', j) if x != ''][-1])[:-1] if 'http' in j and '_' in j else
+#         j.rstrip([x for x in re.split('[:|/]', j) if x != ''][-1])[:-1]
+#     )
+#
+#     id_num = data[data.columns[0]].apply(
+#         lambda j: [x for x in re.split('[_:|/]', j) if x != ''][-1] if 'http' in j and '_' in j else
+#         [x for x in re.split('[:|/]', j) if x != ''][-1]
+#     ).str.lower()
+#
+#     # normalize prefix to dictionary and clean up urls
+#     norm_prefix = prefix.apply(lambda j: source_code_dict[j] if j in source_code_dict.keys() else j)
+#
+#     # concat normalized identifier and number back together
+#     updated_source_codes = norm_prefix + ':' + id_num
+#
+#     return updated_source_codes
 
 
 def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False) -> Dict:
@@ -285,19 +299,17 @@ def merge_dictionaries(dictionaries: Dict, key_type: str, reverse: bool = False)
     Args:
         dictionaries: A nested dictionary.
         key_type: A string containing the key of one of the inner dictionaries.
-        reverse: A bool indicating whether or not the dictionaries should be reversed before merging (default=False).
+        reverse: A bool indicating whether  the dictionaries should be reversed before merging (default=False).
 
     Returns:
-        combined_dictionary: A dictionary object containing.
+        combined_dictionary: A dictionary object containing a merge set of items from each dictionary.
     """
 
     combined_dictionary: Dict = {}
 
     for dictionary in dictionaries.keys():
-        if reverse:
-            combined_dictionary.update({v: k for k, v in dictionaries[dictionary][key_type].items()})
-        else:
-            combined_dictionary.update(dictionaries[dictionary][key_type])
+        if reverse: combined_dictionary.update({v: k for k, v in dictionaries[dictionary][key_type].items()})
+        else: combined_dictionary.update(dictionaries[dictionary][key_type])
 
     return combined_dictionary
 
@@ -348,22 +360,111 @@ def ohdsi_ananke(primary_key: str, ont_keys: list, ont_data: pd.DataFrame, data1
     return merged_data_ont
 
 
-def normalizes_clinical_source_codes(dbxref_dict: Dict, source_dict: Dict):
-    """Function takes two dictionaries and uses them to create a new dictionary. The first dictionary, contains ontology
-    database cross references and the second contains content to normalize the identifiers contained in the first
-    dictionary.
+def normalizes_source_terminologies(dbxref_dict: Dict, source_df: pd.DataFrame, cols: List) -> pd.DataFrame:
+    """Function takes a Pandas DataFrame, a source abbreviation alignment dictionary, and a list of columns containing
+    strings of column names that need normalization. THe column normalizes columns of terminology concepts and returns
+    them as new columns with '_TEMP' appended to the end.
 
     Args:
-        dbxref_dict: A dictionary of ontology identifiers and their database cross references.
-        source_dict: A dictionary containing information for normalizing the prefixes of the database cross references.
+        dbxref_dict: A dictionary of ontology identifiers and their database cross-references.
+        source_df: A Pandas DataFrame that contains code and source columns needing normalization.
+        cols: A list of columns to normalize.
 
+    An example of each input is shown below:
+        dbxref_dict: {'snm', 'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
+        cols: [UMLS_SAB, 'OBO_DBXREF_SAB']
+        source_df:
+            UMLS_SAB               HPO
+            OBO_DBXREF_SAB         icd-10
+
+    Returns:
+        normalized_df: A Pandas DataFrame containing normalizes terminology columns.
+
+        An example output is shown below:
+        source_df:
+            UMLS_SAB               HPO
+            UMLS_SAB_TEMP          hp
+            OBO_DBXREF_SAB         icd-10
+            OBO_DBXREF_SAB_TEMP    icd10
+    """
+
+    normalized_df = source_df.copy()
+    valid_cols = set(cols).intersection(set(source_df.columns))
+
+    for i in valid_cols:
+        normalized_df[i + '_TEMP'] = normalized_df[i].apply(lambda x: dbxref_dict[x] if x in dbxref_dict.keys() else x)
+
+    return normalized_df
+
+
+def normalizes_source_codes(dbxref_dict: Dict, source_df: pd.DataFrame, cols: List) -> pd.DataFrame:
+    """Function takes a Pandas DataFrame, a source abbreviation alignment dictionary, and a nested list of columns and
+    uses them to construct and replace the original columns with normalized identifiers (storing the original column
+    values with '_ORG' appended to the end).
+
+    Args:
+        dbxref_dict: A dictionary of ontology identifiers and their database cross-references.
+        source_df: A Pandas DataFrame that contains code and source columns needing normalization.
+        cols: A nested list, where each inner list contains two items representing column names in the source_df. The
+            first item references the name of the column that contains codes and the second item references the name
+            of the column that contains the code's source abbreviations.
+
+        An example of each input is shown below:
+        dbxref_dict: {'snm', 'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
+        cols: [['CODE', 'OBO_SAB'], ['DBXREF', 'OBO_DBXREF_SAB']]
+        source_df:
+            OBO_ontology_id                http://purl.obolibrary.org/obo/HP_0012161
+            CODE                                                          HP:0012161
+            OBO_SAB                http://purl.obolibrary.org/obo/hp/releases/202...
+            DBXREF                                                          C4023016
+            OBO_SAB                http://purl.obolibrary.org/obo/hp/releases/202...
+
+    Returns:
+        normalized_df: An updated Pandas DataFrame that contains normalized identifiers for the column referenced in the
+            first position of each inner list. An example row of the output is shown below:
+
+            OBO_ontology_id                http://purl.obolibrary.org/obo/HP_0012161
+            CODE_ORG                                                      HP:0012161
+            CODE                                                          hp:0012161
+            OBO_SAB                http://purl.obolibrary.org/obo/hp/releases/202...
+            DBXREF_ORG                                                      C4023016
+            DBXREF                                                     umls:C4023016
+            OBO_SAB                http://purl.obolibrary.org/obo/hp/releases/202...
+
+    """
+
+    normalized_df = source_df.copy()
+
+    for col1, col2 in cols:
+        normalized_df[col1 + '_ORG'] = normalized_df[col1]
+        if list(normalized_df[col2])[0].startswith('http://purl.obolibrary.org/obo/'):
+            normalized_df[col1] = normalized_df[col1].str.lower()
+        else:
+            normalized_df['temp'] = normalized_df[col2] + '*' + normalized_df[col1]
+            normalized_df[col1] = normalized_df['temp'].apply(
+                lambda x: dbxref_dict[x.split('*')[1].split(':')[0]] + ':' + x.split('*')[1].split(':')[1]
+                if (len(x.split('*')[1].split(':')) == 2 and x.split('*')[1].split(':')[0] in dbxref_dict.keys())
+                else dbxref_dict[x.split('*')[0]] + ':' + x.split('*')[1] if x.split('*')[0] in dbxref_dict.keys()
+                else x.split('*')[0].lower() + ':' + x.split('*')[1] if x != 'None*None'
+                else 'None')
+            normalized_df = normalized_df.drop(['temp'], axis=1)
+
+    return normalized_df
+
+
+def normalizes_clinical_source_codes(dbxref_dict: Dict, source_dict: Dict):
+    """Function takes two dictionaries and uses them to create a new dictionary. The first dictionary, contains ontology
+    database cross-references and the second contains content to normalize the identifiers contained in the first
+    dictionary.
+    Args:
+        dbxref_dict: A dictionary of ontology identifiers and their database cross-references.
+        source_dict: A dictionary containing information for normalizing the prefixes of the database cross-references.
         An example of each dictionary is shown below:
         - dbxref_dict = {'DbXref', 'umls:c4022862': 'DbXref', 'umls:c0008733': 'DbXref'}
         - source_dict = {'snm', 'snomed': 'snomed', 'snomed_ct': 'snomed', 'snomed_ct_us_2018_03_01': 'snomed'}
-
     Returns:
-        normalized_prefixes: A dictionary where the keys are database cross references and the values are strings
-            containing the database cross reference type and prefix from the key, separated by a star. For example:
+        normalized_prefixes: A dictionary where the keys are database cross-references and the values are strings
+            containing the database cross-reference type and prefix from the key, separated by a star. For example:
             {'umls:c4022862': 'DbXref*umls', 'umls:c0008733': 'DbXref*umls'}
     """
 
@@ -390,7 +491,7 @@ def filters_mapping_content(exact_results: List, similarity_results: List, thres
 
     Returns:
         A tuple of lists containing mapping results for a given row. The first tuple contains exact mapping results
-            and the second contains similarity results. Both lists contains 3 items: uris, labels, and evidence.
+            and the second contains similarity results. Both lists contain 3 items: uris, labels, and evidence.
     """
 
     exact_uri, exact_label, exact_evid = exact_results
@@ -505,8 +606,7 @@ def formats_mapping_evidence(ont_dict: dict, source_dict: Dict, result: Tuple, c
                     if clin_syn.lower() in ont_syns.keys() and ont_syns[syn.lower()].split('/')[-1] in result[0][0]:
                         syn_lab = '-OMOP_' + lvl + '_SYNONYM:'
                         syn_evid.append('OBO_' + ont_syntp[syn.lower()] + syn_lab + x.split(':')[-1])
-    if None not in result[1]:
-        sim_evid = ['CONCEPT_SIMILARITY:' + x for x in result[1][-1].split(' | ')]
+    if None not in result[1]: sim_evid = ['CONCEPT_SIMILARITY:' + x for x in result[1][-1].split(' | ')]
 
     # compile evidence
     compiled_exact = ' | '.join(list(filter(None, list(unique_everseen(dbx_evid + lab_evid + syn_evid)))))
@@ -620,3 +720,432 @@ def aggregates_mapping_results(data: pd.DataFrame, onts: List, ont_data: Dict, s
         data[x] = data[x].apply(lambda i: i[0:size_limit] if not isinstance(i, int) and i is not None else i)
 
     return data
+
+
+def dataframe_difference(df1: pd.DataFrame, df2: pd.DataFrame) -> Optional[pd.DataFrame]:
+    """Function finds rows which are different between two DataFrames. If there is new data the rows that are unique
+    (i.e., new rows) are returned, otherwise None is returned.
+
+    Args:
+        df1: A Pandas DataFrame.
+        df2: A Pandas DataFrame.
+
+    Returns:
+        diff_df: A Pandas DataFrame that contains data that is unique
+    """
+
+    if not df1.equals(df2): diff_df = pd.concat([df1, df2]).drop_duplicates(keep=False)
+    else: diff_df = None
+
+    return diff_df
+
+
+def adds_merge_metadata(meta: List, df_obj: Union[pd.Series, pd.DataFrame]) -> \
+        Union[Tuple[Optional[str], pd.Series], pd.Series]:
+    """Function generates row-level metadata to explain a mapping.
+
+    Args:
+        meta: A nested list containing information needed to create metadata for mappings.
+        df_obj: A pd.DataFrame or a pd.Series.
+
+    Returns:
+        A tuple where the first item is either a string or None type object and the second item is a pd.Series.
+    """
+    match_type, df1, df2 = meta; df1_name, df1_col_type = df1; df2_name, df2_col_type = df2
+    match_str = '{} ({}) mapped to {} ({}) on "{}"' if df1_col_type is not None else '{} ({}) mapped to {} ({}) on {}'
+
+    if isinstance(df_obj, pd.Series):
+        hit = df_obj[match_type]
+        if df1_col_type is not None:
+            match = match_str.format(df1_name, df_obj[df1_col_type], df2_name, df_obj[df2_col_type], hit)
+        else:
+            match = match_str.format(df1_name, match_type, df2_name, match_type, hit)
+        return match.replace(' (None)', ''), df_obj
+    else:
+        df_obj['MATCH_TYPE'] = df_obj.apply(
+            lambda x: [match_str.format(df1_name, match_type, df2_name, match_type,
+                                        x[match_type]).replace(' (None)', '')
+                       if x[match_type] is not None else None][0]
+            if df1_col_type is None
+            else [match_str.format(df1_name, x[df1_col_type], df2_name, x[df2_col_type], x[match_type]
+                  if x[match_type] is not None else None)][0].replace(' (None)', ''),
+            axis=1)
+
+        return df_obj['MATCH_TYPE']
+
+
+def recursively_updates_dataframe(meta: List, df1: pd.DataFrame, cols: List, df2: pd.DataFrame = None) -> pd.DataFrame:
+    """Function searches all column values provided in the cols list in an input Pandas DataFrame object and ensures
+    that all possible matches for these variables, when merged against itself, are identified.
+
+    Explained another way, for each row in df1, two types of values are returned:
+        (i) test1: get all col2 identifier rows in df1 and return col1 identifiers from these rows. Then, return all
+        rows from df2[col1] containing these identifiers.
+        (i) test2: get all col1 identifier rows in df1 and return col2 identifiers from these rows. Then, return all
+        rows from df2[col2] containing these identifiers.
+
+    Args:
+        meta: A nested list containing information needed to create metadata for mappings.
+        df1: A Pandas DataFrame object.
+        cols: A list of columns to recurse over.
+        df2: A Pandas DataFrame object.
+
+    Returns:
+        df: A Pandas DataFrame that contains all possible objects in the col list for the input df1 object.
+    """
+
+    df_core, df2 = df1.copy(), df2 if df2 is not None else df1; master_ids = set()
+    df_list: List = []; d1, d2 = meta[1][0], meta[2][0]
+
+    for idx, row in tqdm(df1.iterrows(), total=df1.shape[0]):
+        df1_keys = [x for x in df1.columns if x not in set(df2.columns) and 'MATCH' not in x]
+        match, row = adds_merge_metadata(meta, row); df_core.at[idx, 'MATCH_TYPE'] = match
+        for col1, col2 in itertools.combinations(cols, 2):
+            for c1, c2 in [[col1, col2], [col2, col1]]:
+                if (row[c1] != 'None' and row[c2] != 'None') and row[c1] + '-' + row[c2] not in master_ids:
+                    master_ids |= {row[c1] + '-' + row[c2]}; d1c2 = row[c2]
+                    d1c1_ids = df1[df1[c2] == d1c2][c1]; d1c1 = '|'.join(c1 + ':' + x for x in set(d1c1_ids))
+                    df_t = dataframe_difference(df_core, df2[df2[c1].isin(d1c1_ids)])
+                    df_t = df_t[pd.isna(df_t['MATCH_TYPE'])]
+                    if df_t is not None and len(df_t) > 0:
+                        for c in df1_keys: df_t[c] = df_t[c].apply(lambda x: row[c] if x == 'None' or pd.isna(x) else x)
+                        df_t['MATCH'] = row['MATCH'] + ' - ' + 'Recursive Row Search Enhancement'
+                        mt_str1 = row['MATCH'] + ':' + match
+                        mt_str2 = '\n\nRecursive Row Search Enhancement: {}+{} Merge ({}:{}) Rows - {} ({}) Rows'
+                        df_t['MATCH_TYPE'] = mt_str1 + mt_str2.format(d1, d2, c2, d1c2, d2, d1c1); df_list += [df_t]
+    if len(df_list) > 0: df_core = pd.concat([df_core] + df_list).drop_duplicates()
+
+    return df_core
+
+
+def merges_dataframes(merge_type: str, df1: pd.DataFrame, df1_col: List, df2: pd.DataFrame, df2_col: List,
+                      metadata_cols: List, recurse: bool = True) -> Optional[pd.DataFrame]:
+    """Function takes two Pandas DataFrames and comprehensively integrates them, which is a process that includes the
+    subsetting of columns in df1, the merging of df1 and df2, and the recursively updating of the merged data set
+    using data from certain columns in df2.
+
+    Args:
+        merge_type: A string specifying the type of merge to perform (i.e., 'CODE', 'DBXREF', and 'STRING').
+        df1: A Pandas DataFrame Object.
+        df1_col: A list of columns to use when subsetting df1.
+        df2: A Pandas DataFrame Object.
+        df2_col: A list of columns to use from df2 when recursively integrating df1 and df2.
+        metadata_cols: A nested list containing information needed to create metadata for mappings.
+        recurse: A boolean value used to specify if the data should only be merged or be merged and recursed.
+
+    Returns:
+        merged_df: A comprehensively merged Pandas DataFrame Object.
+    """
+
+    print('Verifying Input Data')
+    df1 = df1[df1_col].drop_duplicates(); mt = metadata_cols[0]
+    merge_cols = list(set(df1.columns).intersection(set(df2.columns)))
+    df1 = df1[df1[merge_type.replace('EXACT ', '')] != 'None'].drop_duplicates()
+    if set(df1[merge_cols]) == {'None'} or len(df1) == 0: return None
+    else:
+        print('Merging Input Datasets')
+        if mt == 'DBXREF': merged_df = df1.merge(df2, on=merge_cols, how='left').fillna('None').drop_duplicates()
+        else: merged_df = df1.merge(df2, on=merge_cols, how='inner').fillna('None').drop_duplicates()
+        if len(merged_df) == 0: return merged_df
+        else:
+            merged_df['MATCH_TYPE'] = adds_merge_metadata(metadata_cols, merged_df); merged_df['MATCH'] = merge_type
+            merged_df['MATCH_TYPE'] = merged_df.apply(
+                lambda x: 'OBO Provided {}'.format(x[metadata_cols[1][1]])
+                if x[df2_col[0]] == 'None' else x['MATCH_TYPE'], axis=1)
+            if recurse:
+                print('Recursively Processing Merged Input Datasets')
+                merged_update = recursively_updates_dataframe(metadata_cols, merged_df.copy(), df2_col, df2.copy())
+            else: merged_update = merged_df.copy()
+            merged_update = merged_update.fillna('None').drop_duplicates()
+            # merged_update = merged_update.drop([i for i in merged_update
+            # if set(merged_update[i]) == {'None'}], axis=0)
+
+            return merged_update
+
+
+# def finds_umls_descendants(df: pd.DataFrame, paths: Set, desc_set: Set, kids: Optional[Set] = None) -> Set:
+#     """Function recursively searches for all descendant concepts of an input node regardless of context.
+#
+#     Args:
+#         df: A Pandas DataFrame containing data from the UMLS MRHIER table.
+#         paths: A list of strings, where each string represents a period-delimited list of ancestors.
+#         desc_set: A set of all AUIs that are known to have at least one descendant concept.
+#         kids: A list of strings, where each string represents a period-delimited list of descendants.
+#
+#     Returns:
+#         kids: A list of strings, where each string represents a period-delimited list of descendants.
+#     """
+#
+#     kids = set() if kids is None else kids
+#
+#     if len(paths) == 0: return kids
+#     else:
+#         results = df[df['PTR'] == paths.pop()]
+#         # results = df[(df['PTR'] == path) & (df['AUI'].isin(desc_set))]
+#         if len(results) > 0:
+#             for idx, row in results.iterrows():
+#                 # if row['AUI'] in desc_set:
+#                 desc_seed_path = row['PTR'] + '.' + row['AUI']
+#                 kids |= {desc_seed_path}
+#                 if row['AUI'] in desc_set: paths |= {desc_seed_path}
+#         return finds_umls_descendants(df, paths, desc_set, kids)
+
+def finds_umls_descendants(df: pd.DataFrame, paths: List, desc_set: Set, kids: Optional[List] = None) -> List:
+    """Function recursively searches for all descendant concepts of an input node regardless of context.
+
+    Args:
+        df: A Pandas DataFrame containing data from the UMLS MRHIER table.
+        paths: A nested list of strings, where each string is an AUI.
+        desc_set: A set of all AUIs that are known to have at least one descendant concept.
+        kids: An ordered nested list, where each list contains AUIs.
+
+    Returns:
+        kids: An ordered nested list, where each list contains AUIs.
+    """
+
+    kids = list() if kids is None else kids
+
+    if len(paths) == 1 and len(paths[0]) == 0: return kids
+    else:
+        res = set(df[df['PAUI'].isin(paths.pop())]['AUI'])
+        paths += [[x for x in res if x in desc_set]]
+        kids += [list(res)]
+        return finds_umls_descendants(df, paths, desc_set, kids)
+
+
+def processes_input_concept_mappings(filter_list: List, idx_list: Union[List, Set], df: pd.DataFrame,
+                                     keys: List[str]) -> Tuple:
+    """Function processes the results of mapping an input set of data to the UMLS or other relevant sources that are
+    listed in the filter_list input and returns two Pandas DataFrames where the first DataFrame contains the concepts
+    that were mapped to the UMLS or any relevant sources listed in the filter_list input.
+
+    Args:
+        filter_list: A list of strings representing normalized sources that a valid mapping would contain (e.g.,
+            ['snomed', 'icd10', 'hp', 'icd10cm', 'icd9cm', 'icd9']).
+        idx_list: A list of all input concepts that need mapping (e.g., ['HP:0033807']).
+        df: A Pandas DataFrame that contains mapping results.
+        keys: A list of strings, where each string refers to a column in a Pandas DataFrame. The first string is a
+            primary key to be used for finding missing concepts (i.e., primary_key), the second string is a column to
+            searched for matches in the provided Pandas DataFrames (i.e., search_column), and the remaining strings (
+            i.e., df_col1-df_col4) contain relevant CODE and DBXref columns in the input sources that are merged for
+            mappings (e.g., 'UMLS_SAB_TEMP', 'UMLS_DBXREF_SAB_TEMP', 'OBO_SAB_TEMP', 'OBO_DBXREF_SAB_TEMP']).
+
+    Returns:
+        A tuple of Pandas DataFrames where the first DataFrame contains concepts that had no mapping and the second
+        contains all concepts with at least one mapping.
+    """
+
+    prim_key, sec_key, dfc1, dfc2, dfc3, dfc4 = keys
+    no_match, matches, match_nodes, full_id_list = [], [], set(), set(df[prim_key])
+
+    for i in tqdm(idx_list):
+        if not i.startswith('http'):
+            ids = 'http://purl.obolibrary.org/obo/' + i.replace(':', '_').upper() if 'obo' in prim_key.lower() else i
+        else: ids = i
+        primary_subset = df[(df[prim_key] == ids) & (df[sec_key] != 'None')]
+        dbxref_subset = df[(df[prim_key] == ids) & (df['DBXREF'] != 'None')]
+        code_subset = df[(df[prim_key] == ids) & (df['CODE'] != 'None')]
+        df_list = [x for x in [primary_subset, dbxref_subset, code_subset] if len(x) > 0]
+        for df_sub in df_list:
+            for idx, row in df_sub.iterrows():
+                k = row.keys()
+                if row[sec_key] != 'None':
+                    if dfc1 in k and row[dfc1] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                    elif dfc2 in k and row[dfc2] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                    elif dfc3 in k and row[dfc3] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                    elif dfc4 in k and row[dfc4] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                    if row['DBXREF'] not in ['None', i.lower()] or row['CODE'] != i.lower():
+                        if dfc1 in k and row[dfc1] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                        elif dfc2 in k and row[dfc2] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                        elif dfc3 in k and row[dfc3] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                        elif dfc4 in k and row[dfc4] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                        else: continue
+                elif row['DBXREF'] not in ['None', i.lower()] or row['CODE'] != i.lower():
+                    if row[dfc3] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                    elif row[dfc4] in filter_list: matches.append(idx); match_nodes |= {row[prim_key]}
+                    else: continue
+                else: continue
+
+    match_df = df[df.index.isin(matches)].drop_duplicates()
+    no_match_df = df[df[prim_key].isin(list(full_id_list - match_nodes))].drop_duplicates()
+
+    return no_match_df, match_df
+
+
+def adds_relevant_missing_data(subset: pd.DataFrame, entity_df: pd.DataFrame, node: str, primary_key: str) -> \
+        pd.DataFrame:
+    """Function adds information from a primary entity DataFrame (e.g., the original Pandas DataFrame storing
+    information on ontology concepts) to a matching result subset.
+
+    Args:
+        subset: A Pandas DataFrame containing a subset of mapping results.
+        entity_df: A primary Pandas DataFrame, used to supplement the subset DataFrame.
+        node: A string containing a node identifier.
+        primary_key: A string containing a column name for the primary key needed to add data from the entity_df
+            Pandas DataFrame to the subset Pandas DataFrame.
+
+    Returns:
+        subset_update: A Pandas DataFrame containing updated match information.
+    """
+
+    if primary_key not in subset.columns:
+        # get original data on matched concept
+        missing_data = entity_df[entity_df[primary_key].isin([node])]
+        missing_data[primary_key] = node
+        merge_cols = list(set(missing_data.columns).intersection(set(subset.columns)))
+        subset_update = subset.merge(missing_data, on=merge_cols, how='left')
+    else: subset_update = subset
+
+    return subset_update
+
+
+def finds_entity_mappings(search_type: str, concept_dict: Dict, keys: List, dfs: List, sab_list: List) -> Tuple:
+    """Function takes a dictionary of concept ancestor or children information and three Pandas DataFrames,
+    where the first DataFrame contains data on concepts that were unable to be mapped at the concept-level. The
+    remaining DataFrames contain identifiers and associated information. Using these inputs, the function searches
+    each concept in df0 in order to identify mappings to its ancestor or children concepts using df1 and df2.
+
+    Args:
+        search_type: A string containing the type of search (i.e., 'Ancestor' or 'Child').
+        concept_dict: A dictionary of concepts and concept ancestors or children, where the concept keys are concept
+            identifiers and the concept value is a dictionary keyed by node level (e.g., '0', '1') with values for each
+            key containing an identifier.
+        keys: A list of strings, where each string refers to a column in a Pandas DataFrame. The first string is a
+            primary key to be used for finding missing concepts (i.e., primary_key), the second string is a column to
+            searched for matches in the provided Pandas DataFrames (i.e., search_column), and the final string is a
+            primary key to be used for finding matched concepts in one of the secondary Pandas DataFrames (i.e.,
+            secondary_key).
+        dfs: A Pandas DataFrame containing data for concepts without a mapping and the second two DataFrames contain
+            identifiers and associated information to be used for mapping.
+        sab_list: A list of source terminologies to further filter on results on.
+
+
+    Returns:
+        A tuple that contains a Pandas DataFrame where all rows with an ancestor or child match are removed and the
+        second item is a dictionary where the keys are concept_ids and the values are DataFrames that contain the
+        ancestor or children mappings.
+    """
+
+    sab_list = sab_list if isinstance(sab_list, List) else [sab_list]
+    primary_key, search_column, secondary_key, col1_sab, col2_sab = keys
+    df0, df1, df2, entity_df = dfs
+    entity_dict = concept_dict; match_dict = dict()
+    search_str = 'OBO {}: {} - {} level(s) above {} on {}' if 'Anc' in search_type \
+                 else 'OBO {}: {} - {} level(s) below {} on {}'
+
+    for i in tqdm(set(df0[primary_key])):
+        entities = entity_dict[i]
+        if entities is not None:
+            entity_list = sorted(entities.keys()); match_hits = None; matched_df_list = []
+            while len(entity_list) != 0 and match_hits is None:
+                node_level = entity_list.pop(0); nodes = entities[node_level]; level = int(node_level) + 1
+                relevant_rows = df1[(df1[primary_key].isin(nodes)) & (df1[search_column].isin(sab_list))]
+                if len(relevant_rows) > 0:
+                    if set(relevant_rows[search_column]) != {'umls'}:
+                        node_ids = relevant_rows.groupby([primary_key]); node_list_dfs = []
+                        for node in node_ids.groups.keys():
+                            df = node_ids.get_group(node)
+                            df_match_f = df[search_column].apply(lambda x: True if x != 'umls' else False)
+                            match_hits = df[df_match_f].drop_duplicates(); match_hits['MATCH'] = 'DBXREF'
+                            match_hits['MATCH_TYPE'] = match_hits.apply(
+                                lambda x: search_str.format(search_type, node, level, i, x['DBXREF']), axis=1)
+                            node_list_dfs.append(adds_relevant_missing_data(match_hits, entity_df, i, primary_key))
+                        matched_df_list.append(pd.concat(node_list_dfs).drop_duplicates())
+                    else:
+                        relevant_row_ids = [x.split(':')[-1] for x in set(relevant_rows['DBXREF'])]
+                        df_match1 = df2[(df2[secondary_key].isin(relevant_row_ids)) & (df2[col1_sab].isin(sab_list))]
+                        df_match2 = df2[(df2[secondary_key].isin(relevant_row_ids)) & (df2[col2_sab].isin(sab_list))]
+                        if len(df_match1) > 0:
+                            node_ids = df_match1.groupby([secondary_key]); node_list_dfs = []
+                            for node in node_ids.groups.keys():
+                                match_hits = node_ids.get_group(node); match_hits['MATCH'] = 'DBXREF'
+                                match_hits['MATCH_TYPE'] = match_hits.apply(
+                                    lambda x: search_str.format(search_type, node, level, i, x['DBXREF']), axis=1)
+                                node_list_dfs.append(adds_relevant_missing_data(match_hits, entity_df, i, primary_key))
+                            matched_df_list.append(pd.concat(node_list_dfs).drop_duplicates())
+                        elif len(df_match2) > 0:
+                            node_ids = df_match2.groupby([secondary_key]); node_list_dfs = []
+                            for node in node_ids.groups.keys():
+                                match_hits = node_ids.get_group(node); match_hits['MATCH'] = 'DBXREF'
+                                match_hits['MATCH_TYPE'] = match_hits.apply(
+                                    lambda x: search_str.format(search_type, node, level, i, x['DBXREF']), axis=1)
+                                node_list_dfs.append(adds_relevant_missing_data(match_hits, entity_df, i, primary_key))
+                            matched_df_list.append(pd.concat(node_list_dfs).drop_duplicates())
+                        else: continue
+            if match_hits is not None: match_dict[i] = pd.concat(matched_df_list).fillna('None').drop_duplicates()
+
+    # process and return updated output
+    if len(match_dict) > 0: return df0[~df0[primary_key].isin(list(match_dict.keys()))], match_dict
+    else: return df0, None
+
+
+def finds_entity_fuzzy_matches(df_type: str, dfs: List, keys: List, sab_list: List, df_version: List) -> Optional[Dict]:
+    """Function takes a list of Pandas DataFrames and a list of columns and uses that information to search for
+    strings from the second DataFrame that containing specific substrings from the first DataFrame.
+
+    Args:
+        df_type: A string containing an identifier for df2.
+        dfs: A list of Pandas DataFrames where the first DataFrame contains the mapping results and the second DataFrame
+            contains a Pandas DataFrame of UMLS data.
+        keys: A list of strings, where each string points to a specific column in the second DataFrame in the list.
+        keys: A list of strings, where each string points to a specific column in the second DataFrame in the list.
+        sab_list: A list of source terminologies to further filter on results on.
+        df_version: A list, where the first item is the name of column to create and the second id a string containing
+            the version the current df.
+
+    Returns:
+        substring_match_dict: A dictionary keyed by ontology_id where values are Pandas DataFrames containing the
+            results of the fuzzy string matches.
+    """
+
+    main_key, primary_key, secondary_key, df2_col1, df2_col2 = keys
+    df1, df2 = dfs; sab_list = [sab_list] if not isinstance(sab_list, List) else sab_list
+    filtered_data = df1[df1[secondary_key] != 'None'].drop_duplicates()
+    string_groups = filtered_data.groupby(['STRING']); string_match_dict = {}
+    str_match = 'FUZZY STRING'
+    str_match_type = '{} Strings Containing the Substring: "{}" on rows from MATCH: {} and MATCH_TYPE:{}'
+    df_version_col, df_version = df_version
+
+    for search_string in tqdm(string_groups.groups.keys()):
+        str_df_subset = string_groups.get_group(search_string)
+        matches = df2[df2['STRING'].str.contains(search_string, regex=False)]
+        matches = matches[~matches['STRING'].isin([search_string])].reset_index()
+        if len(matches) > 0:
+            match1 = matches[matches[df2_col1].isin(sab_list)].drop_duplicates()
+            match2 = matches[matches[df2_col2].isin(sab_list)].drop_duplicates()
+        else: match1, match2 = None, None
+        if match1 is not None and len(match1) > 0:
+            match1['MATCH'] = str_match; match1[df_version_col] = df_version
+            for idx, row in str_df_subset.iterrows():
+                match1['MATCH_TYPE'] = str_match_type.format(df_type, search_string, row['MATCH'], row['MATCH_TYPE'])
+                if row[main_key] in string_match_dict.keys(): string_match_dict[row[main_key]].append(match1)
+                else: string_match_dict[row[main_key]] = [match1]
+        elif match2 is not None and len(match2) > 0:
+            match2['MATCH'] = str_match; match2[df_version_col] = df_version
+            for idx, row in str_df_subset.iterrows():
+                match2['MATCH_TYPE'] = str_match_type.format(df_type, search_string, row['MATCH'], row['MATCH_TYPE'])
+                if row[main_key] in string_match_dict.keys(): string_match_dict[row[main_key]].append(match2)
+                else: string_match_dict[row[main_key]] = [match2]
+        else: continue
+
+    if len(string_match_dict) > 0: return {k: pd.concat(v).drop_duplicates() for k, v in string_match_dict.items()}
+    else: return None
+
+
+def pickle_large_data_structure(data: Union[dict, pd.DataFrame], filepath: str) -> None:
+    """Function writes a data object (i.e., dictionary or Pandas DataFrame) to disc employing a defensive way to write
+    data, in order to allow for very large files on all platforms.
+
+    Args:
+        data: A python dictionary or Pandas DataFrame containing a very large amount of data.
+        filepath: A string containing a valid file path and file name.
+
+    Returns:
+        None.
+    """
+
+    max_bytes, bytes_out = 2 ** 31 - 1, pickle.dumps(data)
+    n_bytes = sys.getsizeof(bytes_out)
+    with open(filepath, 'wb') as f_out:
+        for idx in range(0, n_bytes, max_bytes):
+            f_out.write(bytes_out[idx:idx + max_bytes])

@@ -215,9 +215,9 @@ class OMOPDataProcessor(object):
                     '3': {'4126705'}}
             }
 
-        for each concept_id's ancestor dictionary, the keys are string-ints representing location in hierarchy where '0'
-        is the immediate parent node of the AUI listed as the primary key. The largest number in the list is the root
-        node.
+        For each concept_id's ancestor dictionary, the keys are string-ints representing location in hierarchy where '0'
+        is the immediate parent node of the concept listed as the primary key. The largest number in the list is the
+        root node.
 
         Returns:
             None.
