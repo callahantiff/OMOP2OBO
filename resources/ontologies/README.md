@@ -100,6 +100,45 @@ representing the number of levels below (children) that each concept is found.
 #### `processed_obo_data_dictionary.pkl`  
 ```python
 {
-    
+    'cl': {
+        'df': 'resources/ontologies/cl_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/cl_ontology_ancestors.json',
+        'children': 'resources/ontologies/cl_ontology_children.json'
+    },
+    'chebi': {
+        'df': 'resources/ontologies/chebi_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/chebi_ontology_ancestors.json',
+        'children': 'resources/ontologies/chebi_ontology_children.json'
+    },
+    'hp': {
+        'df': 'resources/ontologies/hp_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/hp_ontology_ancestors.json',
+        'children': 'resources/ontologies/hp_ontology_children.json'
+    },
+    'mondo': {
+        'df': 'resources/ontologies/mondo_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/mondo_ontology_ancestors.json',
+        'children': 'resources/ontologies/mondo_ontology_children.json'
+    },
+    'ncbitaxon': {
+        'df': 'resources/ontologies/ncbitaxon_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/ncbitaxon_ontology_ancestors.json',
+        'children': 'resources/ontologies/ncbitaxon_ontology_children.json'
+    },
+    'pr': {
+        'df': 'resources/ontologies/pr_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/pr_ontology_ancestors.json',
+        'children': 'resources/ontologies/pr_ontology_children.json'
+    },
+    'uberon': {
+        'df': 'resources/ontologies/ext_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/ext_ontology_ancestors.json',
+        'children': 'resources/ontologies/ext_ontology_children.json'
+    },
+    'vo': {
+        'df': 'resources/ontologies/vo_ontology_hierarchy_information.pkl',
+        'ancestor': 'resources/ontologies/vo_ontology_ancestors.json',
+        'children': 'resources/ontologies/vo_ontology_children.json'
+    }
 }
 ```
