@@ -42,6 +42,7 @@ resources/ontologies/
 !resources/ontologies/ontology_source_metadata.txt
 resources/programming/
 resources/umls_data/*
+!resources/umls_data/README.md
 !resources/vocabulary_aliases.csv
 
 ## scripts ##
