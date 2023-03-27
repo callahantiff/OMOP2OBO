@@ -1,5 +1,5 @@
 *****
-omop2obo
+omop2obo (v.20 -- beta)
 *****
 
 |github_action| |sonar_quality| |sonar_maintainability| |coveralls| |code_climate_coverage|
@@ -13,25 +13,25 @@ omop2obo
 What is OMOP2OBO?
 ########
 
-``omop2obo`` is a collection of health system-wide, disease-agnostic mappings between standardized clinical terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical Ontologies (`OBOs`_) foundry ontologies.
+``omop2obo`` is a collection of health system-wide, disease-agnostic mappings between standardized clinical
+terminologies in the Observational Medical Outcomes Partnership (`OMOP`_) common data model and several Open Biomedical
+Ontologies (`OBOs`_) foundry ontologies.
 
-*Motivation*
-
-Common data models have solved many challenges of utilizing electronic health records, but have not yet meaningfully integrated clinical and molecular data. Aligning clinical data to open biological ontologies (`OBOs`_), which provide semantically computable representations of biological knowledge, requires extensive manual curation and expertise.
-
-*Objective*
-
-To address these limitations, we have developed ``OMOP2OBO``, the first health system-wide integration and alignment between the Observational Health Data Sciences and Informatics' Observational Medical Outcomes Partnership (`OMOP`_) standardized clinical terminologies and eight OBO biomedical ontologies spanning diseases, phenotypes, anatomical entities, cell types, organisms, chemicals, metabolites, hormones, vaccines, and proteins. To verify that the mappings are both clinically and biologically meaningful, we have performed extensive experiments to verify the `accuracy <https://github.com/callahantiff/OMOP2OBO/wiki/Accuracy>`__, `generalizability <https://github.com/callahantiff/OMOP2OBO/wiki/Generalizability>`_, and `logical consistency <https://github.com/callahantiff/OMOP2OBO/wiki/Consistency>`_ of each released mapping set.
 
 What Does This Repository Provide?
 **********************
 
-Through this repository we provide the following:
+1. **Mappings:** A free set of ``omop2obo`` mappings that can be used out of the box (requires no coding) covering OMOP
+Conditions, Drug Exposures, and Measurements. These mappings are available in several formats including: ``.txt``,
+``.xlsx``, and ``.dump``. We also provide a semantic representation of the mappings, integrated with the OBO biomedical
+ontologies, available as an edge list (``.txt``) and as an ``.owl`` file. See current release for more details.
 
-1. **Mappings:** A free set of ``omop2obo`` mappings that can be used out of the box (requires no coding) covering OMOP Conditions, Drug Exposures, and Measurements. These mappings are available in several formats including: ``.txt``, ``.xlsx``, and ``.dump``. We also provide a semantic representation of the mappings, integrated with the OBO biomedical ontologies, available as an edge list (``.txt``) and as an ``.owl`` file. See current release for more details.
 
-
-2. **A Mapping Framework:** An algorithm and mapping pipeline that enables one to construct their set of `omop2obo` mappings. The figure below provides a high-level overview of the algorithm workflow. The code provided in this repository facilitates all of the automatic steps shown in this figure except for the manual mapping (for now, although we are `currently <https://github.com/callahantiff/OMOP2OBO/issues/19>`__ working on a deep learning model to address this).
+2. **A Mapping Framework:** An algorithm and mapping pipeline that enables one to construct their set of `omop2obo`
+mappings. The figure below provides a high-level overview of the algorithm workflow. The code provided in this
+repository facilitates all of the automatic steps shown in this figure except for the manual mapping (for now, although
+we are `currently <https://github.com/callahantiff/OMOP2OBO/issues/19>`__ working on a deep learning model to address
+this).
 
 .. image:: https://user-images.githubusercontent.com/8030363/99837291-972c1e00-2b24-11eb-826b-8141c6b7d1f0.png
     :align: center
@@ -42,19 +42,17 @@ How do I Learn More?
 
 - Join an existing or start a new `Discussion`_
 
-- The Project `Wiki`_ for more details on the ``omop2obo`` mappings, algorithm, and information on the experiments we ran to ensure each mapping set released is accurate, generalizable, and consistent!
+- The project `Wiki`_ for more details on the ``omop2obo`` mappings, algorithm, and information on the experiments we
+ran to ensure each mapping set released is accurate, generalizable, and consistent!
 
 |
 
 Releases
 ########
 
-- All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/PheKnowLator/wiki>`__  
-
-- We are working on a publishing this work, but if you'd like to use the validated mappings immediately, please `send us an email`_.
+- All code and mappings for each release are free to download, see `Wiki <https://github.com/callahantiff/OMOP2OBO/wiki/V2.0----beta>`__
 
 **Current Release:**
- Release currently in preparation and planned for ***December 2020***!
  - ``v1.0.0`` ➞ data and code can be directly downloaded `here <https://github.com/callahantiff/OMOP2OBO/wiki/V1.0>`__.
 
 |
@@ -65,28 +63,19 @@ Getting Started
 Install Library
 **********************
 
-*NOT YET AVAILABLE - COMING SOON!!*
-
-This program requires Python version 3.6. To install the library from PyPI, run:
+To access this beta, clone the repository directly from GitHub by running:
 
 .. code:: shell
 
-  pip install omop2obo
-
-|
-
-You can also clone the repository directly from GitHub by running:
-
-.. code:: shell
-
-  git clone https://github.com/callahantiff/OMOP2OBO.git
+  git clone -b enabling_bidirectional_mapping https://github.com/callahantiff/OMOP2OBO.git
 
 |
 
 Set-Up Environment
 **********************
 
-The ``omop2obo`` library requires a specific project directory structure. Please make sure that your project directory includes the following sub-directories:
+The ``omop2obo`` library requires a specific project directory structure. Please make sure that your project directory
+includes the following sub-directories:
 
 .. code:: shell
 
@@ -99,6 +88,8 @@ The ``omop2obo`` library requires a specific project directory structure. Please
         |     mappings/
         |         |
         |     ontologies/
+        |         |
+        |     umls_data/
 
 Results will be output to the ``mappings`` directory.
 
@@ -107,21 +98,24 @@ Results will be output to the ``mappings`` directory.
 Dependencies
 ^^^^^^^^^^^^
 
+Please see the project `Wiki`_ page for more information on this beta release, the data required, and teh resulting
+mappings it generates.
+
+
 *APPLICATIONS*
 
-- This software also relies on `OWLTools <https://github.com/owlcollab/owltools>`__. If cloning the repository, the ``owltools`` library file will automatically be included and placed in the correct repository.
-
--  The National of Library Medicine's Unified Medical Language System (UMLS) `MRCONSO <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html>`__ and `MRSTY <https://www.ncbi.nlm.nih.gov/books/NBK9685/table/ch03.Tf/>`_. Using these data requires a license agreement. Note that in order to get the `MRSTY` file you will need to download the UMLS Metathesaurus and run MetamorphoSys. Once both data sources are obtained, please place the files in the ``resources/mappings`` directory.
+- This software also relies on `OWLTools <https://github.com/owlcollab/owltools>`__. If cloning the repository, the
+``owltools`` library file will automatically be included and placed in the correct repository.
 
 *DATA*
 
-- **Clinical Data:** This repository assumes that the clinical data that needs mapping has been placed in the ``resources/clinical_data`` repository. Each data source provided in this repository is assumed to have been extracted from the OMOP CDM. An example of what is expected for this input can be found `here <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/clinical_data>`__.
+- **OMOP Data:** This repository assumes that OMOP vocabulary data have been downloaded from the `OHDSI Athena <https://athena.ohdsi.org/>`__ web application and placed in the ``resources/clinical_data/`` repository. The specific tables that are needed include: `CONCEPT.csv`, `CONCEPT_ANCESTOR.csv`, `CONCEPT_RELATIONSHIP.csv`, `CONCEPT_SYNONYM.csv`, and `VOCABULARY.csv`.
+
+- **UMLS Data:** This repository assumes that UMLS data have been downloaded from the `UMLS Release File Archive <https://www.nlm.nih.gov/research/umls/licensedcontent/umlsarchives04.html>`__ and placed in the ``resources/umls_data/`` repository. The specific tables that are needed include: `MRCONSO.RRF`, `MRDEF.RRF`, `MRHIER.RRF`, `MRMAP.RRF`, `MRSAB.RR`, and `MRSTY.RRF`.
 
 - **Ontology Data:** Ontology data is automatically downloaded from the user provided input file ``ontology_source_list.txt`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/ontology_source_list.txt>`__).
 
-- **Vocabulary Source Code Mapping:** To increase the likelihood of capturing existing database cross-references, ``omop2obo`` provides a file that maps different clinical vocabulary source code prefixes between the UMLS, ontologies, and clinical EHR data (i.e. "SNOMED", "SNOMEDCT", "SNOMEDCT_US")  ``source_code_vocab_map.csv`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/master/resources/mappings/source_code_vocab_map.csv>`__). Please note this file builds off of `these <https://www.nlm.nih.gov/research/umls/sourcereleasedocs/index.html>`__ UMLS provided abbreviation mappings. Currently, this file is updated for ontologies released ``july 2020``, clinical data normlaized to ``OMOP_v5.0``, and ``UMLS 2020AA``.
-
-- **Semantic Mapping Representation:**  In order to create a semantic representation of the ``omop2obo`` mappings, an ontological specification for creating classes that span multiple ontologies (``reosurces/mapping_semantics/omop2obo``). This document only needs to be altered if you plan to utilize the semantic mapping transformation algorithm and want to use a different knowledge representation. Please the following `README <https://github.com/callahantiff/OMOP2OBO/tree/master/resources/mapping_semantics/README.md>`__ for additional details on these resources.
+- **Vocabulary Source Code Mapping:** To increase the likelihood of capturing existing database cross-references, ``omop2obo`` provides a file that maps different clinical vocabulary source code prefixes between the UMLS, ontologies, and clinical EHR data (i.e. "SNOMED", "SNOMEDCT", "SNOMEDCT_US")  ``source_code_vocab_map.csv`` (`here <https://github.com/callahantiff/OMOP2OBO/blob/enabling_bidirectional_mapping/resources/vocabulary_aliases.csv>`__). Please note this file builds off of `these <https://www.nlm.nih.gov/research/umls/sourcereleasedocs/index.html>`__ UMLS provided abbreviation mappings. Currently, this file is updated for ontologies released ``july 2020``, clinical data normlaized to ``OMOP_v5.0``, and ``UMLS 2020AA``.
 
 |
 
@@ -340,7 +334,7 @@ or `send us an email`_ 💌
 
 .. _OBOs: http://www.obofoundry.org/
 
-.. _Wiki: https://github.com/callahantiff/BioLater/wiki
+.. _Wiki: https://github.com/callahantiff/OMOP2OBO/wiki/V2.0----beta
 
 .. _`create an issue`: https://github.com/callahantiff/OMOP2OBO/issues/new/choose
 
