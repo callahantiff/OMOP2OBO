@@ -298,10 +298,10 @@ class OMOPDataProcessor(object):
 
     def data_processor(self) -> dict:
         """Function operates as a main function that processes several OMOP CDM data tables. Two data structures are
-        created and output as a single data structure. The first object is a dictionary which is keyed by UMLS AUI (see
-        the _processes_concept_ancestor function for more detail). The second object is a Pandas DataFrame that contains
-        the remaining OMOP CDM tables merged into a single object (see the tidy_and_filter function for more detail).
-        These two objects are pickled to: resources/clinical_data/OMOP_MAP_PANEL.pkl (self.omop_merge) and
+        created and output as a single data structure. The first object is a dictionary which is keyed by OMOP concept
+        (see the _processes_concept_ancestor function for more detail). The second object is a Pandas DataFrame that
+        contains the remaining OMOP CDM tables merged into a single object (see the tidy_and_filter function for more
+        detail). These two objects are pickled to: resources/clinical_data/OMOP_MAP_PANEL.pkl (self.omop_merge) and
         resources/clinical_data/OMOP_MAP_Ancestor_Dictionary.pkl (self.concept_anc). These two objects are returned as a
         dictionary using the following keys: {'omop_full': omop_merged, 'concept_ancestors': concept_anc}.
 
