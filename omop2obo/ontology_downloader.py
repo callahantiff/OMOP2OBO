@@ -32,7 +32,7 @@ class OntologyDownloader(object):
         IndexError: If the file pointed to by data_path is empty.
     """
 
-    def __init__(self, data_path: str) -> None:
+    def __init__(self, data_path: str, stats_flag: bool = False) -> None:
 
         if not isinstance(data_path, str): raise TypeError('data_path must be type str.')
         elif not os.path.exists(data_path): raise OSError('The {} file does not exist!'.format(data_path))
@@ -41,6 +41,7 @@ class OntologyDownloader(object):
         self.source_list: Dict[str, str] = {}
         self.data_files: Dict[str, str] = {}
         self.metadata: List[List[str]] = []
+        self.stats: bool = stats_flag
 
     def parses_resource_file(self) -> None:
         """Parses data from a file and outputs a list where each item is a line from the input text file.
@@ -129,16 +130,19 @@ class OntologyDownloader(object):
             # only download each ontology if it's not in local directory
             if any(x for x in os.listdir(file_loc) if re.sub('.owl', '', x) == file_prefix):
                 self.data_files[i] = glob.glob(file_loc + '*' + file_prefix + '*.owl')[0]
+                if self.stats:
+                    print('\t- Obtain Ontology Statistics')
+                    stats = gets_ontology_statistics(file_loc + str(file_prefix) + '.owl', os.path.abspath(owltools))
+                    print(stats)
             else:
                 try:
                     # subprocess.check_call([os.path.abspath(owltools), str(source), '-o', str(write_loc) + '.owl'])
                     os.system('wget -O {} {}'.format(write_loc + '.owl', source))
                     self.data_files[i] = str(write_loc) + '.owl'
-
                 except subprocess.CalledProcessError as error: print(error.output)
-            print('\t- Obtain Ontology Statistics')
-            stats = gets_ontology_statistics(file_loc + str(file_prefix) + '.owl', os.path.abspath(owltools))
-            print(stats)
+                print('\t- Obtain Ontology Statistics')
+                stats = gets_ontology_statistics(file_loc + str(file_prefix) + '.owl', os.path.abspath(owltools))
+                print(stats)
         print('--> Generate and Write Metadata for all Ontologies to Local Directory')
         self.generates_source_metadata()
 
