@@ -1,5 +1,5 @@
 *****
-omop2obo (v.20 -- beta)
+omop2obo (v.20 - beta)
 *****
 
 |github_action| |sonar_quality| |sonar_maintainability| |coveralls| |code_climate_coverage|
