@@ -19,6 +19,10 @@ class OMOPDataProcessor(object):
     create a Pandas DataFrame. Also note that columns are added to the OMOP data in order to directly align it to the
     UMLS data.
 
+    For additional detail see README: https://github.com/callahantiff/OMOP2OBO/tree/enabling_bidirectional_mapping/resources/clinical_data#readme
+
+    TODO: Need to add tests
+
     Attributes:
         omop_data_files: A list of strings representing file names.
         omop_merged: A Pandas DataFrame containing merged and processed OMOP concept data.

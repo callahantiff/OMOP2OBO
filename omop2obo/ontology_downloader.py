@@ -20,6 +20,8 @@ class OntologyDownloader(object):
     """Class downloads a list of ontologies listed in a text file and extract and write metadata about each downloaded
     ontology to local repository (resources/ontologies).
 
+    For additional detail see README: https://github.com/callahantiff/OMOP2OBO/blob/enabling_bidirectional_mapping/resources/ontologies/README.md
+
     Attributes:
             data_path: a string containing a file path/name to a txt file storing URLs of sources to download.
             source_list: a list of URLs representing the data sources to download/process.

@@ -18,6 +18,10 @@ class UMLSDataProcessor(object):
     ontology data by the OntologyInfoExtractor() class, this class processes the clinical data to create a Pandas
     DataFrame and dictionaries which contain the ancestor and descendant concepts for all concepts.
 
+    For additional detail see README: https://github.com/callahantiff/OMOP2OBO/blob/enabling_bidirectional_mapping/resources/umls_data/README.md
+
+    TODO: Need to add tests
+
     Attributes:
         umls_data_files: A list of strings representing file names.
         umls_merge: A Pandas DataFrame containing merged and processed UMLS CUI data.

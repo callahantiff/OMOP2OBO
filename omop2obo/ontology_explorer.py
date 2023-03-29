@@ -39,6 +39,10 @@ class OntologyInfoExtractor(object):
                 }
         }
 
+    For additional detail see README: https://github.com/callahantiff/OMOP2OBO/blob/enabling_bidirectional_mapping/resources/ontologies/README.md
+
+    TODO: Need to add tests
+
     Attributes:
         graph: An rdflib graph object.
         ont_dictionary: A dictionary, where keys are an ontology alias (e.g., 'hp') and values are a string pointing
