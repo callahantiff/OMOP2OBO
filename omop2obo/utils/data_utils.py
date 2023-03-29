@@ -29,16 +29,17 @@ Mapping Result Processing
 * aggregates_mapping_results
 * finds_ancestor_mappings
 
-Writing and Saving Data Objects
+Reading and Writing Data Objects
 * pickle_large_data_structure
+* read_pickled_large_data_structure
 
 """
 
 # import needed libraries
 import itertools
+import os
 import pandas as pd  # type: ignore
 import pickle
-# import re
 import sys
 
 from functools import reduce
@@ -1149,3 +1150,25 @@ def pickle_large_data_structure(data: Union[dict, pd.DataFrame], filepath: str) 
     with open(filepath, 'wb') as f_out:
         for idx in range(0, n_bytes, max_bytes):
             f_out.write(bytes_out[idx:idx + max_bytes])
+
+
+def read_pickled_large_data_structure(filepath: str) -> Union[dict, pd.DataFrame]:
+    """Function reads a pickled data object (i.e., dictionary or Pandas DataFrame) from disc employing a defensive way
+    to read data, in order to allow for very large files on all platforms.
+
+    Args:
+        filepath: A string containing a valid file path and file name.
+
+    Returns:
+        None.
+    """
+
+    max_bytes = 2 ** 31 - 1
+    input_size = os.path.getsize(filepath)
+    bytes_in = bytearray(0)
+    with open(filepath, 'rb') as f_in:
+        for _ in range(0, input_size, max_bytes):
+            bytes_in += f_in.read(max_bytes)
+    data = pickle.loads(bytes_in)
+
+    return data

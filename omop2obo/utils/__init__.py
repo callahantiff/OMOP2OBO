@@ -38,5 +38,6 @@ __all__ = ['adds_relevant_missing_data',
            'ohdsi_ananke',
            'pickle_large_data_structure',
            'processes_input_concept_mappings',
+           'read_pickled_large_data_structure',
            'recursively_updates_dataframe'
            ]
