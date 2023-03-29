@@ -129,7 +129,9 @@ class OntologyInfoExtractor(object):
         # get ontology metadata
         ns: Union[List, str] = list(self.graph.triples((None, URIRef(oboinowl + 'default-namespace'), None)))
         ns = str(ns[0][2]) if len(ns) > 0 else ont_id
-        sab = str(list(self.graph.triples((None, OWL.versionIRI, None)))[0][2])
+        x = list(self.graph.triples((None, OWL.versionIRI, None)))
+        sab = str(x[0][2]) if len(x) > 0 else ont_id
+
         # process labels, definitions, and synonyms
         labs = pandas.DataFrame(
             {'obo_id': k, 'code': k.split('/')[-1].replace('_', ':'), 'string': v, 'string_type': 'class label'}
@@ -142,11 +144,12 @@ class OntologyInfoExtractor(object):
             for y in [(k, v) for k, v in res['synonym'].items()] for x in y[1])
         ont_df = pandas.concat([labs, defs, syn]).drop_duplicates()
         # process dbxrefs
-        dbx = pandas.DataFrame(
-            {'obo_id': y[0], 'code': y[0].split('/')[-1].replace('_', ':'), 'dbx': x[0], 'dbx_type': x[1],
-             'dbx_source': x[2], 'dbx_source_name': x[2]}
-            for y in [(k, v) for k, v in res['dbxref'].items()] for x in y[1])
-        ont_df = ont_df.merge(dbx, on=['obo_id', 'code'], how='left').drop_duplicates()
+        if res['dbxref'] is not None:
+            dbx = pandas.DataFrame(
+                {'obo_id': y[0], 'code': y[0].split('/')[-1].replace('_', ':'), 'dbx': x[0], 'dbx_type': x[1],
+                 'dbx_source': x[2], 'dbx_source_name': x[2]}
+                for y in [(k, v) for k, v in res['dbxref'].items()] for x in y[1])
+            ont_df = ont_df.merge(dbx, on=['obo_id', 'code'], how='left').drop_duplicates()
         # add metadata
         ont_df['obo_source'] = sab; ont_df['obo_semantic_type'] = ns
         ont_df = ont_df.fillna('None').drop_duplicates()

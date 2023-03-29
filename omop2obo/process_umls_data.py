@@ -18,6 +18,16 @@ class UMLSDataProcessor(object):
     ontology data by the OntologyInfoExtractor() class, this class processes the clinical data to create a Pandas
     DataFrame and dictionaries which contain the ancestor and descendant concepts for all concepts.
 
+    Attributes:
+        umls_data_files: A list of strings representing file names.
+        umls_merge: A Pandas DataFrame containing merged and processed UMLS CUI data.
+        mrconso: A Pandas DataFrame containing data from the UMLS MRCONSO table.
+        mrdef: A Pandas DataFrame containing data from the UMLS MRDEF table.
+        mrsty: A Pandas DataFrame containing data from the UMLS MRSTY table.
+        mrmap: A Pandas DataFrame containing data from the UMLS MRMAP table.
+        mrsab: A Pandas DataFrame containing data from the UMLS MRSAB table.
+        mrhier: A Pandas DataFrame containing data from the UMLS MRHIER table.
+
     Raises:
         IndexError:
             If umls_data directory is empty.

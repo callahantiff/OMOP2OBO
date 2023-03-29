@@ -19,9 +19,18 @@ class OMOPDataProcessor(object):
     create a Pandas DataFrame. Also note that columns are added to the OMOP data in order to directly align it to the
     UMLS data.
 
+    Attributes:
+        omop_data_files: A list of strings representing file names.
+        omop_merged: A Pandas DataFrame containing merged and processed OMOP concept data.
+        concept: A Pandas DataFrame containing data from the OMOP concept table.
+        concept_synonym: A Pandas DataFrame containing data from the OMOP concept synonym table.
+        vocabulary: A Pandas DataFrame containing data from the OMOP vocabulary table.
+        concept_rel: A Pandas DataFrame containing data from the OMOP concept relationship table.
+        concept_anc: A Pandas DataFrame containing data from the OMOP ancestor table.
+
     Raises:
         IndexError:
-            If omop_data directory is empty.
+            If clinical_data directory is empty.
         FileNotFoundError:
             If the concept.csv file is not in the resources/umls_data directory.
             If the concept_synonym.csv file is not in the resources/umls_data directory.
@@ -37,26 +46,31 @@ class OMOPDataProcessor(object):
         # check umls data directory for needed mapping files
         if len(self.omop_data_files) == 0: raise IndexError('The "resources/clinical_data" directory is empty')
         else:
-            if len(self.omop_data_files) == 0:
+            conc = [x for x in self.omop_data_files if 'CONCEPT.csv' in x]
+            if len(conc) == 0:
                 raise FileNotFoundError('concept.csv missing from "resources/clinical_data/"')
             else:
-                self.concept: Union[str, pd.DataFrame] = [x for x in self.omop_data_files if 'CONCEPT.csv' in x][0]
-            if len(self.omop_data_files) == 0:
+                self.concept: Union[str, pd.DataFrame] = conc[0]
+            syn = [x for x in self.omop_data_files if 'SYNONYM' in x]
+            if len(syn) == 0:
                 raise FileNotFoundError('concept_synonym.csv missing from "resources/clinical_data/"')
             else:
-                self.concept_synonym: Union[str, pd.DataFrame] = [x for x in self.omop_data_files if 'SYNONYM' in x][0]
-            if len(self.omop_data_files) == 0:
+                self.concept_synonym: Union[str, pd.DataFrame] = syn[0]
+            voc = [x for x in self.omop_data_files if 'VOCABULARY' in x]
+            if len(voc) == 0:
                 raise FileNotFoundError('vocabulary.csv missing from "resources/clinical_data/"')
             else:
-                self.vocabulary: Union[str, pd.DataFrame] = [x for x in self.omop_data_files if 'VOCABULARY' in x][0]
-            if len(self.omop_data_files) == 0:
+                self.vocabulary: Union[str, pd.DataFrame] = voc[0]
+            rel = [x for x in self.omop_data_files if 'RELATIONSHIP' in x]
+            if len(rel) == 0:
                 raise FileNotFoundError('concept_relationship.csv missing from "resources/clinical_data/"')
             else:
-                self.concept_rel: Union[str, pd.DataFrame] = [x for x in self.omop_data_files if 'RELATIONSHIP' in x][0]
-            if len(self.omop_data_files) == 0:
+                self.concept_rel: Union[str, pd.DataFrame] = rel[0]
+            anc = [x for x in self.omop_data_files if 'ANCESTOR' in x]
+            if len(anc) == 0:
                 raise FileNotFoundError('concept_ancestor.csv missing from "resources/clinical_data/"')
             else:
-                self.concept_anc: Union[str, pd.DataFrame] = [x for x in self.omop_data_files if 'ANCESTOR' in x][0]
+                self.concept_anc: Union[str, pd.DataFrame] = anc[0]
 
 
     def _processes_concept(self) -> None:
