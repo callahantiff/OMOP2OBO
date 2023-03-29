@@ -4,7 +4,6 @@
 
 # import needed libraries
 import glob
-import json
 import os
 import pandas  # type: ignore
 
@@ -16,9 +15,7 @@ from typing import Dict, List, Union
 from omop2obo.utils import *
 
 # set up environment variables
-obo = Namespace('http://purl.obolibrary.org/obo/')
 oboinowl = Namespace('http://www.geneontology.org/formats/oboInOwl#')
-schema = Namespace('http://www.w3.org/2001/XMLSchema#')
 
 
 class OntologyInfoExtractor(object):
@@ -155,7 +152,14 @@ class OntologyInfoExtractor(object):
                 for y in [(k, v) for k, v in res['dbxref'].items()] for x in y[1])
             ont_df = ont_df.merge(dbx, on=['obo_id', 'code'], how='left').drop_duplicates()
         # add metadata
-        ont_df['obo_source'] = sab; ont_df['obo_semantic_type'] = ns
+        ont_df['SAB'] = sab; ont_df['SAB_NAME'] = sab; ont_df['SEMANTIC_TYPE'] = ns
+        # rename columns
+        ont_df.rename(columns={'obo_id': 'OBO_ontology_id', 'string': 'STRING', 'string_type': 'OBO_STRING_TYPE',
+                               'SEMANTIC_TYPE': 'OBO_SEMANTIC_TYPE', 'SAB': 'OBO_SAB', 'SAB_NAME': 'OBO_SAB_NAME',
+                               'dbx': 'DBXREF', 'dbx_type': 'OBO_DBXREF_TYPE', 'dbx_source': 'OBO_DBXREF_SAB',
+                               'dbx_source_name': 'OBO_DBXREF_SAB_NAME', 'obo_semantic_type': 'OBO_SEMANTIC_TYPE',
+                               'obo_source': 'version'}, inplace=True)
+        ont_df['OBO_DBXREF_SAB'] = ont_df['OBO_DBXREF_SAB_NAME']
         ont_df = ont_df.fillna('None').drop_duplicates()
         # write data to local directory (resources/ontologies)
         print('\t- Writing Concept Ancestor and Descendant Dictionaries to Disk')
@@ -186,7 +190,7 @@ class OntologyInfoExtractor(object):
         """
 
         print('\t- Obtaining Ontology Concept Ancestors')
-        cls = set(ont_df['obo_id'])
+        cls = set(ont_df['OBO_ontology_id'])
         obo_ancs = {x: entity_search(self.graph, x, 'ancestors', ont_id.upper(), RDFS.subClassOf) for x in tqdm(cls)}
         print('\t- Obtaining Ontology Descendants. Please be patient, this can take several minutes.')
         obo_kids = {x: entity_search(self.graph, x, 'children', ont_id.upper(), RDFS.subClassOf) for x in tqdm(cls)}
@@ -197,9 +201,9 @@ class OntologyInfoExtractor(object):
         self.master_ontology_dictionary[ont_id]['ancestors'] = anc_file_str.format(self.ont_directory, ont_id)
         self.master_ontology_dictionary[ont_id]['children'] = kid_file_str.format(self.ont_directory, ont_id)
         print('\t  ...Wrote Ancestor Dictionary to: {}'.format(self.master_ontology_dictionary[ont_id]['ancestors']))
-        json.dump(obo_ancs, open(self.master_ontology_dictionary[ont_id]['ancestors'], 'w'))
+        pickle_large_data_structure(obo_ancs, self.master_ontology_dictionary[ont_id]['ancestors'])
         print('\t  ...Wrote Descendant Dictionary to: {}'.format(self.master_ontology_dictionary[ont_id]['children']))
-        json.dump(obo_kids, open(self.master_ontology_dictionary[ont_id]['children'], 'w'))
+        pickle_large_data_structure(obo_kids, self.master_ontology_dictionary[ont_id]['children'])
 
         return None
 
@@ -224,8 +228,9 @@ class OntologyInfoExtractor(object):
             ont_dict = self.get_ontology_information(ont[0])
             print('--> Converting Metadata into Pandas DataFrame')
             ont_df = self.creates_pandas_dataframe(ont_dict, ont[0])
-            print('--> Obtaining Ancestors and Descendants for each Ontology Class')
-            self.ontology_entity_finder(ont_df, ont[0])
+            if len(set(ont_df['OBO_ontology_id'])) <= 50000:
+                print('--> Obtaining Ancestors and Descendants for each Ontology Class')
+                self.ontology_entity_finder(ont_df, ont[0])
 
         # write dictionary containing all ontologies
         f1 = 'resources/ontologies/processed_obo_data_dictionary.pkl'
