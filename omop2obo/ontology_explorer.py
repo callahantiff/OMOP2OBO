@@ -158,7 +158,7 @@ class OntologyInfoExtractor(object):
                                'SEMANTIC_TYPE': 'OBO_SEMANTIC_TYPE', 'SAB': 'OBO_SAB', 'SAB_NAME': 'OBO_SAB_NAME',
                                'dbx': 'DBXREF', 'dbx_type': 'OBO_DBXREF_TYPE', 'dbx_source': 'OBO_DBXREF_SAB',
                                'dbx_source_name': 'OBO_DBXREF_SAB_NAME', 'obo_semantic_type': 'OBO_SEMANTIC_TYPE',
-                               'obo_source': 'version'}, inplace=True)
+                               'obo_source': 'version', 'code': 'CODE'}, inplace=True)
         ont_df['OBO_DBXREF_SAB'] = ont_df['OBO_DBXREF_SAB_NAME']
         ont_df = ont_df.fillna('None').drop_duplicates()
         # write data to local directory (resources/ontologies)
@@ -180,6 +180,10 @@ class OntologyInfoExtractor(object):
                              '1': ['http://purl.obolibrary.org/obo/HP_0000001']}, ...}
             children: {'http://purl.obolibrary.org/obo/HP_0003743':
                             {'0': ['http://purl.obolibrary.org/obo/HP_0003744']}, ...}
+
+        Note. As this process is not yet optimized, it can take a very long time to process large files. As such, the
+        main function of this script currently only generates the ancestor/children dictionaries for ontologies with
+        50,000 classes or fewer.
 
         Args:
             ont_df: A Pandas DataFrame containing ontology data (see creates_pandas_dataframe() comment for details).
