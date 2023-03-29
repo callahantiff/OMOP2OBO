@@ -21,6 +21,7 @@ class ConceptMapper(object):
     OMOP.
 
     For additional detail see: https://github.com/callahantiff/OMOP2OBO/wiki/V2.0----beta
+    The original workflow can be found here: "releases/v1.0/collaborations/AllofUs/scratch_o2o_v2.py"
 
     TODO:
         - Need to add tests
@@ -34,16 +35,10 @@ class ConceptMapper(object):
         obo_dict: A dictionary keyed by "ancestor" and "children" containing class ancestor and children information.
         ont_alias: A string containing the alis for a specific ontology.
         omop_df: A Pandas DataFrame containing processed OMOP data.
-        omop_dict: A dictionary of OMOP concept ancestor information where the keys are string-ints representing
-            location in hierarchy where '0' is the immediate parent node of the concept listed as the primary key. The
-            largest number in the list is the root node.
         sab_matches: A dictionary keyed by vocabulary abbreviation with results stored in the dictionary key.
         source_code: A dictionary where keys represent data source strings and values contain a primary string to use
             for normalizing the sources.
         umls_df: A Pandas DataFrame containing processed UMLS data.
-        umls_dict: A dictionary of UMLS concept ancestor information where the keys are string-ints representing
-            location in hierarchy where '0' is the immediate parent node of the AUI listed as the primary key. The
-            largest number in the list is the root node.
         write_loc: A string containing the directory where all mapping output will be written to.
 
     Raises:
@@ -62,44 +57,55 @@ class ConceptMapper(object):
     def __init__(self, ontology_alias: Optional[str] = None, id_list: Optional[set] = None,
                  filter_vocabs: Optional[list] = None) -> None:
 
+        print('\n' + '===' * 15 + '\nGENERATING MAPPINGS\n' + '===' * 15)
+        print('--> Loading Processed Data. Please be patient, this may take a few minutes...')
         umls_dir = glob.glob('resources/umls_data/*.pkl')
         omop_dir = glob.glob('resources/clinical_data/*.pkl')
         obo_dir = glob.glob('resources/ontologies/*data_dictionary.pkl')
-        self.source_code: str = 'releases/v1.0/collaborations/AllofUs/resources/source_vocabularies_v2.csv'
+        self.source_code: str = 'resources/vocabulary_aliases.csv'
         self.source_code_map: Optional[dict] = None
         self.ont_alias: str = ontology_alias
         self.filter_vocabs: list = filter_vocabs
         self.write_loc: Optional[str] = None
-        self.sab_matches: Optional[dict] = None
+        self.sab_matches: Optional[dict] = dict()
 
         # read in umls data
+        print('\t- UMLS Data')
         d1 = "resources/umls_data/"
         if len(umls_dir) == 0: raise IndexError('The "resources/umls_data" directory is empty')
         else:
             umls_df = [x for x in umls_dir if 'UMLS_MAP_PANEL' in x]
             if len(umls_df) == 0: raise FileNotFoundError('UMLS_MAP_PANEL.pkl missing from ' + d1)
             else: self.umls_df: pd.DataFrame = read_pickled_large_data_structure(umls_df[0])
-            umls_dict = [x for x in umls_dir if 'UMLS_MAP_Ancestor_Dictionary' in x]
-            if len(umls_dict) == 0: raise FileNotFoundError('UMLS_MAP_Ancestor_Dictionary.pkl missing from + dir')
-            else: self.umls_dict: dict = read_pickled_large_data_structure(umls_dict[0])
+            # uncomment when needed -- code does not currently require this
+            # umls_dict = [x for x in umls_dir if 'UMLS_MAP_Ancestor_Dictionary' in x]
+            # if len(umls_dict) == 0: raise FileNotFoundError('UMLS_MAP_Ancestor_Dictionary.pkl missing from + dir')
+            # else: self.umls_dict: dict = read_pickled_large_data_structure(umls_dict[0])
         # read in omop data
+        print('\t- OMOP Data')
         d2 = "resources/clinical_data"
         if len(omop_dir) == 0: raise IndexError('The "resources/clinical_data" directory is empty')
         else:
             omop_df = [x for x in omop_dir if 'OMOP_MAP_PANEL' in x]
             if len(omop_df) == 0: raise FileNotFoundError('OMOP_MAP_PANEL.pkl missing from ' + d2)
             else: self.omop_df: pd.DataFrame = read_pickled_large_data_structure(omop_df[0])
-            omop_dict = [x for x in umls_dir if 'OMOP_MAP_Ancestor_Dictionary' in x]
-            if len(omop_dict) == 0: raise FileNotFoundError('OMOP_MAP_Ancestor_Dictionary.pkl missing from ' + d2)
-            else: self.omop_dict: dict = read_pickled_large_data_structure(omop_dict[0])
+            # uncomment when needed -- code does not currently require this
+            # omop_dict = [x for x in omop_dir if 'OMOP_MAP_Ancestor_Dictionary' in x]
+            # if len(omop_dict) == 0: raise FileNotFoundError('OMOP_MAP_Ancestor_Dictionary.pkl missing from ' + d2)
+            # else: self.omop_dict: dict = read_pickled_large_data_structure(omop_dict[0])
         # read in obo data
+        print('\t- OBO Data')
         d3 = "resources/ontologies/"
         if len(obo_dir) == 0: raise FileNotFoundError('processed_obo_data_dictionary.pkl missing from ' + d3)
         else: obo_dict = read_pickled_large_data_structure(obo_dir[0])
         temp_dict = obo_dict[self.ont_alias]
-        self.obo_df: pd.DataFrame = temp_dict['df']
-        self.obo_dict: dict = {'ancestors': temp_dict['ancestors'], 'children': temp_dict['children']}
-        self.id_list: set = set(self.obo_df['CODE']) if id_list is None else id_list
+        self.obo_df: pd.DataFrame = read_pickled_large_data_structure(temp_dict['df'])
+        if 'ancestors' in temp_dict.keys() and 'children' in temp_dict.keys():
+            self.obo_dict: dict = {
+                'ancestors': read_pickled_large_data_structure(temp_dict['ancestors']),
+                'children': read_pickled_large_data_structure(temp_dict['children'])}
+        else: self.obo_dict = None
+        self.id_list: set = set(list(self.obo_df['CODE'])) if id_list is None else id_list
 
 
     def _create_output_directory(self) -> None:
@@ -134,10 +140,13 @@ class ConceptMapper(object):
                 if secondary_idx != '' and primary_idx != '': self.source_code_map[secondary_idx] = primary_idx
 
         # normalize source concept aliases
+        print('\t- Processing OBO Data')
         self.obo_df = normalizes_source_codes(
             self.source_code_map, self.obo_df, [['CODE', 'OBO_SAB'], ['DBXREF', 'OBO_DBXREF_SAB']])
+        print('\t- Processing UMLS Data')
         self.umls_df = normalizes_source_codes(
             self.source_code_map, self.umls_df, [['CODE', 'UMLS_SAB'], ['DBXREF', 'UMLS_DBXREF_SAB']])
+        print('\t- Processing OMOP Data')
         self.omop_df = normalizes_source_codes(
             self.source_code_map, self.omop_df.copy(),  [['CODE', 'SAB'], ['DBXREF_CODE', 'DBXREF_SAB']])
 
@@ -204,7 +213,7 @@ class ConceptMapper(object):
 
     def _result_formatter(self, match_df: pd.DataFrame, match_df_kids: pd.DataFrame, fuzzy_match_dict: dict,
                           match_df_anc: pd.DataFrame, omop_code_concept_dict: dict, obo_version: str, obo_dict: dict,
-                          c_matches: int, anc_matches: int, kid_matches: int, fuzzy_matches: int) -> None:
+                          c_matches: int, anc_matches: int, kid_matches: int, fuzzy_matches: int, sab: str) -> None:
         """Function formats mapping results after searching for additional mappings to ancestor and children concepts.
 
         Args:
@@ -219,6 +228,7 @@ class ConceptMapper(object):
             anc_matches: An integer representing the count of mapped concepts with an ancestor mapping.
             kid_matches: An integer representing the count of mapped concepts with an exact child mapping.
             fuzzy_matches: An integer representing the count of mapped concepts with a fuzzy child mapping.
+            sab: A string indicating which clinical vocabulary was processed.
 
         Returns:
              None.
@@ -227,7 +237,7 @@ class ConceptMapper(object):
         print('\t- Formatting Concept Mapping Results')
         master_matches = {}; primary_key_col = 'OBO_ontology_id'; no_map = []; no_children = []
         concept_match_set = set(match_df[primary_key_col])
-        for ont_id in tqdm(self.id_list):
+        for ont_id in self.id_list:
             ont_id = ont_id if 'htt' in ont_id else 'http://purl.obolibrary.org/obo/' + ont_id.replace(':', '_').upper()
             matches = {}; idx_matches = []
             if ont_id in concept_match_set:
@@ -262,18 +272,17 @@ class ConceptMapper(object):
                 master_matches[ont_id] = {'ont_label': obo_dict[ont_id], 'ont_version': obo_version, 'mappings': matches}
         # descriptions
         s = '{}: {} concept matches, {} ancestor matches, {} concept-children matches, {} fuzzy matches - {} NO MATCHES'
-        s = s.format(self.ont_alias, c_matches, anc_matches, kid_matches, fuzzy_matches, len(set(no_map)))
+        s = s.format(sab, c_matches, anc_matches, kid_matches, fuzzy_matches, len(set(no_map)))
         print('\t\t- ' + s)
         # update dictionary
         r = {'processed_mappings': master_matches, 'no_mappings': no_map, 'no_child_mappings': no_children, 'stats': s}
-        self.sab_matches['|'.join(self.ont_alias)] = r
+        self.sab_matches[sab] = r
 
         return None
 
 
-    def _hierarchy_search(self, filter_terms: list, obo_umls_merged_df: pd.DataFrame, keys: list,
-                          obo_df_temp: pd.DataFrame, umls_df_temp: pd.DataFrame, column_keys: list,
-                          filtered_df: pd.DataFrame, fuzzy_children: bool, obo_version: str,
+    def _hierarchy_search(self, filter_terms: list, obo_umls_merged_df: pd.DataFrame, obo_df_temp: pd.DataFrame,
+                          umls_df_temp: pd.DataFrame, filtered_df: pd.DataFrame, fuzzy_children: bool, obo_version: str,
                           omop_code_concept_dict: dict, obo_dict: dict) -> None:
         """Function performs additional searches for concepts where no exact match could be found. For concepts where
         no exact match was found, the OBO hierarchy is searched. For all matched concepts, additional searches are
@@ -284,10 +293,8 @@ class ConceptMapper(object):
         Args:
             filter_terms: A list of source vocabulary aliases.
             obo_umls_merged_df: A Pandas DataFrame containing the results of exact mapping.
-            keys: A list of columns to include in final Pandas DataFrame.
             obo_df_temp: A version of the OBO Pandas DataFrame where the source vocabularies have been normalized.
             umls_df_temp:  A version of the OBO Pandas DataFrame where the source vocabularies have been normalized.
-            column_keys: A list of columns to use when performing the hierarchical search.
             filtered_df: A Pandas DataFrame that has been filtered to only contain certain terminologies.
             fuzzy_children: A bool variable used to indicate whether fuzzy child mappings should be returned.
             obo_version: A string containing version information for the OBO ontology.
@@ -299,46 +306,45 @@ class ConceptMapper(object):
         """
 
         for sab in tqdm(filter_terms):
+            column_keys = ['OBO_ontology_id', 'OBO_DBXREF_SAB_TEMP', 'UMLS_CUI', 'UMLS_SAB_TEMP',
+                           'UMLS_DBXREF_SAB_TEMP']
+            keys = ['OBO_ontology_id', 'UMLS_CUI', 'UMLS_SAB_TEMP', 'UMLS_DBXREF_SAB_TEMP', 'OBO_SAB_TEMP',
+                    'OBO_DBXREF_SAB_TEMP']
             no_match_df_anc, match_df_anc, match_df_no_kids, match_df_kids, fuzzy_match_dict = [None] * 5
-            print('\t- Determining Mapping Level for Processed Results in {} Vocabulary(ies)'.format(sab))
             cols = ['UMLS_SAB', 'UMLS_DBXREF_SAB', 'OBO_SAB', 'OBO_DBXREF_SAB']
             merged_df = normalizes_source_terminologies(self.source_code_map, obo_umls_merged_df, cols)
-            no_match_df, match_df = processes_input_concept_mappings([self.ont_alias], self.id_list, merged_df, keys)
+            no_match_df, match_df = processes_input_concept_mappings([sab], self.id_list, merged_df, keys)
             c_matches = len(set(match_df['OBO_ontology_id']))
-            if len(no_match_df) > 0:
+            if len(no_match_df) > 0 and self.obo_dict is not None:
                 print('\t- Searching for Ancestor Matches in the {} Vocabulary(ies)'.format(sab))
                 anc_dfs = [no_match_df.copy(), obo_df_temp.copy(), umls_df_temp.copy(), self.obo_df]
                 no_match_df_anc, match_df_anc = finds_entity_mappings(
-                    'Ancestor', self.obo_dict['ancestors'], column_keys, anc_dfs, [self.ont_alias])
+                    'Ancestor', self.obo_dict['ancestors'], column_keys, anc_dfs, [sab])
                 anc_matches = len(set(match_df_anc.keys())) if match_df_anc is not None else 0
             else: anc_matches = 0
-            if len(match_df) > 0:
+            if len(match_df) > 0 and self.obo_dict is not None:
                 print('\t- Searching for Children Matches')
                 kid_dfs = [match_df.copy(), obo_df_temp.copy(), umls_df_temp.copy(), self.obo_df]
                 match_df_no_kids, match_df_kids = finds_entity_mappings(
-                    'Child', self.obo_dict['children'], column_keys, kid_dfs, [self.ont_alias])
+                    'Child', self.obo_dict['children'], column_keys, kid_dfs, [sab])
                 kid_matches = len(set(match_df_kids.keys())) if match_df_kids is not None else 0
             else: kid_matches = 0
-            if len(match_df) > 0 and fuzzy_children is not None:
+            if (len(match_df) > 0 and fuzzy_children is not None) and self.obo_dict is not None:
                 print('\t- Searching for Fuzzy Matches')
                 fuzzy_dfs = [match_df_no_kids.copy(), filtered_df.drop_duplicates().copy()]
                 keys = ['OBO_ontology_id', 'UMLS_AUI', 'UMLS_CUI', 'UMLS_SAB_TEMP', 'UMLS_DBXREF_SAB_TEMP']
                 fuzzy_match_dict = finds_entity_fuzzy_matches(
-                    'UMLS', fuzzy_dfs, keys, [self.ont_alias], ['OBO_SAB', obo_version])
+                    'UMLS', fuzzy_dfs, keys, [sab], ['OBO_SAB', obo_version])
                 fuzzy_matches = len(set(fuzzy_match_dict.keys())) if fuzzy_match_dict is not None else 0
             else: fuzzy_matches = 0
 
             self._result_formatter(match_df, match_df_kids, fuzzy_match_dict, match_df_anc, omop_code_concept_dict,
-                                   obo_version, obo_dict, c_matches, anc_matches, kid_matches, fuzzy_matches)
+                                   obo_version, obo_dict, c_matches, anc_matches, kid_matches, fuzzy_matches, sab)
 
         return None
 
 
     def generate_exact_mappings(self) -> None:
-
-        # original workflow can be found here: "releases/v1.0/collaborations/AllofUs/scratch_o2o_v2.py"
-
-        print('\n' + '===' * 15 + '\nGENERATING MAPPINGS\n' + '===' * 15)
         self._create_output_directory()
         print('--> Mappings Output Location: {}'.format(self.write_loc))
 
@@ -347,7 +353,7 @@ class ConceptMapper(object):
         print('--> STEP 1: Normalizing Source Abbreviations')
         self._normalize_abbreviations()
         # filter obo_df to only contains concepts that need to be mapped
-        df = self.obo_df[self.obo_df['CODE'].isin(self.id_list)].drop_duplicates()
+        df = self.obo_df[self.obo_df['CODE'].str.upper().isin(self.id_list)].drop_duplicates()
 
 
         # STEP 2: Filter OBO, OMOP, and UMLS Data to Only Contain Vocabularies of Interest
@@ -367,7 +373,6 @@ class ConceptMapper(object):
         merged2 = merged1.merge(test_str, on=merge_cols, how='outer').fillna('None').drop_duplicates()
         obo_umls_merged_df = merged2.copy()
 
-
         #### STEP 4: Look for Ancestor and Children Matches for Concepts Not Matched in Prior Step
         print('--> STEP 4: Searching Vocabulary Hierarchies for Concepts Not Matched in Prior Step')
         # convert OMOP data to dictionary
@@ -379,80 +384,77 @@ class ConceptMapper(object):
         filter_terms = filt; fuzzy_children = True; obo_version = list(set(self.obo_df['OBO_SAB']))[0]
         obo_df_temp = normalizes_source_terminologies(self.source_code_map, self.obo_df, ['OBO_DBXREF_SAB'])
         umls_df_temp = normalizes_source_terminologies(self.source_code_map, filtered_df, ['UMLS_SAB', 'UMLS_DBXREF_SAB'])
-        column_keys = ['OBO_ontology_id', 'OBO_DBXREF_SAB_TEMP', 'UMLS_CUI', 'UMLS_SAB_TEMP', 'UMLS_DBXREF_SAB_TEMP']
-        keys = ['OBO_ontology_id', 'UMLS_CUI', 'UMLS_SAB_TEMP', 'UMLS_DBXREF_SAB_TEMP', 'OBO_SAB_TEMP', 'OBO_DBXREF_SAB_TEMP']
-        self._hierarchy_search(filter_terms, obo_umls_merged_df, keys, obo_df_temp, umls_df_temp, column_keys,
-                               filtered_df, fuzzy_children, obo_version, omop_code_concept_dict, obo_dict)
+        self._hierarchy_search(filter_terms, obo_umls_merged_df, obo_df_temp, umls_df_temp, filtered_df, fuzzy_children,
+                               obo_version, omop_code_concept_dict, obo_dict)
         # write the full set of results
-        pickle.dump(self.sab_matches, open(self.write_loc + '/temp_allJoined_sab_ancestors_dict.pkl', 'wb'))
+        pickle.dump(self.sab_matches, open(self.write_loc + '/temp_unformatted_mapping_results_dict.pkl', 'wb'))
 
 
         #### STEP 5: Finalize Mapping Output
         print('--> STEP 5: Finalize Mappings and Generate Output by Clinical Source Vocabulary')
         for keys in list(self.sab_matches.keys()):
-            print('\t- Processing: {}'.format(str(keys)))
             data = []; children_data = []; mapping_dict = self.sab_matches[keys]['processed_mappings']
-            subset = ['concept_id', 'STRING', 'SAB', 'CODE_ORG', 'domain_id', 'concept_class_id', 'standard_concept']
-            omop_sub = self.omop_df[subset]
-            for k, v in tqdm(mapping_dict.items()):
-                ont_id = k; ont_label = v['ont_label']; ont_version = v['ont_version']; mappings = v['mappings']
-                for code in mappings.keys():
-                    for omop_id in mappings[code].keys():
-                        for level, res in mappings[code][omop_id].items():
-                            match = ' | '.join(res['MATCH']); match_type = ' | '.join(res['MATCH_TYPE'])
-                            res_cols = [code, omop_id, ont_id, ont_label, ont_version, level, match, match_type]
-                            if 'child' in level: children_data += [res_cols]
-                            else: data += [res_cols]
-            ## convert to data frame
-            # concept-level data
-            map_df_c = pd.DataFrame({'concept_id': [x[1] for x in data], 'ontology_id': [x[2] for x in data],
-                                     'ontology_label': [x[3] for x in data], 'ontology_version': [x[4] for x in data],
-                                     'map_level': [x[5] for x in data], 'map_type': [x[6] for x in data],
-                                     'map_evidence': [x[7] for x in data]})
-            # add omop data
-            map_df_c = map_df_c.merge(omop_sub, on=['concept_id'], how='left').drop_duplicates()
-            map_df_c.rename(
-                columns={'STRING': 'concept_name', 'SAB': 'vocabulary_id', 'CODE_ORG': 'concept_code'}, inplace=True)
-            # reorder columns
-            ordered_cols = ['ontology_id', 'ontology_label', 'ontology_version', 'concept_id', 'concept_code',
-                            'concept_name', 'concept_class_id', 'vocabulary_id', 'domain_id', 'standard_concept',
-                            'map_level', 'map_type', 'map_evidence']
-            map_df_c = map_df_c[ordered_cols]
-            # refine filtering for parents
-            map_df_c = map_df_c[map_df_c['vocabulary_id'].isin([x.upper() for x in keys.split('|')])].drop_duplicates()
-            map_df_c = map_df_c[map_df_c['concept_id'] != 'None'].drop_duplicates()
-            # concept-level data children
-            if len(children_data) > 0:
-                map_df_k = pd.DataFrame(
-                    {'concept_id': [x[1] for x in children_data], 'ontology_id': [x[2] for x in children_data],
-                     'ontology_label': [x[3] for x in children_data], 'ontology_version': [x[4] for x in children_data],
-                     'map_level': [x[5] for x in children_data], 'map_type': [x[6] for x in children_data],
-                     'map_evidence': [x[7] for x in children_data]})
-                omop_sub_child = omop_sub.copy()
-                omop_sub_child.rename(columns={
-                    'STRING': 'concept_name', 'SAB': 'vocabulary_id', 'CODE_ORG': 'concept_code'}, inplace=True)
-                map_df_k = map_df_k.merge(omop_sub_child, on=['concept_id'], how='left')
-            else: map_df_k = None
-            # reorder columns
-            ordered_cols = ['ontology_id', 'ontology_label', 'ontology_version', 'concept_id', 'concept_code',
-                            'concept_name', 'concept_class_id', 'vocabulary_id', 'domain_id', 'standard_concept',
-                            'map_level', 'map_type', 'map_evidence']
-            map_df_k = map_df_k[ordered_cols]
-            # refine filtering for parents and children
-            vocab_keys = [x.upper() for x in keys.split('|')]
-            map_df_k = map_df_k[map_df_k['vocabulary_id'].isin(vocab_keys)].drop_duplicates()
-            map_df_k = map_df_k[map_df_k['concept_id'] != 'None'].drop_duplicates()
-            # write data
-            map_df_c['map_evidence'] = map_df_c['map_evidence'].str.replace('\n\n', '\n')
-            o = len(set(map_df_c['ontology_id'])); c = len(map_df_c['concept_id'])
-            print('\t-Concept Mappings: {} ontology concepts mapped to {} OMOP concepts'.format(str(o), str(c)))
-            print(map_df_c.groupby(['map_level'])['ontology_id'].count())
-            f_src = self.write_loc + '/omop2obo_{}_mappings_v2beta.tsv'.format(keys)
-            map_df_c.to_csv(f_src, header=True, index=False, sep='\t')
-            if map_df_k is not None:  # concept children data
-                map_df_k['map_evidence'] = map_df_k['map_evidence'].str.replace('\n\n', '\n')
-                o = len(set(map_df_k['ontology_id'])); c = len(map_df_k['concept_id'])
-                print('\t- Child Mappings: {} ontology concepts mapped to {} OMOP concepts'.format(str(o), str(c)))
-                print(map_df_k.groupby(['map_level'])['ontology_id'].count())
-                f_src = self.write_loc + '/omop2obo_{}_children_mappings_v2beta.tsv'.format(keys)
-                map_df_k.to_csv(f_src, header=True, index=False, sep='\t')
+            if len(mapping_dict) > 0:
+                print('\t- Processing: {}'.format(str(keys)))
+                subset = ['concept_id', 'STRING', 'SAB', 'CODE_ORG', 'domain_id', 'concept_class_id', 'standard_concept']
+                omop_sub = self.omop_df[subset]
+                for k, v in tqdm(mapping_dict.items()):
+                    ont_id = k; ont_label = v['ont_label']; ont_version = v['ont_version']; mappings = v['mappings']
+                    for code in mappings.keys():
+                        for omop_id in mappings[code].keys():
+                            for level, res in mappings[code][omop_id].items():
+                                match = ' | '.join(res['MATCH']); match_type = ' | '.join(res['MATCH_TYPE'])
+                                res_cols = [code, omop_id, ont_id, ont_label, ont_version, level, match, match_type]
+                                if 'child' in level: children_data += [res_cols]
+                                else: data += [res_cols]
+                ## convert to data frame
+                # concept-level data
+                map_df_c = pd.DataFrame({'concept_id': [x[1] for x in data], 'ontology_id': [x[2] for x in data],
+                                         'ontology_label': [x[3] for x in data], 'ontology_version': [x[4] for x in data],
+                                         'map_level': [x[5] for x in data], 'map_type': [x[6] for x in data],
+                                         'map_evidence': [x[7] for x in data]})
+                # add omop data
+                map_df_c = map_df_c.merge(omop_sub, on=['concept_id'], how='left').drop_duplicates()
+                map_df_c.rename(
+                    columns={'STRING': 'concept_name', 'SAB': 'vocabulary_id', 'CODE_ORG': 'concept_code'}, inplace=True)
+                # reorder columns
+                ordered_cols = ['ontology_id', 'ontology_label', 'ontology_version', 'concept_id', 'concept_code',
+                                'concept_name', 'concept_class_id', 'vocabulary_id', 'domain_id', 'standard_concept',
+                                'map_level', 'map_type', 'map_evidence']
+                map_df_c = map_df_c[ordered_cols]
+                # refine filtering for parents
+                map_df_c = map_df_c[map_df_c['vocabulary_id'].isin([x.upper() for x in keys.split('|')])].drop_duplicates()
+                map_df_c = map_df_c[map_df_c['concept_id'] != 'None'].drop_duplicates()
+                # concept-level data children
+                if len(children_data) > 0:
+                    map_df_k = pd.DataFrame(
+                        {'concept_id': [x[1] for x in children_data], 'ontology_id': [x[2] for x in children_data],
+                         'ontology_label': [x[3] for x in children_data], 'ontology_version': [x[4] for x in children_data],
+                         'map_level': [x[5] for x in children_data], 'map_type': [x[6] for x in children_data],
+                         'map_evidence': [x[7] for x in children_data]})
+                    omop_sub_child = omop_sub.copy()
+                    omop_sub_child.rename(columns={
+                        'STRING': 'concept_name', 'SAB': 'vocabulary_id', 'CODE_ORG': 'concept_code'}, inplace=True)
+                    map_df_k = map_df_k.merge(omop_sub_child, on=['concept_id'], how='left')
+                else: map_df_k = None
+                # reorder columns
+                ordered_cols = ['ontology_id', 'ontology_label', 'ontology_version', 'concept_id', 'concept_code',
+                                'concept_name', 'concept_class_id', 'vocabulary_id', 'domain_id', 'standard_concept',
+                                'map_level', 'map_type', 'map_evidence']
+                map_df_k = map_df_k[ordered_cols]
+                # refine filtering for parents and children
+                vocab_keys = [x.upper() for x in keys.split('|')]
+                map_df_k = map_df_k[map_df_k['vocabulary_id'].isin(vocab_keys)].drop_duplicates()
+                map_df_k = map_df_k[map_df_k['concept_id'] != 'None'].drop_duplicates()
+                # write data
+                map_df_c['map_evidence'] = map_df_c['map_evidence'].str.replace('\n\n', '\n')
+                o = len(set(map_df_c['ontology_id'])); c = len(map_df_c['concept_id'])
+                print('\t\t- Concept Mappings: {} ontology concepts mapped to {} OMOP concepts'.format(str(o), str(c)))
+                f_src = self.write_loc + '/omop2obo_{}_mappings_v2beta.tsv'.format(keys)
+                map_df_c.to_csv(f_src, header=True, index=False, sep='\t')
+                if map_df_k is not None:  # concept children data
+                    map_df_k['map_evidence'] = map_df_k['map_evidence'].str.replace('\n\n', '\n')
+                    o = len(set(map_df_k['ontology_id'])); c = len(map_df_k['concept_id'])
+                    print('\t\t- Child Mappings: {} ontology concepts mapped to {} OMOP concepts'.format(str(o), str(c)))
+                    f_src = self.write_loc + '/omop2obo_{}_children_mappings_v2beta.tsv'.format(keys)
+                    map_df_k.to_csv(f_src, header=True, index=False, sep='\t')
