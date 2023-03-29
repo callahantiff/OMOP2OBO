@@ -838,13 +838,13 @@ def merges_dataframes(merge_type: str, df1: pd.DataFrame, df1_col: List, df2: pd
         merged_df: A comprehensively merged Pandas DataFrame Object.
     """
 
-    print('Verifying Input Data')
+    # print('Verifying Input Data')
     df1 = df1[df1_col].drop_duplicates(); mt = metadata_cols[0]
     merge_cols = list(set(df1.columns).intersection(set(df2.columns)))
     df1 = df1[df1[merge_type.replace('EXACT ', '')] != 'None'].drop_duplicates()
     if set(df1[merge_cols]) == {'None'} or len(df1) == 0: return None
     else:
-        print('Merging Input Datasets')
+        # print('Merging Input Datasets')
         if mt == 'DBXREF': merged_df = df1.merge(df2, on=merge_cols, how='left').fillna('None').drop_duplicates()
         else: merged_df = df1.merge(df2, on=merge_cols, how='inner').fillna('None').drop_duplicates()
         if len(merged_df) == 0: return merged_df
@@ -854,7 +854,7 @@ def merges_dataframes(merge_type: str, df1: pd.DataFrame, df1_col: List, df2: pd
                 lambda x: 'OBO Provided {}'.format(x[metadata_cols[1][1]])
                 if x[df2_col[0]] == 'None' else x['MATCH_TYPE'], axis=1)
             if recurse:
-                print('Recursively Processing Merged Input Datasets')
+                # print('Recursively Processing Merged Input Datasets')
                 merged_update = recursively_updates_dataframe(metadata_cols, merged_df.copy(), df2_col, df2.copy())
             else: merged_update = merged_df.copy()
             merged_update = merged_update.fillna('None').drop_duplicates()
@@ -1034,7 +1034,7 @@ def finds_entity_mappings(search_type: str, concept_dict: Dict, keys: List, dfs:
     search_str = 'OBO {}: {} - {} level(s) above {} on {}' if 'Anc' in search_type \
                  else 'OBO {}: {} - {} level(s) below {} on {}'
 
-    for i in tqdm(set(df0[primary_key])):
+    for i in set(df0[primary_key]):
         entities = entity_dict[i]
         if entities is not None:
             entity_list = sorted(entities.keys()); match_hits = None; matched_df_list = []
@@ -1107,7 +1107,7 @@ def finds_entity_fuzzy_matches(df_type: str, dfs: List, keys: List, sab_list: Li
     str_match_type = '{} Strings Containing the Substring: "{}" on rows from MATCH: {} and MATCH_TYPE:{}'
     df_version_col, df_version = df_version
 
-    for search_string in tqdm(string_groups.groups.keys()):
+    for search_string in string_groups.groups.keys():
         str_df_subset = string_groups.get_group(search_string)
         matches = df2[df2['STRING'].str.contains(search_string, regex=False)]
         matches = matches[~matches['STRING'].isin([search_string])].reset_index()
