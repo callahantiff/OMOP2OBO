@@ -150,7 +150,12 @@ class OntologyInfoExtractor(object):
                 {'obo_id': y[0], 'code': y[0].split('/')[-1].replace('_', ':'), 'dbx': x[0], 'dbx_type': x[1],
                  'dbx_source': x[2], 'dbx_source_name': x[2]}
                 for y in [(k, v) for k, v in res['dbxref'].items()] for x in y[1])
-            ont_df = ont_df.merge(dbx, on=['obo_id', 'code'], how='left').drop_duplicates()
+        else:
+            dbx = pandas.DataFrame(
+                {'obo_id': y[0], 'code': y[0].split('/')[-1].replace('_', ':'), 'dbx': None, 'dbx_type': None,
+                 'dbx_source': None, 'dbx_source_name': None}
+                for y in [(k, v) for k, v in res['label'].items()] for _ in y[1])
+        ont_df = ont_df.merge(dbx, on=['obo_id', 'code'], how='left').drop_duplicates()
         # add metadata
         ont_df['SAB'] = sab; ont_df['SAB_NAME'] = sab; ont_df['SEMANTIC_TYPE'] = ns
         # rename columns
