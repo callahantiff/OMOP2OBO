@@ -162,7 +162,7 @@ class OntologyInfoExtractor(object):
         ont_df['OBO_DBXREF_SAB'] = ont_df['OBO_DBXREF_SAB_NAME']
         ont_df = ont_df.fillna('None').drop_duplicates()
         # write data to local directory (resources/ontologies)
-        print('\t- Writing Concept Ancestor and Descendant Dictionaries to Disk')
+        print('\t- Writing Metadata DataFrame to Disk')
         out = '{}/{}_ontology_hierarchy_information.pkl'.format(self.ont_directory, ont_id)
         pickle_large_data_structure(ont_df, out)
         print('\t  ...Wrote Pandas DataFrame to: {}'.format(out))
