@@ -19,7 +19,7 @@ from omop2obo.utils import aggregates_mapping_results
 @click.option('--ont_file', type=click.Path(exists=True), required=True, default='resources/ontology_source_list.txt')
 @click.option('--tfidf_mapping', required=True, default='no')
 @click.option('--clinical_domain', required=True)
-@click.option('--merge', required=True, multiple=True, default='True or False - UMLS Expanded Merge')
+@click.option('--merge', required=True, default='True or False - UMLS Expanded Merge')
 @click.option('--onts', required=True, multiple=True, default=['List'])
 @click.option('--clinical_data', type=click.Path(exists=True), required=True)
 @click.option('--primary_key', required=True, default='CONCEPT_ID')
