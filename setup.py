@@ -83,4 +83,9 @@ setup(
         'tqdm==4.54.1',
         'types-requests'],
     extras_require=extras,
+    entry_points={
+        "console_scripts": [
+            'omop2obo = omop2obo.main:main',
+        ],
+    },
 )
