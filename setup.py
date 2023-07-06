@@ -78,7 +78,7 @@ setup(
         'rdflib==5.0.0',
         'regex>=2021.8.3',
         'responses==0.10.12',
-        'scipy==1.5.4',
+        'scipy==1.10.0',
         'scikit-learn==0.23.2',
         'tqdm==4.54.1',
         'types-requests'],
